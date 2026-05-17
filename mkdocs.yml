@@ -1,0 +1,48 @@
+site_name: Salesforce Training
+
+theme:
+  name: slate
+  custom_dir: docs/overrides
+
+plugins:
+  - search:
+      separator: '[\s\-\/\_]+'
+      min_search_length: 2
+
+hooks:
+  - hooks/lesson_meta.py
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - But Why: but-why.md
+      - Switching Systems Mid-Month: switching-systems-mid-month.md
+      - First Time Logging In: first-time-logging-in.md
+      - How to Navigate the Community Site: how-to-navigate-the-community-site.md
+      - My Account: my-account.md
+  - What to Do First:
+      - What to Do First: what-to-do-first.md
+      - Update Your Games, Equipment and Preferences: update-your-games-equipment-and-preferences.md
+      - Availability: availability.md
+  - Understanding the Difference:
+      - Understanding the Difference: understanding-the-difference.md
+      - Using Calendar Events: using-calendar-events.md
+      - Wrap Up a Session: wrap-up-a-session.md
+  - Mentees and Sessions:
+      - Finding Your Mentees and Sessions: finding-your-mentees-and-sessions.md
+      - Accessing Your Mentees: accessing-your-mentees.md
+      - Accessing Historical Session Notes: accessing-historical-session-notes.md
+      - Accessing Your Sessions: accessing-your-sessions.md
+      - Recording an Absence (Illness and Holiday): recording-an-absence-illness-and-holiday.md
+  - Resources:
+      - How to Log a Support Ticket: how-to-log-a-support-ticket.md
+      - Useful Links: useful-links.md
+      - Terminology: terminology.md
+      - Dashboard: dashboard.md
+  - Need Help: need-help.md
+
+extra_css:
+  - assets/stylesheets/aurora.css
+
+extra_javascript:
+  - assets/javascripts/aurora.js

@@ -1,0 +1,2809 @@
+/* =========================================================
+   Aurora — v2 Salesforce Training stylesheet
+   ---------------------------------------------------------
+   Spec: ../salesforce-training/housekeeping/notes/v2-build-plan.md
+   Stage 3: tokens, body, scrollbar, shell, tile primitive,
+   eyebrow/title block. Stages 4+ build on top.
+   ========================================================= */
+
+
+/* OpenDyslexic — self-hosted; only fetched when a font-family rule
+   actually uses it (so the 172 KB file doesn't load until the user
+   picks "OpenDyslexic" from the dev-panel font dropdown). */
+@font-face {
+  font-family: "OpenDyslexic";
+  src: url("../fonts/OpenDyslexic-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+/* ---------- §5 Design tokens (+ §6 motion tokens) ---------- */
+
+:root {
+  /* COLOUR */
+  --aur-bg:                #0d0817;
+  --aur-bg-elev-1:         rgba(20, 16, 32, 0.56);
+  --aur-bg-elev-2:         rgba(28, 22, 44, 0.66);
+  --aur-bg-sidebar:        rgba(14, 10, 24, 0.62);
+
+  --aur-border:            rgba(255, 255, 255, 0.06);
+  --aur-border-strong:     rgba(255, 255, 255, 0.10);
+  --aur-border-focus:      rgba(214, 114, 230, 0.55);
+
+  --aur-text:              #e6e2ef;
+  --aur-text-soft:         #a39db1;
+  --aur-text-muted:        #6f6a7d;
+  --aur-text-on-accent:    #1a0d22;
+
+  --aur-accent:            #d672e6;
+  --aur-accent-soft:       #ffb6f0;
+  --aur-accent-deep:       #b14ad8;
+  --aur-accent-grad:       linear-gradient(135deg, #ff8edf 0%, #b14ad8 100%);
+  --aur-accent-grad-soft:  linear-gradient(135deg, rgba(255,142,223,0.18) 0%, rgba(177,74,216,0.18) 100%);
+  --aur-accent-ring:       rgba(214, 114, 230, 0.32);
+  --aur-accent-glow:       rgba(214, 114, 230, 0.45);
+
+  --aur-success:           #6ee29a;
+  --aur-warning:           #f0c66d;
+  --aur-danger:            #ef8b8b;
+
+  /* AURORA BACKDROP (body-wide blurred colour layer; Stage 3.5).
+     Three radial blobs at top-left / middle-right / bottom-centre.
+     Stage 6 may animate drift on top of these. */
+  --aur-backdrop-1:        #ff8edf;
+  --aur-backdrop-2:        #b14ad8;
+  --aur-backdrop-3:        #6ee29a;
+  --aur-backdrop-opacity:  0.42;
+
+  /* SECTION GLOWS (Stage 4). Each nav section gets its own glow colour
+     that replaces --aur-accent-glow when the user is on a page in that
+     section (via body[data-section="…"]). Defaults to the main accent. */
+  --aur-section-glow-standalone:                            rgba(214, 114, 230, 0.45);
+  --aur-section-glow-getting-started:                       rgba(255, 142, 223, 0.45);
+  --aur-section-glow-what-to-do-first:                      rgba(177, 74, 216, 0.45);
+  --aur-section-glow-understanding-the-difference:          rgba(110, 226, 154, 0.45);
+  --aur-section-glow-finding-your-mentees-and-sessions:     rgba(240, 198, 109, 0.45);
+  --aur-section-glow-resources:                             rgba(142, 214, 255, 0.45);
+
+  /* STRUCTURE */
+  --aur-tile-blur:         8px;
+  --aur-tile-radius:       16px;
+  --aur-tile-radius-sm:    10px;
+  --aur-tile-radius-pill:  999px;
+
+  --aur-shadow-rest:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 18px 40px -28px rgba(0, 0, 0, 0.65);
+  --aur-shadow-hover:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 22px 48px -22px rgba(0, 0, 0, 0.72),
+    0 0 0 1px var(--aur-border-strong);
+  --aur-shadow-focus:
+    0 0 0 2px var(--aur-bg),
+    0 0 0 4px var(--aur-accent-ring);
+
+  /* TYPOGRAPHY */
+  --aur-font:              -apple-system, "Segoe UI", "Inter", system-ui, sans-serif;
+  --aur-font-title:        var(--aur-font);
+  --aur-font-subtitle:     var(--aur-font);
+  --aur-font-body:         var(--aur-font);
+  --aur-font-mono:         ui-monospace, "Cascadia Mono", "Consolas", monospace;
+
+  /* Base body font is viewport-responsive — 16px on a small laptop,
+     up to 20px on a 4K monitor. Everything else expressed in rem
+     scales with it automatically. */
+  --aur-size-eyebrow:      0.78rem;
+  --aur-size-body:         clamp(16px, 0.95vw, 20px);
+  --aur-size-body-lg:      1.06rem;
+  --aur-size-h3:           1.05rem;
+  --aur-size-h2:           1.4rem;
+  --aur-size-h1:           clamp(2rem, 3.6vw, 3.4rem);
+
+  --aur-track-eyebrow:     0.18em;
+  --aur-track-section:     0.22em;
+
+  --aur-line-tight:        1.18;
+  --aur-line-body:         1.55;
+
+  /* LAYOUT — all viewport-responsive via clamp/min so the design
+     scales smartly: narrow gutters on big monitors, tight padding
+     on small ones, everything stays proportional. */
+  --aur-shell-max:         min(2200px, 95vw);
+  --aur-shell-gap:         clamp(24px, 1.8vw, 44px);
+  --aur-sidebar-w:         clamp(280px, 16vw, 340px);
+  --aur-main-pad:          clamp(24px, 1.8vw, 44px);
+  --aur-tile-pad:          clamp(20px, 1.4vw, 32px);
+  --aur-topbar-h:          64px;   /* mobile sticky top bar; also used for min-height offset */
+
+  /* MOTION (§6.1 durations) */
+  --aur-dur-micro:         120ms;
+  --aur-dur-small:         200ms;
+  --aur-dur-medium:        400ms;
+  --aur-dur-large:         900ms;
+  --aur-dur-xlarge:        2400ms;
+
+  /* MOTION (§6.2 easings) */
+  --aur-ease-standard:     cubic-bezier(0.4, 0, 0.2, 1);
+  --aur-ease-out-soft:     cubic-bezier(0.22, 1, 0.36, 1);
+  --aur-ease-in-soft:      cubic-bezier(0.55, 0, 0.1, 1);
+  --aur-ease-bounce-tiny:  cubic-bezier(0.34, 1.32, 0.64, 1);
+  --aur-ease-linear:       linear;
+
+  /* DEV-PANEL CONTROLLED (Stage 8) */
+  --aur-star-intensity:    1;
+  --aur-backdrop-blur:     40px;
+  --aur-font-scale:        1;
+
+  color-scheme: dark;
+}
+
+
+/* ---------- Reset & body (§7.1) ---------- */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;       /* Body no longer scrolls; .aur-main does. */
+}
+@media (max-width: 800px) {
+  html, body {
+    height: auto;
+    overflow: visible;    /* On mobile the body scrolls normally. */
+  }
+  body { overflow-x: hidden; }
+}
+
+html {
+  background: var(--aur-bg);
+  color: var(--aur-text);
+  font-family: var(--aur-font-body);
+  font-size: calc(var(--aur-size-body) * var(--aur-font-scale, 1));
+  line-height: var(--aur-line-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  caret-color: var(--aur-accent);
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: var(--aur-bg);
+  color: var(--aur-text);
+}
+
+
+/* ---------- Aurora backdrop (Stage 3.5) ---------- */
+
+/* Fixed full-viewport blurred colour layer behind everything.
+   Tiles' backdrop-filter blurs this through their frosted glass. */
+/* Wrapper holds the blur + opacity + saturation. The three colour
+   blobs are independent children so each can drift on its own timeline
+   without forming a synchronised "pulse". */
+/* Top-fade rendered as a sticky pseudo-element on .aur-main, NOT a
+   viewport-fixed overlay. That keeps it inside main's stacking
+   context — it covers main-column content as it scrolls past, but
+   the starfield + backdrop blobs (siblings of .aur-shell) pass
+   through unaffected and stay visible. Implemented at .aur-main below. */
+
+.aur-backdrop {
+  position: fixed;
+  inset: -10vh;
+  z-index: 0;
+  pointer-events: none;
+  opacity: var(--aur-backdrop-opacity);
+  filter: blur(var(--aur-backdrop-blur, 40px)) saturate(115%);
+  transition: filter var(--aur-dur-medium) var(--aur-ease-out-soft);
+}
+
+/* Each blob: one large radial fade, full-size sibling overlay. Each
+   has its own keyframes (different vector and prime-ish duration) so
+   the three never resync. Range is ≤ 3.5vw/2.5vh — perceptible only
+   on close inspection. */
+.aur-backdrop__blob {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+.aur-backdrop__blob--1 {
+  background: radial-gradient(circle 560px at 15% 20%, var(--aur-backdrop-1) 0%, transparent 100%);
+  animation: aur-blob-drift-1 137s ease-in-out infinite;
+}
+.aur-backdrop__blob--2 {
+  background: radial-gradient(circle 520px at 82% 62%, var(--aur-backdrop-2) 0%, transparent 100%);
+  animation: aur-blob-drift-2 173s ease-in-out infinite;
+}
+.aur-backdrop__blob--3 {
+  background: radial-gradient(circle 480px at 50% 92%, var(--aur-backdrop-3) 0%, transparent 100%);
+  animation: aur-blob-drift-3 211s ease-in-out infinite;
+}
+
+@keyframes aur-blob-drift-1 {
+  0%   { transform: translate(0,      0); }
+  33%  { transform: translate(3vw,    2vh); }
+  66%  { transform: translate(-1.5vw, -2vh); }
+  100% { transform: translate(0,      0); }
+}
+@keyframes aur-blob-drift-2 {
+  0%   { transform: translate(0,      0); }
+  33%  { transform: translate(-2.5vw, 2.5vh); }
+  66%  { transform: translate(2vw,    -1.5vh); }
+  100% { transform: translate(0,      0); }
+}
+@keyframes aur-blob-drift-3 {
+  0%   { transform: translate(0,      0); }
+  33%  { transform: translate(2vw,    -2.5vh); }
+  66%  { transform: translate(-2.5vw, 1vh); }
+  100% { transform: translate(0,      0); }
+}
+
+/* While the user is dragging in a colour picker, soften the blur so each
+   frame is cheap to rasterize. The 50px blur snaps back when they release. */
+html.aur-is-dragging .aur-backdrop {
+  filter: blur(22px) saturate(140%);
+  transition: none;
+}
+
+/* ---------- Scroll optimisation ----------
+   backdrop-filter on tiles that scroll over an animated background is the
+   single most expensive GPU operation on this page: every frame the browser
+   must re-sample the animated blobs + stars through each tile's blur kernel.
+   JS adds `aur-is-scrolling` to <html> on scroll (passive listener, removed
+   150 ms after the last scroll event). While it's present:
+   - All tile/sidebar backdrop-filters are suspended (tiles fall back to their
+     semi-transparent background colour — visually barely noticeable while
+     the user is moving).
+   - Background animations are paused so the GPU source texture doesn't change
+     while we've already stopped sampling it.
+   Both classes restore immediately once scrolling stops. */
+html.aur-is-scrolling .aur-tile,
+html.aur-is-scrolling .aur-sidebar,
+html.aur-is-scrolling .aur-shell-topbar {
+  -webkit-backdrop-filter: none;
+          backdrop-filter: none;
+}
+html.aur-is-scrolling .aur-backdrop__blob,
+html.aur-is-scrolling .aur-starfield__layer,
+html.aur-is-scrolling .aur-star {
+  animation-play-state: paused;
+}
+
+
+/* ---------- §7.2 Animated star layer ----------
+   Three fixed full-viewport divs behind the shell, on top of the
+   backdrop blobs. Each layer:
+     - Two stacked radial-gradient pinpoint patterns at different tile
+       sizes and offsets, so the eye can't decode a repeating grid.
+     - Per-layer alpha A on the pinpoint colour: 0.85 / 0.55 / 0.35.
+     - Drift via transform (90s / 130s / 170s, distance ≤ 18px).
+     - Breathing via opacity (9s / 12s / 16s), oscillating between
+       0.85 × intensity and 1.0 × intensity. `--aur-star-intensity`
+       (default 1) lets the Stage 8 dev slider dim all three in
+       lockstep without re-rasterizing the gradients.
+   will-change promotes each layer to its own compositor texture so
+   drift and breathing stay on the GPU at idle (target < 1% CPU). */
+
+/* ---------- §7.2 Star field ----------
+   Inline SVG (hooks/gen_stars.py) gives each star its own DOM node,
+   so opacity twinkles per-star with random duration + phase — the
+   tell-tale "polished starfield" signal that a uniform gradient tile
+   can't produce. Two SVG parallax-drift layers (FAR slow, NEAR fast),
+   plus a static CSS gradient dust layer behind for ambient density.
+   A radial mask kills the wallpaper symmetry. One absolute-positioned
+   shooting-star pseudo-bar fires on a 28s cycle.
+   All motion is transform/opacity → stays in the compositor. */
+
+.aur-starfield {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: var(--aur-star-intensity, 1);
+  /* Asymmetric density mask — anchored top-left, fading out bottom-right.
+     Breaks the "tile of dots" wallpaper feel. */
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 35% 30%, #000 35%, rgba(0,0,0,0.55) 75%, transparent 100%);
+          mask-image: radial-gradient(ellipse 90% 80% at 35% 30%, #000 35%, rgba(0,0,0,0.55) 75%, transparent 100%);
+}
+
+/* Ambient dust — single CSS gradient layer behind the SVG. Fills the
+   "I want hundreds of pinpoints" density floor cheaply; the SVG stars
+   carry the character. */
+.aur-starfield__dust {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.55) 0 1px, transparent 1.4px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.55) 0 1px, transparent 1.4px);
+  background-size: 240px 240px, 400px 400px;
+  background-position: 0 0, 110px 95px;
+  /* No animation: background-position is not GPU-compositable so animating
+     it causes a full repaint every frame. Static dust still fills ambient density. */
+}
+
+/* Parallax-warp wrappers — each is 200vh tall and contains the same
+   star markup twice (stacked top + bottom lanes). The layer translates
+   upward by -50% per cycle, giving an infinite seamless flow that
+   reads as "the viewer is moving slowly through space." Different
+   durations per layer = parallax depth (near moves faster). */
+.aur-starfield__layer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 200%;
+  will-change: transform;
+}
+.aur-starfield__lane {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50%;
+}
+.aur-starfield__lane:first-child { top: 0; }
+.aur-starfield__lane:last-child  { top: 50%; }
+
+.aur-starfield__layer--far  { animation: aur-warp-far  240s linear infinite; }
+.aur-starfield__layer--near { animation: aur-warp-near 120s linear infinite; }
+
+/* Individual star — a 1–3px absolutely positioned circle. Inline
+   styles per star: left/top (% of viewport), width/height (px),
+   background (tint), --bo (base opacity), and the animation spec.
+   Hero stars also carry an inline box-shadow halo (static — not
+   animated, so no paint cost during twinkle). */
+.aur-star {
+  position: absolute;
+  border-radius: 50%;
+  opacity: var(--bo, 0.6);
+  pointer-events: none;
+  /* No will-change here: 126 individual compositor layers overwhelms GPU memory.
+     Stars share their parent layer's composite texture instead. */
+}
+
+/* Per-star twinkle — TWO peaks per cycle (at 25% and 70%) with a small
+   dip between them at 45%, giving each star a scintillating flicker
+   instead of a smooth breath. Range is calc(--bo × 0.55) at min to
+   --bo at peak — wide enough to read as twinkling, narrow enough to
+   feel atmospheric (not strobing). Random per-star duration + delay
+   on every <i.aur-star> means no two stars peak at the same time. */
+@keyframes aur-twinkle {
+  0%, 100% { opacity: calc(var(--bo, 0.5) * 0.55); }
+  25%      { opacity: var(--bo, 0.5); }
+  45%      { opacity: calc(var(--bo, 0.5) * 0.7); }
+  70%      { opacity: var(--bo, 0.5); }
+}
+
+/* One-direction warp — each layer translates upward by exactly the
+   height of one lane (50% of the 200vh wrapper). Because the two
+   lanes share identical star markup, the moment the animation snaps
+   back to 0 is visually identical to the moment just before the snap.
+   Linear easing keeps the motion uniform — no slow-down before the
+   loop boundary. */
+@keyframes aur-warp-far  { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+@keyframes aur-warp-near { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+
+/* Dust gradient: animate background-position downward by exactly one
+   tile (240px) over a long duration. Since the gradient repeats every
+   240px, the wraparound is invisible. The second background's tile
+   (400px) is slightly off-sync per cycle but the dots are sparse so
+   the very faint mismatch reads as natural sky-shimmer. */
+@keyframes aur-drift-dust {
+  from { background-position: 0 0,    110px 95px;  }
+  to   { background-position: 0 240px, 110px 335px; }
+}
+
+/* Shooting star — single reusable bar at a top-level z-index (sibling
+   of .aur-starfield, not child). Sits above the shell so it's never
+   hidden behind content tiles. JS drives the animation via WAAPI. */
+
+/* NOTE: the starfield animations (twinkle, warp, dust drift) are
+   explicitly requested decorative chrome — no prefers-reduced-motion
+   override here. The global "Pause animations" toggle (bottom-left)
+   remains the manual control. */
+
+
+::selection {
+  background: var(--aur-accent);
+  color: var(--aur-text-on-accent);
+}
+
+/* Universal accent focus ring. Components can override with their own
+   focus styling in later stages (e.g. §7.3 tile uses --aur-shadow-focus,
+   §7.4 nav-item gets a 2px solid border-focus, etc.). */
+:focus-visible {
+  outline: 2px solid var(--aur-border-focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip-to-content link (§9 accessibility). Hidden until focused. */
+.aur-skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 9999;
+  padding: 10px 14px;
+  background: var(--aur-accent-grad);
+  color: var(--aur-text-on-accent);
+  font-weight: 600;
+  border-radius: var(--aur-tile-radius-sm);
+  text-decoration: none;
+}
+.aur-skip:focus {
+  left: 12px;
+  top: 12px;
+  outline: none;
+  box-shadow: var(--aur-shadow-focus);
+}
+
+
+/* ---------- §7.1 Scrollbar ----------
+   .aur-main is the desktop scroll container (html has overflow:hidden on desktop).
+   html only scrolls on mobile. All three share the same webkit rules. */
+
+/* Firefox */
+html, .aur-main, .aur-scroll {
+  scrollbar-color: rgba(214, 114, 230, 0.45) transparent;
+  scrollbar-width: thin;
+}
+
+/* Webkit / Blink */
+html::-webkit-scrollbar,
+.aur-main::-webkit-scrollbar,
+.aur-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+html::-webkit-scrollbar-track,
+.aur-main::-webkit-scrollbar-track,
+.aur-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 6px 0;  /* breathing room at viewport top/bottom */
+}
+html::-webkit-scrollbar-thumb,
+.aur-main::-webkit-scrollbar-thumb,
+.aur-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg,
+    rgba(255, 142, 223, 0.45) 0%,
+    rgba(177,  74, 216, 0.45) 100%);
+  border-radius: 999px;
+  border: 2px solid transparent;      /* floating gap around the thumb */
+  background-clip: padding-box;
+}
+html::-webkit-scrollbar-thumb:hover,
+.aur-main::-webkit-scrollbar-thumb:hover,
+.aur-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ff8edf 0%, #b14ad8 100%);
+  background-clip: padding-box;
+  box-shadow: 0 0 10px rgba(214, 114, 230, 0.5);
+}
+html::-webkit-scrollbar-thumb:active,
+.aur-main::-webkit-scrollbar-thumb:active,
+.aur-scroll::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #ff8edf 0%, #b14ad8 100%);
+  background-clip: padding-box;
+  box-shadow: 0 0 18px rgba(214, 114, 230, 0.75);
+}
+html::-webkit-scrollbar-corner,
+.aur-main::-webkit-scrollbar-corner,
+.aur-scroll::-webkit-scrollbar-corner,
+html::-webkit-scrollbar-button,
+.aur-main::-webkit-scrollbar-button,
+.aur-scroll::-webkit-scrollbar-button {
+  display: none;
+}
+
+
+/* ---------- Shell (two-column layout) ---------- */
+
+.aur-shell {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: var(--aur-sidebar-w) minmax(0, 1fr);
+  gap: var(--aur-shell-gap);
+  max-width: var(--aur-shell-max);
+  margin: 0 auto;
+  /* No bottom padding — main extends all the way to the viewport bottom
+     so there's no visible "clip line" with empty starfield below it. */
+  padding: var(--aur-shell-gap) var(--aur-shell-gap) 0;
+  height: 100vh;
+  height: 100dvh;   /* dvh accounts for mobile browser chrome; 100vh is the fallback */
+}
+@media (max-width: 800px) {
+  .aur-shell {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: var(--aur-shell-gap);
+  }
+}
+
+.aur-sidebar {
+  background: var(--aur-bg-sidebar);
+  border: 1px solid var(--aur-border);
+  border-radius: var(--aur-tile-radius);
+  -webkit-backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  box-shadow: var(--aur-shadow-rest);
+  padding: var(--aur-tile-pad);
+  /* Shell is now fixed-height: 100vh and the body doesn't scroll, so
+     sticky has nothing to stick to. Regular grid child fills its row. */
+  align-self: start;
+  height: calc(100vh  - var(--aur-shell-gap) * 2);
+  height: calc(100dvh - var(--aur-shell-gap) * 2);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow: hidden;
+}
+
+/* Main column scrolls INTERNALLY (body itself is fixed-height + no
+   scroll). That lets us apply a `mask-image` to .aur-main with a
+   transparent top band — content scrolling past that band fades to
+   nothing, but the band itself is truly invisible (no overlay, no
+   solid colour, no blur) so the starfield + backdrop blobs behind
+   pass through completely unaffected. */
+.aur-main {
+  padding: var(--aur-main-pad);
+  min-width: 0;
+  height: calc(100vh  - var(--aur-shell-gap));
+  height: calc(100dvh - var(--aur-shell-gap));  /* extend to viewport bottom */
+  overflow-y: auto;
+  scrollbar-color: var(--aur-accent-ring) transparent;
+  scrollbar-width: thin;
+  -webkit-mask-image: linear-gradient(to bottom,
+    transparent 0,
+    #000 calc(var(--aur-shell-gap) * 0.85),
+    #000 100%);
+          mask-image: linear-gradient(to bottom,
+    transparent 0,
+    #000 calc(var(--aur-shell-gap) * 0.85),
+    #000 100%);
+}
+@media (max-width: 800px) {
+  .aur-main {
+    height: auto;
+    overflow-y: visible;
+    -webkit-mask-image: none;
+            mask-image: none;
+  }
+}
+
+
+/* ---------- §7.15 Brand pill ---------- */
+
+.aur-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--aur-text);
+  padding: 4px 2px;
+  border-radius: var(--aur-tile-radius-sm);
+  transition: transform var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-brand:hover { transform: translateY(-1px); }
+.aur-brand:hover .aur-brand__pill { background: var(--aur-accent-grad); color: var(--aur-text-on-accent); }
+
+.aur-brand__icon {
+  width: 40px;
+  height: 40px;
+  display: block;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.aur-brand__name-mind { color: #702EC6; }
+.aur-brand__name-jam  { color: #DC372B; }
+
+.aur-brand__pill {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--aur-tile-radius-sm);
+  background: var(--aur-accent-grad-soft);
+  color: var(--aur-accent-soft);
+  font-family: var(--aur-font-title);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  transition:
+    background var(--aur-dur-small) var(--aur-ease-standard),
+    color var(--aur-dur-small) var(--aur-ease-standard);
+}
+
+.aur-brand__name {
+  font-family: var(--aur-font-title);
+  font-weight: 700;
+  font-size: 1.55rem;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  color: var(--aur-text);
+}
+
+
+/* ---------- §7.7 Progress bar ---------- */
+
+.aur-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aur-progress__track {
+  position: relative;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--aur-tile-radius-pill);
+  overflow: hidden;
+}
+
+.aur-progress__fill {
+  position: relative;
+  height: 100%;
+  background: var(--aur-accent-grad);
+  border-radius: var(--aur-tile-radius-pill);
+  overflow: hidden;
+  /* Width is set inline by JS. The first-paint transition is added by JS
+     after the initial style is set, to ensure a fill animation happens
+     from old-value (or 0) to new-value, not from 0 to 0. */
+}
+
+.aur-progress__shimmer {
+  position: absolute;
+  inset: 0;
+  width: 30%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 100%
+  );
+  animation: aur-progress-shimmer 4s linear infinite;
+}
+
+@keyframes aur-progress-shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(400%); }
+}
+
+.aur-progress__label {
+  margin: 0;
+  font-family: var(--aur-font-subtitle);
+  font-size: var(--aur-size-eyebrow);
+  letter-spacing: var(--aur-track-eyebrow);
+  text-transform: uppercase;
+  color: var(--aur-text-muted);
+}
+.aur-progress__current { color: var(--aur-text-soft); font-weight: 600; }
+.aur-progress__sep { margin: 0 4px; opacity: 0.6; }
+.aur-progress__caption { margin-left: 6px; }
+
+
+/* ---------- Progress-bar personality on advance ----------
+   JS adds `.is-advancing` to .aur-progress while the fill is sliding to
+   its new width. While advancing:
+     - Fill leading edge glows with a brighter halo that fades out.
+     - Shimmer overlay does a quick sprint pass.
+     - Current-number label bounces and flashes accent for the moment of
+       arrival.
+   Removed once the width transition ends.
+   prefers-reduced-motion: keep the fill transition but skip the bounces. */
+
+.aur-progress.is-advancing .aur-progress__fill {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 0 16px 2px var(--aur-accent-glow);
+  animation: aur-progress-glow-pulse var(--aur-dur-large) var(--aur-ease-out-soft) 1;
+}
+@keyframes aur-progress-glow-pulse {
+  0%   { filter: brightness(1.0); }
+  25%  { filter: brightness(1.25); }
+  100% { filter: brightness(1.0); }
+}
+
+.aur-progress.is-advancing .aur-progress__shimmer {
+  animation:
+    aur-progress-shimmer-fast var(--aur-dur-large) linear 1,
+    aur-progress-shimmer 4s linear infinite var(--aur-dur-large);
+}
+@keyframes aur-progress-shimmer-fast {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(400%); }
+}
+
+.aur-progress.is-advancing .aur-progress__current {
+  animation: aur-progress-pop var(--aur-dur-large) var(--aur-ease-bounce-tiny) 1;
+}
+@keyframes aur-progress-pop {
+  0%   { transform: scale(1);    color: var(--aur-text-soft); }
+  35%  { transform: scale(1.22); color: var(--aur-accent-soft); }
+  60%  { transform: scale(0.96); color: var(--aur-accent-soft); }
+  100% { transform: scale(1);    color: var(--aur-text-soft); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aur-progress.is-advancing .aur-progress__fill,
+  .aur-progress.is-advancing .aur-progress__shimmer,
+  .aur-progress.is-advancing .aur-progress__current {
+    animation: none;
+    transform: none;
+  }
+}
+
+
+/* ---------- §7.4 Sidebar nav ---------- */
+
+.aur-nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0 -10px;     /* Bleed scrollbar to sidebar's inner edge */
+  padding: 24px 10px 24px;
+  scrollbar-color: var(--aur-accent-ring) transparent;
+  scrollbar-width: thin;
+  /* Fade nav items at top + bottom so they don't pop at a hard edge
+     when the nav scrolls. */
+  -webkit-mask-image: linear-gradient(to bottom,
+    transparent 0,
+    #000 28px,
+    #000 calc(100% - 16px),
+    transparent 100%);
+          mask-image: linear-gradient(to bottom,
+    transparent 0,
+    #000 28px,
+    #000 calc(100% - 16px),
+    transparent 100%);
+}
+.aur-nav::-webkit-scrollbar { width: 6px; }
+.aur-nav::-webkit-scrollbar-track { background: transparent; margin: 4px 0; }
+.aur-nav::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg,
+    rgba(255, 142, 223, 0.35) 0%,
+    rgba(177,  74, 216, 0.35) 100%);
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+.aur-nav::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ff8edf 0%, #b14ad8 100%);
+  background-clip: padding-box;
+}
+
+/* Section group: collapsible header + body. */
+.aur-nav__section {
+  margin: 12px 0 2px;
+}
+.aur-nav__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 4px;
+  padding: 6px 4px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--aur-tile-radius-sm);
+  font-family: var(--aur-font-subtitle);
+  font-size: var(--aur-size-eyebrow);
+  font-weight: 600;
+  letter-spacing: var(--aur-track-section);
+  text-transform: uppercase;
+  color: var(--aur-text-muted);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    color var(--aur-dur-small) var(--aur-ease-standard),
+    background-color var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-nav__heading:hover {
+  color: var(--aur-text-soft);
+  background: rgba(255, 255, 255, 0.03);
+}
+.aur-nav__heading:focus-visible {
+  outline: none;
+  box-shadow: var(--aur-shadow-focus);
+}
+.aur-nav__heading-title { flex: 1 1 auto; min-width: 0; }
+.aur-nav__chevron {
+  flex-shrink: 0;
+  transition: transform var(--aur-dur-medium) var(--aur-ease-out-soft);
+}
+.aur-nav__section.is-open .aur-nav__chevron {
+  transform: rotate(180deg);
+}
+
+/* Collapsible body: grid-template-rows 0fr ↔ 1fr animates between 0 and
+   the natural height of the inner <ul>. Smooth and JS-measurement-free. */
+.aur-nav__collapsible {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--aur-dur-medium) var(--aur-ease-out-soft);
+}
+.aur-nav__section.is-open .aur-nav__collapsible {
+  grid-template-rows: 1fr;
+}
+.aur-nav__collapsible > .aur-nav__list {
+  overflow: hidden;
+  /* Subtle inner fade so items don't pop in/out, they ease */
+  opacity: 0;
+  transition: opacity var(--aur-dur-medium) var(--aur-ease-out-soft);
+}
+.aur-nav__section.is-open .aur-nav__collapsible > .aur-nav__list {
+  opacity: 1;
+}
+
+.aur-nav__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.aur-nav__list--standalone { margin-bottom: 4px; }
+
+/* Reduced motion: collapse is still functional but the transition is
+   removed so the user gets an instant toggle. */
+@media (prefers-reduced-motion: reduce) {
+  .aur-nav__chevron,
+  .aur-nav__collapsible,
+  .aur-nav__collapsible > .aur-nav__list {
+    transition: none;
+  }
+}
+
+.aur-nav-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 12px;
+  border-radius: var(--aur-tile-radius-sm);
+  color: var(--aur-text-soft);
+  text-decoration: none;
+  position: relative;
+  transition:
+    background var(--aur-dur-micro) var(--aur-ease-standard),
+    color var(--aur-dur-micro) var(--aur-ease-standard);
+}
+
+.aur-nav-item__marker {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid var(--aur-border-strong);
+  transition:
+    border-color var(--aur-dur-micro) var(--aur-ease-standard),
+    background var(--aur-dur-small) var(--aur-ease-standard),
+    box-shadow var(--aur-dur-small) var(--aur-ease-standard);
+}
+
+.aur-nav-item__label {
+  font-size: 0.92rem;
+  line-height: 1.3;
+  /* Plain inline flow: number stays attached to the first word of the
+     title even when the title wraps to a second line. (Previous
+     inline-flex + flex-wrap put each span on its own flex line, so a
+     long title would wrap to line 2 leaving the number orphaned on
+     line 1.) */
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.aur-nav-item__num {
+  color: var(--aur-text-muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  margin-right: 4px;
+}
+.aur-nav-item__title { color: inherit; }
+
+/* Hover (non-current) */
+.aur-nav-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--aur-text);
+}
+.aur-nav-item:hover .aur-nav-item__marker { border-color: var(--aur-accent-soft); }
+
+/* Pressed */
+.aur-nav-item:active {
+  transform: scale(0.99);
+  transition-duration: 80ms;
+}
+
+/* Focus-visible */
+.aur-nav-item:focus-visible {
+  outline: 2px solid var(--aur-border-focus);
+  outline-offset: 2px;
+  border-radius: var(--aur-tile-radius-sm);
+}
+
+/* Current page */
+.aur-nav-item.is-current {
+  background: var(--aur-accent-grad-soft);
+  color: var(--aur-text);
+}
+.aur-nav-item.is-current .aur-nav-item__title { color: var(--aur-text); }
+.aur-nav-item.is-current::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--aur-accent-grad);
+}
+.aur-nav-item.is-current .aur-nav-item__marker {
+  background: var(--aur-accent-grad);
+  border-color: transparent;
+  box-shadow: 0 0 14px var(--aur-accent-glow);
+}
+
+/* Completed state (§7.4 — CSS stub; markup added in Stage 5 when the
+   lesson template introduces a 'mark complete' action that pushes the
+   slug into localStorage.completedLessons and re-renders the marker
+   as a check icon). */
+.aur-nav-item.is-done .aur-nav-item__num,
+.aur-nav-item.is-done .aur-nav-item__title { color: var(--aur-text-muted); }
+.aur-nav-item.is-done .aur-nav-item__marker {
+  border-color: var(--aur-text-muted);
+  color: var(--aur-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+.aur-nav-item.is-done .aur-nav-item__marker svg {
+  width: 10px;
+  height: 10px;
+}
+
+
+/* ---------- §7.10 Help card ---------- */
+
+.aur-help-card {
+  background: var(--aur-bg-elev-1);
+  border: 1px solid var(--aur-border);
+  border-radius: var(--aur-tile-radius-sm);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition:
+    transform var(--aur-dur-small) var(--aur-ease-standard),
+    border-color var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-help-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--aur-border-strong);
+}
+.aur-help-card:hover .aur-help-card__cta { border-color: var(--aur-text-soft); color: var(--aur-text); }
+
+.aur-help-card__heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--aur-text);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.aur-help-card__heading svg { color: var(--aur-accent-soft); }
+
+.aur-help-card__body {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--aur-text-soft);
+  line-height: 1.45;
+  /* Avoid orphan words on the last line ("us" landing alone). Modern
+     browsers redistribute the wrap; older browsers fall back to default. */
+  text-wrap: pretty;
+}
+
+/* .aur-help-card__cta is a layout-only modifier on top of .aur-btn-ghost
+   (full-width, tighter type for the sidebar). The base button rules
+   (§7.6) handle background / colour / border / hover. */
+.aur-help-card__cta {
+  margin-top: 4px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+}
+
+
+/* ---------- Per-section glow (Stage 4) ----------
+   When the current page is in a known section, swap the universal
+   --aur-accent-glow for the section's own glow. Affects tile hover
+   halos AND the current-page nav-item marker glow. */
+
+body[data-section="getting-started"]                       { --aur-accent-glow: var(--aur-section-glow-getting-started); }
+body[data-section="what-to-do-first"]                      { --aur-accent-glow: var(--aur-section-glow-what-to-do-first); }
+body[data-section="understanding-the-difference"]          { --aur-accent-glow: var(--aur-section-glow-understanding-the-difference); }
+body[data-section="finding-your-mentees-and-sessions"]     { --aur-accent-glow: var(--aur-section-glow-finding-your-mentees-and-sessions); }
+body[data-section="resources"]                             { --aur-accent-glow: var(--aur-section-glow-resources); }
+body[data-section="standalone"]                            { --aur-accent-glow: var(--aur-section-glow-standalone); }
+
+
+/* ---------- §7.3 Tile primitive (resting only) ---------- */
+
+.aur-tile {
+  background: var(--aur-bg-elev-1);
+  border: 1px solid var(--aur-border);
+  border-radius: var(--aur-tile-radius);
+  -webkit-backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  box-shadow: var(--aur-shadow-rest);
+  padding: var(--aur-tile-pad);
+  transition:
+    transform var(--aur-dur-small) var(--aur-ease-standard),
+    border-color var(--aur-dur-small) var(--aur-ease-standard),
+    box-shadow var(--aur-dur-small) var(--aur-ease-standard),
+    background-color var(--aur-dur-small) var(--aur-ease-standard);
+}
+
+/* No visual change on tile :hover. Info cards are reading panels,
+   not interactive controls — the lift + border highlight + shadow
+   read as "glow" and add motion that isn't earned. The 3D tilt on
+   `.is-tiltable` still provides subtle spatial feedback in JS. */
+
+
+/* ---------- §7.11 Eyebrow + title block ---------- */
+
+.aur-eyebrow {
+  font-family: var(--aur-font-subtitle);
+  font-size: var(--aur-size-eyebrow);
+  letter-spacing: var(--aur-track-eyebrow);
+  text-transform: uppercase;
+  color: var(--aur-text-muted);
+  margin: 0 0 12px;
+}
+
+.aur-title {
+  font: 700 var(--aur-size-h1) / var(--aur-line-tight) var(--aur-font-title);
+  color: var(--aur-text);
+  margin: 0 0 12px;
+}
+
+.aur-description {
+  font-family: var(--aur-font-body);
+  font-size: var(--aur-size-body-lg);
+  color: var(--aur-text-soft);
+  line-height: var(--aur-line-body);
+  margin: 0 0 28px;
+}
+
+
+/* ---------- §7.11+ Lesson layout ---------- */
+
+.aur-lesson-head { margin: 8px 0 28px; }
+
+
+/* ---------- §7.12 Media tile ---------- */
+
+.aur-media-tile {
+  padding: 0;
+  overflow: hidden;
+  margin: 0 0 28px;
+}
+
+.aur-media-tile__header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--aur-border);
+}
+.aur-media-tile__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--aur-text-soft);
+  font: 600 0.86rem var(--aur-font-subtitle);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.aur-media-tile__label svg { color: var(--aur-accent-soft); }
+
+.aur-media-tile__body {
+  position: relative;
+  padding: 16px;
+  cursor: zoom-in;
+  /* Skeleton placeholder while loading: shimmer + min-height so the
+     tile has a visible footprint before the image arrives. Once the
+     image fires `load`, JS adds `.is-loaded` and the placeholder is
+     released so the tile collapses to the image's natural height. */
+  min-height: 200px;
+  background:
+    linear-gradient(110deg,
+      rgba(255, 255, 255, 0.03) 30%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.03) 70%);
+  background-size: 200% 100%;
+  animation: aur-media-skeleton 1.6s linear infinite;
+}
+.aur-media-tile__body.is-loaded {
+  background: none;
+  animation: none;
+  min-height: 0;
+}
+
+.aur-media-tile__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  border-radius: var(--aur-tile-radius-sm);
+  opacity: 0;
+  transition: opacity var(--aur-dur-medium) var(--aur-ease-out-soft);
+}
+.aur-media-tile__img.is-loaded { opacity: 1; }
+
+@keyframes aur-media-skeleton {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+.aur-media-tile__caption {
+  padding: 8px 18px 16px;
+  color: var(--aur-text-soft);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+
+/* ---------- Video panel (YouTube embed) ----------
+   Renders below the info-cards when `video:` is set in front-matter.
+   16:9 responsive aspect ratio; tile-styled wrapper. */
+
+.aur-video-panel {
+  background: var(--aur-bg-elev-1);
+  border: 1px solid var(--aur-border);
+  border-radius: var(--aur-tile-radius);
+  -webkit-backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  padding: 22px;
+  margin: 0 0 28px;
+  box-shadow: var(--aur-shadow-rest);
+}
+.aur-video-panel__embed {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  border-radius: var(--aur-tile-radius-sm);
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.4);
+}
+.aur-video-panel__embed iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Lite-load poster button — fills the 16:9 embed container until
+   clicked; JS swaps it out for the real YouTube iframe on click. */
+.aur-video-lite {
+  position: absolute;
+  inset: 0;
+  display: block;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: #000;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: inherit;
+}
+.aur-video-lite__poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  transition: filter var(--aur-dur-medium) var(--aur-ease-out-soft),
+              transform var(--aur-dur-medium) var(--aur-ease-out-soft);
+}
+.aur-video-lite__title {
+  position: absolute;
+  top: clamp(12px, 1.4vw, 24px);
+  left: clamp(16px, 1.8vw, 28px);
+  right: clamp(56px, 6vw, 80px);
+  z-index: 3;
+  color: #fff;
+  font: 600 clamp(1rem, 1.05vw, 1.35rem) / 1.3 var(--aur-font-title);
+  letter-spacing: 0.005em;
+  text-align: left;
+  /* Default state: strong directional drop shadow so the title is
+     clearly cast on the poster behind it (5px right / 8px down).
+     Plus a tight halo and soft bloom for legibility on any region.
+     Hover state softens the directional shadow down to just the
+     halo + bloom — so the bright hover poster reads as back-lit
+     without a conflicting cast shadow on top of it. */
+  text-shadow:
+    5px 8px 4px  rgba(0, 0, 0, 1),
+    0 0 4px      rgba(0, 0, 0, 1),
+    0 0 22px     rgba(0, 0, 0, 0.55);
+  transition: text-shadow var(--aur-dur-medium) var(--aur-ease-out-soft);
+  pointer-events: none;
+}
+.aur-video-lite:hover .aur-video-lite__title {
+  text-shadow:
+    0 0 5px      rgba(0, 0, 0, 1),
+    0 0 12px     rgba(0, 0, 0, 0.85),
+    0 0 30px     rgba(0, 0, 0, 0.6);
+}
+.aur-video-lite__play {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.aur-video-lite__play svg {
+  width: clamp(56px, 5.5vw, 90px);
+  height: clamp(56px, 5.5vw, 90px);
+  color: #fff;
+  filter:
+    drop-shadow(0 6px 16px rgba(0, 0, 0, 0.6))
+    drop-shadow(0 0 24px rgba(255, 255, 255, 0.18));
+  transition: transform var(--aur-dur-medium) var(--aur-ease-out-soft);
+}
+
+.aur-video-lite:hover .aur-video-lite__poster { filter: brightness(1.08); }
+.aur-video-lite:hover .aur-video-lite__play svg { transform: scale(1.1); }
+.aur-video-lite:focus-visible {
+  outline: 2px solid var(--aur-accent);
+  outline-offset: -2px;
+}
+
+
+/* ---------- §7.13 Info card row ---------- */
+
+/* Stacked single-column layout. Each card takes the full main-column
+   width, so the Step-by-step card (typically the longest with 5-10
+   step panels each with prose + media) gets the room it needs. The
+   What-you'll-learn card stacks above it, matching v1's reading order. */
+.aur-info-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 0 0 28px;
+}
+@media (max-width: 960px) {
+  .aur-info-cards {
+    gap: 14px;
+  }
+}
+
+.aur-info-card { padding: 22px; }
+
+.aur-info-card__heading {
+  margin: 0 0 14px;
+  font: 600 var(--aur-size-h3) / 1.3 var(--aur-font-title);
+  color: var(--aur-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Row at the top of an info card holding the heading + an action button. */
+.aur-info-card__head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.aur-info-card__head-row .aur-info-card__heading {
+  margin-bottom: 0;
+}
+
+
+/* ---------- Steps "Compact" toggle ----------
+   Lives in the Steps card's head row. Pressed state hides each step's
+   body via [data-aur-steps].is-compact selector below. */
+.aur-steps-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  color: var(--aur-text-soft);
+  border: 1px solid var(--aur-border-strong);
+  border-radius: var(--aur-tile-radius-pill);
+  font: 600 0.78rem var(--aur-font-body);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background var(--aur-dur-small) var(--aur-ease-standard),
+    color var(--aur-dur-small) var(--aur-ease-standard),
+    border-color var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-steps-toggle:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--aur-text);
+  border-color: var(--aur-text-soft);
+}
+.aur-steps-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--aur-shadow-focus);
+}
+.aur-steps-toggle[aria-pressed="true"] {
+  background: var(--aur-accent-grad-soft);
+  color: var(--aur-accent-soft);
+  border-color: var(--aur-border-focus);
+}
+
+
+/* ---------- Compact-mode step expand-on-click ----------
+   Default (full) mode: .aur-step__detail flows inline below the title.
+   Compact mode ([data-aur-steps].is-compact):
+     - Each step shows just marker + title; .aur-step__detail collapses
+       to 0 height.
+     - Clicking the step title toggles `.is-expanded` on the step, which
+       reveals the detail inline using the grid-template-rows 0fr ↔ 1fr
+       trick (smooth height animation without JS measurement).
+     - Each step can be expanded/collapsed independently. Multiple may be
+       open at once. State is not persisted (page-local). */
+
+[data-aur-steps].is-compact .aur-step {
+  margin-bottom: 4px;
+}
+[data-aur-steps].is-compact .aur-step__title {
+  cursor: pointer;
+  user-select: none;
+  transition: color var(--aur-dur-small) var(--aur-ease-standard);
+}
+[data-aur-steps].is-compact .aur-step__title:hover {
+  color: var(--aur-accent-soft);
+}
+[data-aur-steps].is-compact .aur-step__detail {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--aur-dur-medium) var(--aur-ease-out-soft);
+}
+[data-aur-steps].is-compact .aur-step.is-expanded .aur-step__detail {
+  grid-template-rows: 1fr;
+}
+[data-aur-steps].is-compact .aur-step__detail-inner {
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity var(--aur-dur-medium) var(--aur-ease-out-soft);
+}
+[data-aur-steps].is-compact .aur-step.is-expanded .aur-step__detail-inner {
+  opacity: 1;
+}
+
+/* Reduced motion: instant show/hide. */
+@media (prefers-reduced-motion: reduce) {
+  [data-aur-steps].is-compact .aur-step__detail,
+  [data-aur-steps].is-compact .aur-step__detail-inner {
+    transition: none;
+  }
+}
+
+/* "Tip" — subtle gradient border at top + warm icon. */
+.aur-info-card--tip { position: relative; }
+.aur-info-card--tip::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  height: 3px;
+  background: var(--aur-accent-grad);
+  border-radius: var(--aur-tile-radius) var(--aur-tile-radius) 0 0;
+}
+.aur-info-card--tip .aur-info-card__heading svg { color: var(--aur-warning); }
+
+.aur-info-card--learn .aur-info-card__heading svg { color: var(--aur-success); }
+
+.aur-info-card__prose { color: var(--aur-text-soft); }
+
+/* ---------- Contact card (Need Help page) ---------- */
+.aur-contact-card { display: flex; flex-direction: column; gap: 0; }
+
+.aur-contact-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 0;
+}
+
+.aur-contact-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--aur-tile-radius-pill);
+  background: var(--aur-accent-grad-soft);
+  color: var(--aur-accent-soft);
+}
+
+.aur-contact-detail { display: flex; flex-direction: column; gap: 3px; }
+
+.aur-contact-label {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--aur-text-muted);
+}
+
+.aur-contact-value {
+  font-size: 0.97rem;
+  color: var(--aur-text);
+  text-decoration: none;
+  word-break: break-all;
+}
+a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: underline; }
+
+.aur-contact-divider {
+  height: 1px;
+  background: var(--aur-border);
+  margin: 0;
+}
+
+
+/* ---------- Glossary / Terminology ---------- */
+.aur-glossary {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.aur-glossary__entry {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--aur-border);
+}
+.aur-glossary__entry:first-child { padding-top: 0; }
+.aur-glossary__entry:last-child { border-bottom: none; padding-bottom: 0; }
+
+.aur-glossary__term {
+  font: 600 0.95rem / 1.3 var(--aur-font-title);
+  color: var(--aur-accent-soft);
+  margin: 0;
+}
+
+.aur-glossary__def {
+  color: var(--aur-text-soft);
+  font-size: 0.92rem;
+  line-height: 1.65;
+  margin: 0;
+}
+.aur-glossary__def p { margin: 0 0 8px; }
+.aur-glossary__def p:last-child { margin-bottom: 0; }
+
+.aur-glossary__note {
+  margin-top: 8px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 3px solid var(--aur-accent-soft);
+  border-radius: 0 var(--aur-tile-radius-sm) var(--aur-tile-radius-sm) 0;
+  font-size: 0.88rem;
+  color: var(--aur-text-soft);
+  line-height: 1.6;
+}
+
+/* Status table (Session Statuses section) */
+.aur-status-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  margin-top: 12px;
+}
+.aur-status-table th {
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--aur-text-muted);
+  padding: 0 12px 10px 0;
+  border-bottom: 1px solid var(--aur-border);
+}
+.aur-status-table td {
+  padding: 12px 12px 12px 0;
+  vertical-align: top;
+  border-bottom: 1px solid var(--aur-border);
+  line-height: 1.6;
+}
+.aur-status-table tr:last-child td { border-bottom: none; padding-bottom: 0; }
+.aur-status-table__emoji { width: 2em; font-size: 1.1em; padding-right: 4px !important; }
+.aur-status-table__name { font-weight: 600; color: var(--aur-text); white-space: nowrap; padding-right: 20px !important; }
+.aur-status-table__desc { color: var(--aur-text-soft); }
+
+/* Category label — Event Types sub-sections */
+.aur-cat-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--aur-accent-soft);
+  margin: 22px 0 6px !important;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--aur-border);
+}
+.aur-cat-label:first-of-type { margin-top: 12px !important; }
+
+/* What you'll learn — checklist */
+
+.aur-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.aur-checklist li {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 10px;
+  align-items: start;
+  color: var(--aur-text-soft);
+  font-size: 0.94rem;
+  line-height: 1.45;
+}
+.aur-checklist__check {
+  color: var(--aur-success);
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+
+/* ---------- §7.8 Step-by-step ---------- */
+
+.aur-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  counter-reset: aur-step;
+}
+
+/* Each step is its own card. Hard boundaries between steps so the
+   eye knows where one finishes and the next begins — addresses
+   readability for dyslexia, ADHD, autism (and everyone else).
+   British Dyslexia Association: clear visual chunking, generous
+   whitespace, predictable structure.
+   Flex row so the number pill and the title share a line; the body
+   (title + detail) stacks vertically inside the right flex item. */
+.aur-step {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--aur-border);
+  border-radius: var(--aur-tile-radius);
+  padding: 18px 22px 20px;
+  position: relative;
+}
+[data-aur-steps].is-compact .aur-step__title:focus-visible {
+  outline: none;
+  box-shadow: var(--aur-shadow-focus);
+  border-radius: var(--aur-tile-radius-sm);
+}
+
+/* Step marker: small pill at the top of each step card. Gives every
+   step a strong, regular focal point that's easy to find while
+   scanning ("you are here" anchor — helps ADHD). Leading-zero digit
+   in accent-soft on a tinted accent background. */
+.aur-step__marker {
+  flex-shrink: 0;
+  min-width: 28px;
+  background: var(--aur-accent-grad-soft);
+  color: var(--aur-accent-soft);
+  font: 700 0.82rem / 1 var(--aur-font-body);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  padding: 5px 10px 4px;
+  border-radius: var(--aur-tile-radius-pill);
+  margin: 0;
+}
+/* Old trailing period belongs to the marker-as-row layout; the pill
+   form doesn't need it. Disabled rather than removed so anyone reading
+   the css history sees the intent. */
+.aur-step__marker::after { content: none; }
+
+.aur-step__body { flex: 1; min-width: 0; }
+
+.aur-step__title {
+  margin: 0 0 6px;
+  color: var(--aur-text);
+  font: 600 0.98rem / 1.35 var(--aur-font-title);
+}
+
+/* Body prose: tuned for dyslexia-friendly reading per the British
+   Dyslexia Association — line-height ~1.65, slight letter-spacing,
+   line-length cap so wide screens don't produce 120-char lines.
+   `text-wrap: pretty` improves last-line balance in modern browsers;
+   the JS "widont" pass guarantees no single-word last lines everywhere. */
+.aur-step__prose,
+.aur-step__prose p,
+.aur-step__prose li,
+.aur-info-card__prose,
+.aur-info-card__prose p,
+.aur-info-card__prose li,
+.aur-prose p,
+.aur-prose li,
+.aur-description {
+  text-wrap: pretty;
+}
+.aur-step__prose {
+  color: var(--aur-text-soft);
+  font-size: 0.92rem;
+  line-height: 1.65;
+  letter-spacing: 0.01em;
+}
+.aur-step__prose p { margin: 0 0 10px; }
+.aur-step__prose p:last-child { margin-bottom: 0; }
+.aur-step__prose ul { margin: 6px 0 10px; padding-left: 22px; }
+.aur-step__prose li { margin: 4px 0; }
+/* Bullet markers in accent colour so they read as deliberate anchors,
+   not decoration — helps with line-counting in long lists (ADHD). */
+.aur-step__prose ul li::marker {
+  color: var(--aur-accent-soft);
+}
+/* Strong words pop against the ambient soft-gray prose — brighter
+   text colour + heavier weight. Always on (not a hover effect). */
+.aur-step__prose strong {
+  color: var(--aur-text);
+  font-weight: 700;
+}
+.aur-step__prose em {
+  color: var(--aur-accent-soft);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.aur-step__media {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.aur-step__media-img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  max-height: 60vh;
+  max-height: 60svh;
+  object-fit: contain;
+  border-radius: var(--aur-tile-radius-sm);
+  border: 1px solid var(--aur-border);
+  cursor: zoom-in;
+}
+
+/* Step prose and media stack vertically inside the card. The
+   per-step 2-column layout was tried (commit history) but Salesforce
+   admin screenshots need full card width to remain legible. The
+   card-per-step treatment provides the scannability win; vertical
+   stack provides the readability win. */
+
+
+/* ---------- §7.14 Page nav (Back / Continue) ---------- */
+
+/* In-flow at the bottom of the page. Starts hidden (opacity 0, slight
+   downward offset); JS drives opacity continuously based on the nav's
+   distance from the viewport bottom, so the buttons gradually fade and
+   rise into place as the reader scrolls down. Reduced-motion bypasses
+   the fade and shows the nav immediately. */
+.aur-page-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 32px;
+
+  opacity: 0;
+  transform: translateY(24px);
+  will-change: opacity, transform;
+}
+
+
+/* ---------- §7.9 Copy button ---------- */
+
+.aur-copy {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 14px;
+  border-radius: var(--aur-tile-radius-pill);
+  border: 1px solid var(--aur-border-strong);
+  background: transparent;
+  color: var(--aur-text-soft);
+  font: 600 0.85rem var(--aur-font-body);
+  cursor: pointer;
+  overflow: visible;
+  transition:
+    background var(--aur-dur-small) var(--aur-ease-standard),
+    color var(--aur-dur-small) var(--aur-ease-standard),
+    border-color var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-copy:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--aur-text);
+  border-color: var(--aur-text-soft);
+}
+.aur-copy:focus-visible {
+  outline: none;
+  box-shadow: var(--aur-shadow-focus);
+}
+.aur-copy code {
+  font-family: var(--aur-font-mono);
+  font-size: 0.85em;
+}
+
+/* Icon morph */
+.aur-copy__icon {
+  position: relative;
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.aur-copy__icon-default,
+.aur-copy__icon-done {
+  position: absolute;
+  inset: 0;
+  transition: opacity var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-copy__icon-done { opacity: 0; color: var(--aur-success); }
+.aur-copy.is-copied .aur-copy__icon-default { opacity: 0; }
+.aur-copy.is-copied .aur-copy__icon-done    { opacity: 1; }
+
+/* Label morph */
+.aur-copy__label-done    { display: none; color: var(--aur-success); }
+.aur-copy.is-copied .aur-copy__label-default { display: none; }
+.aur-copy.is-copied .aur-copy__label-done    { display: inline; }
+
+/* Ripple */
+.aur-copy::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: var(--aur-accent-ring);
+  transform: scale(0);
+  opacity: 0;
+  pointer-events: none;
+}
+.aur-copy.is-copied::before {
+  animation: aur-copy-ripple var(--aur-dur-medium) var(--aur-ease-out-soft) forwards;
+}
+@keyframes aur-copy-ripple {
+  0%   { transform: scale(0);   opacity: 0.7; }
+  100% { transform: scale(8);   opacity: 0;   }
+}
+
+/* 3-particle burst */
+.aur-copy__particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.aur-copy__particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: var(--aur-success);
+  opacity: 0;
+  transform: translate(0, 0) scale(0.4);
+  pointer-events: none;
+}
+.aur-copy.is-copied .aur-copy__particle {
+  animation-name: aur-copy-particle;
+  animation-duration: var(--aur-dur-medium);
+  animation-timing-function: var(--aur-ease-bounce-tiny);
+  animation-fill-mode: forwards;
+}
+@keyframes aur-copy-particle {
+  0%   { transform: translate(0, 0) scale(0.4);                                   opacity: 0;   }
+  20%  { opacity: 1; }
+  100% { transform: translate(var(--p-tx, 0), var(--p-ty, 0)) scale(0.8);         opacity: 0;   }
+}
+
+
+/* ---------- §7.16 Lightbox ---------- */
+
+.aur-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6vh 6vw;
+  background: rgba(8, 4, 18, 0.86);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  opacity: 0;
+  transition: opacity var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-lightbox[hidden] { display: none; }
+.aur-lightbox.is-open {
+  opacity: 1;
+}
+
+.aur-lightbox__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--aur-tile-radius-sm);
+  border: 1px solid var(--aur-border-strong);
+  background: rgba(20, 16, 32, 0.6);
+  color: var(--aur-text);
+  font-size: 24px;
+  cursor: pointer;
+  transition:
+    background var(--aur-dur-small) var(--aur-ease-standard),
+    border-color var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-lightbox__close:hover {
+  background: rgba(40, 30, 60, 0.8);
+  border-color: var(--aur-text-soft);
+}
+
+.aur-lightbox__img {
+  max-width: 100%;
+  max-height: 80vh;
+  max-height: 80svh;
+  object-fit: contain;
+  border-radius: var(--aur-tile-radius);
+  box-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.6);
+  transform: scale(0.96);
+  opacity: 0;
+  transition:
+    transform var(--aur-dur-medium) var(--aur-ease-out-soft),
+    opacity var(--aur-dur-medium) var(--aur-ease-out-soft);
+}
+.aur-lightbox.is-open .aur-lightbox__img {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.aur-lightbox__caption {
+  margin-top: 16px;
+  color: var(--aur-text-soft);
+  text-align: center;
+  max-width: 60ch;
+}
+
+
+/* ---------- §6.5 Page-load entrance (tile stagger) ---------- */
+
+.aur-main > * {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.aur-main.is-revealed > * {
+  animation: aur-tile-enter var(--aur-dur-medium) var(--aur-ease-out-soft) both;
+}
+.aur-main.is-revealed > *:nth-child(1) { animation-delay: 0ms; }
+.aur-main.is-revealed > *:nth-child(2) { animation-delay: 80ms; }
+.aur-main.is-revealed > *:nth-child(3) { animation-delay: 160ms; }
+.aur-main.is-revealed > *:nth-child(4) { animation-delay: 240ms; }
+.aur-main.is-revealed > *:nth-child(5) { animation-delay: 320ms; }
+.aur-main.is-revealed > *:nth-child(6) { animation-delay: 400ms; }
+/* After 6, no stagger — children snap in together. */
+.aur-main.is-revealed > *:nth-child(n+7) { animation-delay: 400ms; }
+
+@keyframes aur-tile-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+
+/* ---------- §7.3 Tile interactive states (hover + tilt + focus-within) ---------- */
+
+.aur-tile.is-tiltable {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* No outer-tile focus ring. Focus-within fired whenever any descendant
+   gained focus (e.g. the tab-focusable step titles), which lit up the
+   whole containing tile. Inner controls keep their own :focus-visible
+   styles — that's the right level for keyboard navigation feedback. */
+
+
+/* ---------- §7.5 Hyperlinks (inside .aur-prose) ---------- */
+
+.aur-prose a {
+  color: var(--aur-accent-soft);
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 182, 240, 0.25);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition:
+    color var(--aur-dur-small) var(--aur-ease-standard),
+    text-decoration-color var(--aur-dur-small) var(--aur-ease-standard),
+    text-shadow var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-prose a:hover {
+  color: var(--aur-accent);
+  text-decoration-color: var(--aur-accent);
+  text-shadow: 0 0 14px var(--aur-accent-glow);
+}
+.aur-prose a:active { color: var(--aur-accent-deep); }
+.aur-prose a:focus-visible {
+  outline: 2px solid var(--aur-accent-ring);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* External arrow (everything that's an http(s) link and NOT mindjam.my.site.com).
+   Inline SVG via a CSS mask so the arrow inherits the link colour. */
+.aur-prose a[href^="http"]:not([href*="mindjam.my.site.com"])::after {
+  content: '';
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  margin-left: 0.22em;
+  background-color: currentColor;
+  opacity: 0.55;
+  vertical-align: baseline;
+  transition: opacity var(--aur-dur-small) var(--aur-ease-standard);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M5.5 3a.75.75 0 0 0 0 1.5h4.94L3.22 11.72a.75.75 0 1 0 1.06 1.06l7.22-7.22V10.5a.75.75 0 0 0 1.5 0V3.75A.75.75 0 0 0 12.25 3z'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M5.5 3a.75.75 0 0 0 0 1.5h4.94L3.22 11.72a.75.75 0 1 0 1.06 1.06l7.22-7.22V10.5a.75.75 0 0 0 1.5 0V3.75A.75.75 0 0 0 12.25 3z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.aur-prose a[href^="http"]:not([href*="mindjam.my.site.com"]):hover::after { opacity: 1; }
+
+
+/* ---------- §7.6 Buttons ---------- */
+
+.aur-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: var(--aur-tile-radius-pill);
+  padding: 10px 18px;
+  font: 600 0.9rem var(--aur-font-body);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition:
+    background var(--aur-dur-small) var(--aur-ease-standard),
+    color var(--aur-dur-small) var(--aur-ease-standard),
+    border-color var(--aur-dur-small) var(--aur-ease-standard),
+    transform var(--aur-dur-small) var(--aur-ease-standard),
+    box-shadow var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--aur-shadow-focus);
+}
+.aur-btn:active {
+  transform: scale(0.99);
+  transition-duration: 80ms;
+}
+
+.aur-btn-primary {
+  background: var(--aur-accent-grad);
+  color: var(--aur-text-on-accent);
+  box-shadow: 0 8px 20px -8px var(--aur-accent-glow);
+}
+.aur-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px -10px var(--aur-accent-glow);
+  color: var(--aur-text-on-accent);
+}
+
+.aur-btn-ghost {
+  background: transparent;
+  color: var(--aur-text-soft);
+  border-color: var(--aur-border-strong);
+}
+
+/* Larger size for prominent CTAs (e.g. the safeguarding-form link).
+   Bumps font size + padding so the label reads cleanly. */
+.aur-btn-lg {
+  font-size: 1rem;
+  padding: 14px 22px;
+  letter-spacing: 0.015em;
+}
+
+/* Danger / safeguarding CTA — red outline + red text on transparent.
+   Less loud than the primary gradient pill, but the red signals "this
+   matters, take action" semantically. Pairs naturally with the
+   "Important: Safeguarding Concerns" step copy. */
+.aur-btn-danger {
+  background: transparent;
+  color: var(--aur-danger);
+  border: 1px solid var(--aur-danger);
+  box-shadow: none;
+}
+.aur-btn-danger:hover {
+  background: rgba(239, 139, 139, 0.08);
+  color: var(--aur-danger);
+  border-color: var(--aur-danger);
+  box-shadow: none;
+}
+.aur-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--aur-text);
+  border-color: var(--aur-text-soft);
+}
+
+.aur-btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--aur-tile-radius-sm);
+  padding: 0;
+}
+
+.aur-btn:disabled,
+.aur-btn[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+
+/* ---------- §6.4 Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+/* ---------- §7.18 Dev panel (Stage 3.5 subset) ----------
+   - Only rendered when html[data-aur-dev="1"] (set by base.html
+     inline script based on ?dev=1 / localStorage.auroraDev).
+   - Anchored bottom-right; toggle (44px round) above panel.
+   - Will be extended in Stage 4 (per-section glow) and Stage 8
+     (full control set). */
+
+.aur-dev-toggle,
+.aur-dev-panel {
+  display: none;
+}
+
+/* ---------- Global animation-pause toggle ----------
+   Fixed bottom-left, always visible. Mirrors the dev toggle on the
+   right corner. Pressed state swaps the pause icon for a play icon
+   and changes the label. JS wires the actual GIF freeze behaviour. */
+.aur-anim-toggle {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 9000;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--aur-bg-elev-2);
+  border: 1px solid var(--aur-border-strong);
+  border-radius: var(--aur-tile-radius-pill);
+  padding: 9px 14px 9px 12px;
+  color: var(--aur-text);
+  font: 600 0.82rem var(--aur-font-body);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  backdrop-filter: blur(12px) saturate(120%);
+  box-shadow: var(--aur-shadow-rest);
+  transition:
+    transform var(--aur-dur-small) var(--aur-ease-standard),
+    border-color var(--aur-dur-small) var(--aur-ease-standard),
+    box-shadow var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-anim-toggle:hover {
+  border-color: var(--aur-text-soft);
+  transform: translateY(-1px);
+  box-shadow: var(--aur-shadow-hover);
+}
+.aur-anim-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--aur-shadow-focus);
+}
+.aur-anim-toggle:active {
+  transform: scale(0.99);
+  transition-duration: 80ms;
+}
+.aur-anim-toggle__icon {
+  color: var(--aur-accent-soft);
+  flex-shrink: 0;
+}
+.aur-anim-toggle .aur-anim-toggle__icon-play { display: none; }
+.aur-anim-toggle .aur-anim-toggle__icon-pause { display: inline-block; }
+.aur-anim-toggle[aria-pressed="true"] .aur-anim-toggle__icon-play { display: inline-block; }
+.aur-anim-toggle[aria-pressed="true"] .aur-anim-toggle__icon-pause { display: none; }
+
+/* Mobile: drop the label, keep the icon. Move out of the way of the
+   bottom-of-page Continue button area. */
+@media (max-width: 800px) {
+  .aur-anim-toggle {
+    bottom: 12px;
+    left: 12px;
+    padding: 10px;
+  }
+  .aur-anim-toggle__label { display: none; }
+}
+
+/* Canvas that replaces a paused GIF. Inherits the visual treatment
+   of .aur-step__media-img and .aur-media-tile__img. */
+canvas.aur-anim-frozen {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  border-radius: var(--aur-tile-radius-sm);
+  border: 1px solid var(--aur-border);
+  cursor: pointer;
+}
+/* The media-tile canvas sits inside .aur-media-tile__body and should
+   match the rounded body — drop the inner border there, it's redundant. */
+.aur-media-tile__body canvas.aur-anim-frozen {
+  border: 0;
+  border-radius: 0;
+  max-height: none;
+}
+
+
+html[data-aur-dev="1"] .aur-dev-toggle {
+  display: inline-flex;
+}
+html[data-aur-dev="1"] .aur-dev-panel.is-open {
+  display: flex;
+}
+
+.aur-dev-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: var(--aur-accent-grad);
+  color: var(--aur-text-on-accent);
+  font-family: var(--aur-font-body);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px -8px var(--aur-accent-glow);
+  z-index: 9000;
+  transition:
+    transform var(--aur-dur-small) var(--aur-ease-standard),
+    box-shadow var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-dev-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px -10px var(--aur-accent-glow);
+}
+.aur-dev-toggle:active {
+  transform: scale(0.97);
+  transition-duration: 80ms;
+}
+
+.aur-dev-panel {
+  position: fixed;
+  bottom: 76px;
+  right: 20px;
+  width: 320px;
+  max-height: min(78vh, 640px);
+  flex-direction: column;
+  background: rgba(20, 16, 32, 0.92);
+  border: 1px solid var(--aur-border-strong);
+  border-radius: var(--aur-tile-radius);
+  -webkit-backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  box-shadow: var(--aur-shadow-hover);
+  color: var(--aur-text);
+  font-family: var(--aur-font-body);
+  font-size: 0.9rem;
+  z-index: 9001;
+  overflow: hidden;
+}
+
+.aur-dev-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--aur-border);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.aur-dev-panel__header-title {
+  font-size: var(--aur-size-eyebrow);
+  letter-spacing: var(--aur-track-eyebrow);
+  text-transform: uppercase;
+  color: var(--aur-text-soft);
+}
+.aur-dev-panel__close {
+  background: transparent;
+  border: none;
+  color: var(--aur-text-muted);
+  font-size: 22px;
+  line-height: 1;
+  padding: 0 4px;
+  cursor: pointer;
+  border-radius: var(--aur-tile-radius-sm);
+  transition: color var(--aur-dur-micro) var(--aur-ease-standard);
+}
+.aur-dev-panel__close:hover { color: var(--aur-text); }
+
+.aur-dev-panel__body {
+  padding: 14px 16px;
+  overflow-y: auto;
+  scrollbar-color: var(--aur-accent-ring) transparent;
+  scrollbar-width: thin;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aur-dev-field {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+.aur-dev-divider {
+  border: none;
+  border-top: 1px solid var(--aur-border);
+  margin: 6px 0;
+}
+.aur-dev-group-label {
+  display: block;
+  font-size: var(--aur-size-eyebrow);
+  letter-spacing: var(--aur-track-eyebrow);
+  text-transform: uppercase;
+  color: var(--aur-text-muted);
+  margin: -2px 0 4px;
+}
+.aur-dev-field__label {
+  font-size: 0.85rem;
+  color: var(--aur-text-soft);
+}
+
+.aur-dev-field select {
+  background: rgba(0, 0, 0, 0.32);
+  color: var(--aur-text);
+  border: 1px solid var(--aur-border-strong);
+  border-radius: var(--aur-tile-radius-sm);
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  min-width: 130px;
+  transition: border-color var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-dev-field select:hover {
+  border-color: var(--aur-text-soft);
+}
+
+
+/* ---------- Slider control (Stage 8) ----------
+   Generic [data-aur-slider] containing an <input type="range"> and a value
+   label. The JS auto-discovers each slider, reads min/max/step/default/
+   target/unit/format from data-attrs, and wires input/change events. */
+
+.aur-slider {
+  display: grid;
+  grid-template-columns: 1fr 52px;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.aur-slider__input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--aur-tile-radius-pill);
+  outline: none;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+.aur-slider__input::-webkit-slider-runnable-track {
+  height: 4px;
+  background: transparent;
+  border-radius: var(--aur-tile-radius-pill);
+}
+.aur-slider__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--aur-accent-grad);
+  border: 1px solid rgba(0, 0, 0, 0.45);
+  box-shadow: 0 4px 10px -4px var(--aur-accent-glow);
+  cursor: grab;
+  transition: transform var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-slider__input::-webkit-slider-thumb:hover { transform: scale(1.1); }
+.aur-slider__input::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(0.95); }
+.aur-slider__input::-moz-range-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--aur-tile-radius-pill);
+}
+.aur-slider__input::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--aur-accent-grad);
+  border: 1px solid rgba(0, 0, 0, 0.45);
+  box-shadow: 0 4px 10px -4px var(--aur-accent-glow);
+  cursor: grab;
+}
+.aur-slider__input:focus-visible {
+  outline: none;
+  box-shadow: var(--aur-shadow-focus);
+}
+.aur-slider__value {
+  text-align: right;
+  font: 500 0.78rem var(--aur-font-mono);
+  color: var(--aur-text);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* ---------- Custom colour picker (replaces native <input type="color">) ---------- */
+
+.aur-picker {
+  /* Override the parent's auto-row so the popover can span both columns. */
+  grid-template-rows: auto auto;
+  position: relative;
+}
+
+.aur-picker__swatch {
+  width: 44px;
+  height: 28px;
+  border: 1px solid var(--aur-border-strong);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 0;
+  background: currentColor;
+  transition:
+    border-color var(--aur-dur-small) var(--aur-ease-standard),
+    transform var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-picker__swatch:hover {
+  border-color: var(--aur-text-soft);
+  transform: translateY(-1px);
+}
+.aur-picker.is-open .aur-picker__swatch {
+  border-color: var(--aur-border-focus);
+  box-shadow: 0 0 0 3px var(--aur-accent-ring);
+}
+
+.aur-picker__pop {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  margin-top: 4px;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid var(--aur-border-strong);
+  border-radius: var(--aur-tile-radius-sm);
+}
+.aur-picker__pop[hidden] { display: none; }
+
+.aur-picker__sv {
+  position: relative;
+  width: 100%;
+  height: 130px;
+  border-radius: 8px;
+  background-color: hsl(0, 100%, 50%);
+  background-image:
+    linear-gradient(to bottom, rgba(0,0,0,0) 0%, #000 100%),
+    linear-gradient(to right,  #fff 0%, rgba(255,255,255,0) 100%);
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.aur-picker__sv-cursor {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.55),
+    0 1px 4px rgba(0, 0, 0, 0.4);
+  left: 0;
+  top: 0;
+}
+
+.aur-picker__row {
+  display: flex;
+  align-items: center;
+}
+
+.aur-picker__hue {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(to right,
+    #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+  outline: none;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+.aur-picker__hue::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.55);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  cursor: grab;
+}
+.aur-picker__hue::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.55);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  cursor: grab;
+}
+.aur-picker__hue::-webkit-slider-thumb:active,
+.aur-picker__hue::-moz-range-thumb:active { cursor: grabbing; }
+
+.aur-picker__hex {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.32);
+  color: var(--aur-text);
+  border: 1px solid var(--aur-border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font: 500 0.82rem var(--aur-font-mono);
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  outline: none;
+  transition: border-color var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-picker__hex:focus {
+  border-color: var(--aur-border-focus);
+}
+
+.aur-dev-panel__footer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--aur-border);
+  background: rgba(0, 0, 0, 0.18);
+}
+.aur-dev-btn {
+  flex: 1;
+  background: transparent;
+  color: var(--aur-text-soft);
+  border: 1px solid var(--aur-border-strong);
+  border-radius: var(--aur-tile-radius-pill);
+  padding: 8px 12px;
+  font: 600 0.82rem var(--aur-font-body);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-dev-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--aur-text);
+  border-color: var(--aur-text-soft);
+}
+.aur-dev-btn.is-success {
+  color: var(--aur-success);
+  border-color: var(--aur-success);
+}
+
+
+/* ===========================================================
+   Stage 9 — Polish: reference-page classes + responsive
+   =========================================================== */
+
+/* ---------- Reference-page layouts (was inline style="…") ---------- */
+
+/* Useful Links — responsive 2-4 column auto-fit grid of link cards. */
+.aur-link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  /* No align-items override: default `stretch` makes every tile in
+     a row match the tallest, so the grid reads as a clean matrix
+     instead of ragged-bottom rectangles. */
+}
+.aur-link-grid .aur-info-card {
+  display: flex;
+  flex-direction: column;
+}
+.aur-link-grid .aur-info-card ul {
+  margin-top: 12px;
+  padding-left: 18px;
+}
+
+/* Terminology — stacked full-width glossary cards. */
+.aur-glossary-card {
+  margin-bottom: 20px;
+}
+.aur-glossary-card:last-child {
+  margin-bottom: 0;
+}
+
+/* Dashboard — centred WIP banner. */
+.aur-wip-banner {
+  max-width: 640px;
+  margin: 32px auto;
+  text-align: center;
+}
+.aur-wip-banner .aur-info-card__heading {
+  justify-content: center;
+}
+
+/* Homepage — centred welcome layout. */
+.aur-welcome {
+  text-align: center;
+  max-width: 720px;
+  margin: 32px auto;
+}
+.aur-welcome .aur-description {
+  margin-top: 16px;
+}
+.aur-welcome-card {
+  max-width: 720px;
+  margin: 0 auto 32px;
+}
+.aur-welcome-nav {
+  max-width: 720px;
+  margin: 32px auto;
+}
+
+
+/* ---------- Mobile hamburger (visible only when sidebar is collapsed) ---------- */
+
+.aur-shell-topbar {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--aur-bg-sidebar);
+  -webkit-backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  border-bottom: 1px solid var(--aur-border);
+}
+
+.aur-hamburger {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: transparent;
+  color: var(--aur-text);
+  border: 1px solid var(--aur-border-strong);
+  border-radius: var(--aur-tile-radius-sm);
+  cursor: pointer;
+  transition: border-color var(--aur-dur-small) var(--aur-ease-standard),
+              background var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-hamburger:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--aur-text-soft);
+}
+.aur-hamburger:focus-visible {
+  outline: none;
+  box-shadow: var(--aur-shadow-focus);
+}
+.aur-hamburger svg { width: 20px; height: 20px; }
+
+.aur-shell-topbar__brand {
+  font: 700 0.95rem var(--aur-font-title);
+  color: var(--aur-text);
+  letter-spacing: 0.01em;
+}
+
+/* Mobile backdrop behind the slide-in sidebar drawer. */
+.aur-sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: rgba(8, 4, 18, 0.65);
+  opacity: 0;
+  transition: opacity var(--aur-dur-small) var(--aur-ease-standard);
+}
+body.aur-sidebar-open .aur-sidebar-backdrop {
+  display: block;
+  opacity: 1;
+}
+
+
+/* ---------- Tablet (≤1100px) ---------- */
+
+@media (max-width: 1100px) {
+  :root {
+    --aur-sidebar-w:  240px;
+    --aur-shell-gap:  24px;
+    --aur-main-pad:   20px;
+  }
+  /* Info cards: drop to single column once the layout gets tight. */
+  .aur-info-cards {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+
+/* ---------- Mobile (≤800px) ----------
+   Shell collapses to single column.
+   Sidebar becomes a fixed slide-in drawer toggled by the hamburger
+   in the top bar. JS adds `body.aur-sidebar-open` to slide it in. */
+
+@media (max-width: 800px) {
+  .aur-shell {
+    grid-template-columns: 1fr;
+    padding: 0;
+    gap: 0;
+  }
+
+  .aur-shell-topbar {
+    display: flex;
+  }
+
+  .aur-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(86vw, 320px);
+    max-height: none;
+    z-index: 60;
+    transform: translateX(-100%);
+    transition: transform var(--aur-dur-medium) var(--aur-ease-out-soft);
+    border-radius: 0;
+    border-right: 1px solid var(--aur-border-strong);
+    box-shadow: 12px 0 32px -12px rgba(0, 0, 0, 0.6);
+  }
+  body.aur-sidebar-open .aur-sidebar {
+    transform: translateX(0);
+  }
+
+  .aur-main {
+    padding: 20px 16px 48px;
+    min-height: calc(100vh  - var(--aur-topbar-h));
+    min-height: calc(100dvh - var(--aur-topbar-h));
+  }
+
+  /* Lesson chrome titles: shrink the H1 clamp floor so it doesn't overflow. */
+  .aur-title {
+    font-size: clamp(1.5rem, 7vw, 2.2rem);
+  }
+
+  /* Step markers: stay 28px on mobile (don't shrink). The hover state's
+     30px grow is fine. */
+  .aur-info-card { padding: 18px; }
+
+
+  /* Page nav: stack on the smallest screens if Back+Continue labels are long. */
+  /* Mobile: nav buttons stack and expand to fill the row. */
+  .aur-page-nav {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .aur-page-nav > * {
+    flex: 1 1 140px;
+    justify-content: center;
+  }
+
+  /* Dev panel: pull away from the right edge a touch on mobile. */
+  .aur-dev-toggle { right: 12px; bottom: 12px; }
+  .aur-dev-panel  { right: 12px; bottom: 64px; max-width: calc(100vw - 24px); }
+}
+
+
+/* ---------- Narrow phones (≤480px) ----------
+   Tighten up spacing and typography so nothing clips or overflows on
+   small Android and older iPhone screens. */
+
+@media (max-width: 480px) {
+  /* Shrink card padding so content has more room. */
+  .aur-info-card { padding: 16px; }
+
+  /* Title: bring the floor down a touch so long lesson titles don't wrap
+     into three lines on a 360px phone. */
+  .aur-title { font-size: clamp(1.3rem, 8vw, 1.8rem); }
+
+  /* "Compact" label takes up space; icon alone is clear enough at this width. */
+  .aur-steps-toggle__label { display: none; }
+
+  /* Link grid: force single column below 480px (auto-fit already handles
+     this at ~520px via minmax(260px, 1fr), but belt-and-suspenders for
+     phones that report a wider CSS pixel width than their physical grid). */
+  .aur-link-grid { grid-template-columns: 1fr; }
+
+  /* Welcome card nav buttons: stack vertically instead of side by side. */
+  .aur-welcome-nav { flex-direction: column; align-items: stretch; gap: 10px; }
+  .aur-welcome-nav > * { text-align: center; justify-content: center; }
+
+  /* Reduce bottom breathing room slightly on the shortest phones. */
+  .aur-main { padding-bottom: 36px; }
+}
+
+
+/* ---------- Mobile sidebar accessibility ---------- */
+
+/* On mobile, hide the sidebar's contents from the accessibility tree
+   while closed. body.aur-sidebar-open removes the inert state. */
+@media (max-width: 800px) {
+  body:not(.aur-sidebar-open) .aur-sidebar {
+    visibility: hidden;
+  }
+  body.aur-sidebar-open .aur-sidebar {
+    visibility: visible;
+  }
+}
