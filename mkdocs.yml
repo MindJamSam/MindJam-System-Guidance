@@ -1,7 +1,7 @@
 site_name: Salesforce Training
 # TODO: set to the real published URL — powers sitemap.xml absolute URLs,
 # <link rel="canonical">, and og:url/og:image. Trailing slash matters.
-site_url: https://example.invalid/salesforce-training/
+site_url: https://mindjamsam.github.io/MindJam-System-Guidance/
 site_description: Training guide for MindJam mentors using the Salesforce Community Site to manage mentees, sessions, availability, and wrap-ups.
 
 theme:
