@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" role="img" aria-labelledby="title desc">
+  <title id="title">Select list display icon</title>
+  <desc id="desc">A small Salesforce display selector icon cycling through MindJam colours.</desc>
+  <style>
+    @keyframes mj-view-colour {
+      0%, 100% { fill: #d9b7f0; }
+      33.333% { fill: #ffe88a; }
+      66.666% { fill: #e8788a; }
+    }
+    .mj-view-mark {
+      animation: mj-view-colour 18s linear infinite;
+      filter: drop-shadow(0 0 2px rgba(217, 183, 240, 0.32));
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .mj-view-mark { animation: none; fill: #d9b7f0; }
+    }
+  </style>
+  <g class="mj-view-mark">
+    <rect x="2" y="2" width="11" height="1.4" rx="0.2"/>
+    <rect x="2" y="5" width="2.4" height="1.2" rx="0.2"/>
+    <rect x="6.2" y="5" width="2.4" height="1.2" rx="0.2"/>
+    <rect x="10.4" y="5" width="2.4" height="1.2" rx="0.2"/>
+    <rect x="2" y="7.6" width="2.4" height="1.2" rx="0.2"/>
+    <rect x="6.2" y="7.6" width="2.4" height="1.2" rx="0.2"/>
+    <rect x="10.4" y="7.6" width="2.4" height="1.2" rx="0.2"/>
+    <rect x="2" y="10.2" width="2.4" height="1.2" rx="0.2"/>
+    <rect x="6.2" y="10.2" width="2.4" height="1.2" rx="0.2"/>
+    <rect x="10.4" y="10.2" width="2.4" height="1.2" rx="0.2"/>
+    <rect x="2" y="12.8" width="2.4" height="1.2" rx="0.2"/>
+    <rect x="6.2" y="12.8" width="2.4" height="1.2" rx="0.2"/>
+    <rect x="10.4" y="12.8" width="2.4" height="1.2" rx="0.2"/>
+  </g>
+</svg>

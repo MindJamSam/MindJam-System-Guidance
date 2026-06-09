@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{# Stage 5 lesson template.
+   Pages opt in by setting `steps:` in their front-matter; everything
+   else falls through to plain page.content rendering. #}
+
+{% block content %}
+
+  {#- ---------- Copy-button macro ----------
+      Single source of truth for the .aur-copy pill. Pages declare a
+      `copy:` list on a step (or `copy:` object on a tip) in front-matter;
+      this macro renders the SVG + label + accessible attributes so the
+      markup never has to be hand-pasted into a `body:` string.
+
+      Front-matter shape (step):
+        steps:
+          - title: ...
+            body: ...
+            copy:
+              - label: "Community Site URL"        # visible label text
+                value: "https://mindjam.my.site.com/Portal"   # copied to clipboard
+
+      Falls back to `value` as the label if `label` is omitted. -#}
+  {%- macro copy_button(item) -%}
+  <button type="button"
+          class="aur-copy"
+          data-aur-copy="{{ item.value }}"
+          aria-label="Copy {{ item.label or item.value }}">
+    <span class="aur-copy__icon" aria-hidden="true">
+      <svg class="aur-copy__icon-default" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+        <rect x="9" y="9" width="11" height="11" rx="2"/>
+        <path d="M5 15V6a2 2 0 0 1 2-2h9"/>
+      </svg>
+      <svg class="aur-copy__icon-done" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12l5 5L20 7"/>
+      </svg>
+    </span>
+    <span class="aur-copy__label">
+      <span class="aur-copy__label-default">{{ item.label or item.value }}</span>
+      <span class="aur-copy__label-done">Copied</span>
+    </span>
+  </button>
+  {%- endmacro -%}
+
+  {#- A page opts into the lesson layout by having ANY of:
+      steps:, media:, video:, description:. Pages without any of these
+      (or the homepage) fall through to plain page.content rendering so
+      reference pages, the WIP placeholder, and the welcome screen can
+      use bespoke markdown. -#}
+  {%- if page.meta and (page.meta.steps or page.meta.media or page.meta.video or page.meta.description) -%}
+
+    {#- Lesson position + total are computed in hooks/lesson_meta.py
+        (on_nav) and stamped onto every page. See base.html for the
+        sidebar progress bar consumer. -#}
+    {%- set total_lessons = page.lesson_total or 0 -%}
+    {%- set current_pos   = page.lesson_pos or 0 -%}
+
+    {#- Resources pages are reference material, not part of a linear
+        course — hide the "Page X of Y" counter and the bottom Back/Continue
+        nav so they don't suggest a step sequence the reader isn't on. -#}
+    {%- set is_reference = (page.meta and page.meta.section == 'resources') -%}
+
+    <header class="aur-lesson-head">
+      {%- if not is_reference -%}
+      <p class="aur-eyebrow">Page {{ current_pos }} of {{ total_lessons }}</p>
+      {%- endif -%}
+      <h1 class="aur-title">{{ page.title }}</h1>
+      {% if page.meta.description %}
+        <p class="aur-description">{{ page.meta.description }}</p>
+      {% endif %}
+    </header>
+
+    {%- if page.meta.media -%}
+      <figure class="aur-media-tile aur-tile is-tiltable" role="figure">
+        <header class="aur-media-tile__header">
+          <span class="aur-media-tile__label">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="14" rx="2"/>
+              <path d="M10 9l6 3-6 3V9z" fill="currentColor" stroke="none"/>
+            </svg>
+            <span>{{ page.meta.media.header or 'Instructional GIF' }}</span>
+          </span>
+        </header>
+        <div class="aur-media-tile__body">
+          {%- set _msrc = page.meta.media.src -%}
+          {%- if _msrc.endswith('.webm') -%}
+            <video class="aur-media-tile__img" loop muted playsinline preload="none" data-aur-lazy-video disablepictureinpicture controlslist="nopictureinpicture nodownload noremoteplayback">
+              <source data-src="{{ _msrc | url }}" type="video/webm">
+            </video>
+          {%- else -%}
+            <img class="aur-media-tile__img"
+                 src="{{ _msrc | url }}"
+                 alt="{{ page.meta.media.alt or '' }}"
+                 loading="lazy"
+                 data-aur-lightbox>
+          {%- endif -%}
+        </div>
+        {% if page.meta.media.caption %}
+          <figcaption class="aur-media-tile__caption">{{ page.meta.media.caption }}</figcaption>
+        {% endif %}
+      </figure>
+    {%- endif -%}
+
+    {#- A "What you'll learn" tile previously rendered here from
+        page.meta.what_you_learn. Removed by user request; front-matter
+        data has been cleaned up too. -#}
+    {%- if page.meta.steps or page.meta.tip -%}
+    <div class="aur-info-cards">
+      {%- if page.meta.steps -%}
+      <article class="aur-tile aur-info-card aur-info-card--steps is-tiltable" data-aur-steps aria-label="Steps">
+        <header class="aur-info-card__head-row aur-info-card__head-row--steps-actions">
+          {#- "Compact" toggle: hides step bodies; hovering a step reveals
+              its body in a side popover. State persists per visitor. -#}
+          <button type="button"
+                  class="aur-steps-toggle"
+                  id="aur-steps-toggle"
+                  aria-pressed="false"
+                  aria-label="Toggle compact view of steps">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="4" y1="6"  x2="20" y2="6"/>
+              <line x1="4" y1="12" x2="20" y2="12"/>
+              <line x1="4" y1="18" x2="20" y2="18"/>
+            </svg>
+            <span class="aur-steps-toggle__label">Compact</span>
+          </button>
+        </header>
+        <ol class="aur-steps">
+          {%- for step in page.meta.steps -%}
+            <li class="aur-step" id="step-{{ loop.index }}">
+              {#- Plain integer (1, 2, …). Pill styling and accessible
+                  label live in CSS. -#}
+              <span class="aur-step__marker" aria-hidden="true">{{ loop.index }}</span>
+              <div class="aur-step__body">
+                <h3 class="aur-step__title">{{ step.title }}</h3>
+                <div class="aur-step__detail">
+                  <div class="aur-step__detail-inner">
+                    {% if step.body_html %}
+                      <div class="aur-step__prose aur-prose">{{ step.body_html | safe }}</div>
+                    {% endif %}
+                    {#- `step.copy` would return Python's dict.copy method
+                        (truthy, but not iterable) on steps without a copy:
+                        block. Use membership + bracket-indexing for safety,
+                        same pattern as tip.copy below. -#}
+                    {% if 'copy' in step %}
+                      <div class="aur-step__copies">
+                        {% for item in step['copy'] %}{{ copy_button(item) }}{% endfor %}
+                      </div>
+                    {% endif %}
+                    {% if step.media %}
+                      <div class="aur-step__media">
+                        {% for m in step.media %}
+                          {%- if m.src.endswith('.webm') -%}
+                            <video class="aur-step__media-img" loop muted playsinline preload="none" data-aur-lazy-video disablepictureinpicture controlslist="nopictureinpicture nodownload noremoteplayback">
+                              <source data-src="{{ m.src | url }}" type="video/webm">
+                            </video>
+                          {%- else -%}
+                            <img class="aur-step__media-img"
+                                 src="{{ m.src | url }}"
+                                 alt="{{ m.alt or '' }}"
+                                 loading="lazy"
+                                 data-aur-lightbox>
+                          {%- endif -%}
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </li>
+          {%- endfor -%}
+        </ol>
+      </article>
+      {%- endif -%}
+
+      {%- if page.meta.tip -%}
+        <article class="aur-tile aur-info-card aur-info-card--tip is-tiltable">
+          <h2 class="aur-info-card__heading">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 18h6M10 21h4M9 14a5.5 5.5 0 1 1 6 0c-.5.4-.9.9-1 1.5v.5H10v-.5c-.1-.6-.5-1.1-1-1.5z"/>
+            </svg>
+            <span>Tip</span>
+          </h2>
+          {% if page.meta.tip.body_html %}
+            <div class="aur-info-card__prose aur-prose">{{ page.meta.tip.body_html | safe }}</div>
+          {% endif %}
+          {#- The front-matter `copy:` key shadows Python's `dict.copy` method.
+              Jinja's `tip.copy` returns the method (getattr-first), so we
+              must use the explicit `'copy' in tip` membership check before
+              bracket-indexing — otherwise pages WITHOUT a copy block would
+              render an empty button (the bound method is truthy). -#}
+          {%- if 'copy' in page.meta.tip -%}
+            {{ copy_button(page.meta.tip['copy']) }}
+          {%- endif -%}
+        </article>
+      {%- endif -%}
+    </div>
+    {%- endif -%}
+
+    {%- if page.meta.video -%}
+      {#- Lite-load video: custom MindJam poster + drop-shadow title.
+          The real YouTube iframe is only injected when the user clicks
+          (JS handler in aurora.js). Saves a heavy 3rd-party iframe on
+          every video page until it's actually wanted. -#}
+      <section class="aur-video-panel" aria-label="Video">
+        <div class="aur-video-panel__embed">
+          <button class="aur-video-lite"
+                  type="button"
+                  data-aur-video-src="{{ page.meta.video.src }}"
+                  data-aur-video-title="{{ page.meta.video.title or 'Video' }}"
+                  aria-label="Play video: {{ page.meta.video.title or 'Video' }}">
+            <img class="aur-video-lite__poster"
+                 src="{{ 'assets/images/brand/video-poster.jpg' | url }}"
+                 alt=""
+                 loading="lazy"
+                 aria-hidden="true">
+            <span class="aur-video-lite__title">{{ page.meta.video.title or '' }}</span>
+            <span class="aur-video-lite__play" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="36" height="36">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+      </section>
+    {%- endif -%}
+
+    {#- Opt-in "Compact" toolbar for accordion pages (terminology,
+        useful-links). Pages set `accordion_toolbar: true` in front-matter;
+        the JS handler keys off `data-aur-accordion-compact`. Kept here
+        instead of inlined in markdown so the markup has a single home. -#}
+    {%- if page.meta.accordion_toolbar -%}
+      <div class="aur-info-card__head-row aur-info-card__head-row--steps-actions aur-term-actions">
+        <button type="button" class="aur-steps-toggle" data-aur-accordion-compact aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="5" y1="7" x2="19" y2="7"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <line x1="5" y1="17" x2="19" y2="17"></line>
+          </svg>
+          <span class="aur-steps-toggle__label">Compact</span>
+        </button>
+      </div>
+    {%- endif -%}
+
+    {%- if page.content -%}
+      <div class="aur-lesson-body aur-prose">{{ page.content | safe }}</div>
+    {%- endif -%}
+
+    {%- if not is_reference -%}
+    <nav class="aur-page-nav" aria-label="Section navigation">
+      {%- if page.previous_page -%}
+        <a class="aur-btn aur-btn-ghost" href="{{ page.previous_page.url | url }}" rel="prev">
+          <span aria-hidden="true">&larr;</span>
+          <span>Back</span>
+        </a>
+      {%- else -%}<span></span>{%- endif -%}
+
+      {%- if page.next_page -%}
+        <a class="aur-btn aur-btn-primary" href="{{ page.next_page.url | url }}" rel="next">
+          <span>Continue</span>
+          <span aria-hidden="true">&rarr;</span>
+        </a>
+      {%- else -%}<span></span>{%- endif -%}
+    </nav>
+    {%- endif -%}
+
+  {%- else -%}
+    {{ page.content | safe }}
+  {%- endif -%}
+{% endblock %}
+
+{# Lightbox lives at the page level (single instance reused by all
+   images AND videos). JS swaps which element is shown based on the
+   media type the user expanded. The video has no `controls` attribute
+   — native controls can't be frosted in Firefox, so we render a
+   custom controls bar below the video and wire it up in JS. #}
+{% block lightbox %}
+  <div class="aur-lightbox" id="aur-lightbox" hidden aria-hidden="true" role="dialog" aria-label="Media preview">
+    <button type="button" class="aur-lightbox__close" id="aur-lightbox-close" aria-label="Close">&times;</button>
+    <img class="aur-lightbox__img" id="aur-lightbox-img" alt="" hidden>
+    <div class="aur-lightbox__video-wrap" id="aur-lightbox-video-wrap" hidden>
+      <video class="aur-lightbox__video" id="aur-lightbox-video" playsinline disablepictureinpicture controlslist="nopictureinpicture nodownload noremoteplayback"></video>
+      <div class="aur-lightbox__video-controls" id="aur-lightbox-video-controls">
+        <button type="button" class="aur-lightbox__video-btn" id="aur-lightbox-video-play" aria-label="Play">
+          <svg class="aur-lightbox__video-icon aur-lightbox__video-icon--play"  viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="aur-lightbox__video-icon aur-lightbox__video-icon--pause" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" hidden><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+        </button>
+        <input type="range" class="aur-lightbox__video-scrubber" id="aur-lightbox-video-scrubber" min="0" max="1000" value="0" step="1" aria-label="Seek">
+        <span class="aur-lightbox__video-time" id="aur-lightbox-video-time" aria-live="off">0:00&nbsp;/&nbsp;0:00</span>
+        <button type="button" class="aur-lightbox__video-btn" id="aur-lightbox-video-fs" aria-label="Fullscreen">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 9V3h6"/><path d="M21 9V3h-6"/><path d="M3 15v6h6"/><path d="M21 15v6h-6"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <figcaption class="aur-lightbox__caption" id="aur-lightbox-caption"></figcaption>
+  </div>
+{% endblock %}

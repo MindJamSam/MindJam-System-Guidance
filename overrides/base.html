@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d0817">
+  <link rel="icon" type="image/svg+xml" href="{{ 'assets/images/brand/favicon-v3.svg'|url }}">
+  <title>{% if page and page.title and not page.is_homepage %}{{ page.title }} — {{ config.site_name }}{% else %}{{ config.site_name }}{% endif %}</title>
+
+  {#- ============================================================
+        SEO: description, canonical, Open Graph, Twitter card.
+
+        Description falls back to config.site_description when a
+        page omits it (e.g. the homepage). Canonical + og:url +
+        og:image are absolute and only emitted when site_url is
+        set in mkdocs.yml; without it they would be useless to
+        crawlers and link-preview scrapers.
+      ============================================================ -#}
+  {%- set _page_desc = (page and page.meta and page.meta.description) or config.site_description -%}
+  {%- if _page_desc -%}
+  <meta name="description" content="{{ _page_desc }}">
+  {%- endif %}
+
+  {%- if config.site_url -%}
+    {%- set _site_url = config.site_url if config.site_url.endswith('/') else config.site_url ~ '/' -%}
+    {%- set _page_url = page.canonical_url or _site_url -%}
+    {%- set _og_image = _site_url ~ 'assets/images/brand/video-poster.jpg' -%}
+  <link rel="canonical" href="{{ _page_url }}">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="{{ config.site_name }}">
+  <meta property="og:title" content="{% if page and page.title and not page.is_homepage %}{{ page.title }}{% else %}{{ config.site_name }}{% endif %}">
+  {%- if _page_desc %}
+  <meta property="og:description" content="{{ _page_desc }}">
+  {%- endif %}
+  <meta property="og:url" content="{{ _page_url }}">
+  <meta property="og:image" content="{{ _og_image }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{% if page and page.title and not page.is_homepage %}{{ page.title }}{% else %}{{ config.site_name }}{% endif %}">
+  {%- if _page_desc %}
+  <meta name="twitter:description" content="{{ _page_desc }}">
+  {%- endif %}
+  <meta name="twitter:image" content="{{ _og_image }}">
+  {%- endif %}
+
+  {% for path in extra_css %}<link rel="stylesheet" href="{{ path|url }}?v=20260523-clean-pngs">{% endfor %}
+
+  {#- ============================================================
+        SINGLE SOURCE OF TRUTH for the Appearance-panel defaults.
+
+        To change the out-of-the-box look (colours, blur, glass,
+        font size, etc.), edit this object ONLY. Everything else
+        reads from window.__AURORA_DEFAULTS__:
+          - The early-init CSS-var script below (FOUC prevention).
+          - aurora.js DEFAULTS (used by applyPrefs + Reset button).
+          - The Appearance panel sliders/pickers (synced on load).
+
+        The slider `value=` attrs and CSS `:root` vars further
+        down are auto-overridden by this and don't need to match.
+      ============================================================ -#}
+  <script>
+    window.__AURORA_DEFAULTS__ = {
+      fontStack:     null,
+      fontSize:      1.05,
+      stars:         true,
+      colours:       true,
+      colour1:       '#e6b71d',
+      colour2:       '#c52f64',
+      colour3:       '#9734e4',
+      bgOpacity:     0.15,
+      tileColour:    '#141020',
+      tileOpacity:   1,
+      tileBlur:      3,
+      headingColour: '#e7c5f3',
+      textColour:    '#dbc4e9',
+      linkColour:    '#e75488'
+    };
+  </script>
+
+  {#- Dev-mode gate + early-paint CSS-var application.
+      Runs synchronously in <head> so html[data-aur-dev] is set before
+      paint and the applied appearance (defaults overlaid by any saved
+      user prefs) is in place before first render (no flash). -#}
+  <script>
+    (function () {
+      try {
+        var rs = document.documentElement.style;
+
+        /* Dev mode */
+        var params = new URLSearchParams(window.location.search);
+        var devParam = params.get('dev');
+        if (devParam === '1') localStorage.setItem('auroraDev', '1');
+        else if (devParam === '0') localStorage.removeItem('auroraDev');
+        var devOn = localStorage.getItem('auroraDev') === '1';
+        if (devOn) document.documentElement.setAttribute('data-aur-dev', '1');
+        if (devOn) {
+          var devRaw = localStorage.getItem('auroraDevOverrides');
+          if (devRaw) {
+            var devO = JSON.parse(devRaw);
+            Object.keys(devO).forEach(function (k) {
+              if (typeof k === 'string' && k.indexOf('--aur-') === 0) rs.setProperty(k, devO[k]);
+            });
+          }
+        }
+
+        /* Layer any saved user prefs over the defaults, then apply
+           the resulting palette to CSS vars before first paint. */
+        var saved = {};
+        try {
+          var userRaw = localStorage.getItem('auroraUserPrefs');
+          if (userRaw) saved = JSON.parse(userRaw);
+        } catch (e) {}
+        var p = Object.assign({}, window.__AURORA_DEFAULTS__ || {}, saved);
+
+        if (p.fontStack) {
+          ['--aur-font','--aur-font-title','--aur-font-subtitle','--aur-font-body'].forEach(function (v) {
+            rs.setProperty(v, p.fontStack);
+          });
+        }
+        function hexRgb(h) { return parseInt(h.slice(1,3),16)+','+parseInt(h.slice(3,5),16)+','+parseInt(h.slice(5,7),16); }
+        if (p.fontSize    != null) rs.setProperty('--aur-font-scale',       String(p.fontSize));
+        if (p.stars       != null) rs.setProperty('--aur-star-intensity',    p.stars ? '1' : '0');
+        if (p.colour1)             rs.setProperty('--aur-backdrop-1',        p.colour1);
+        if (p.colour2)             rs.setProperty('--aur-backdrop-2',        p.colour2);
+        if (p.colour3)             rs.setProperty('--aur-backdrop-3',        p.colour3);
+        if (p.bgOpacity   != null) rs.setProperty('--aur-backdrop-opacity',  p.colours === false ? '0' : String(p.bgOpacity));
+        if (p.tileOpacity != null || p.tileColour) {
+          var tc = p.tileColour || '#141020';
+          var g  = p.tileOpacity != null ? p.tileOpacity : 0.44;
+          var a1 = 1 - g * 0.85;
+          rs.setProperty('--aur-bg-elev-1', 'rgba(' + hexRgb(tc) + ', ' + a1.toFixed(3) + ')');
+          rs.setProperty('--aur-bg-elev-2', 'rgba(' + hexRgb(tc) + ', ' + Math.min(1, a1 + 0.10).toFixed(3) + ')');
+          rs.setProperty('--aur-bg-elev-stack-2', 'rgba(' + hexRgb(tc) + ', ' + Math.min(1, a1 + 0.22).toFixed(3) + ')');
+          rs.setProperty('--aur-bg-elev-stack-3', 'rgba(' + hexRgb(tc) + ', ' + Math.min(1, a1 + 0.34).toFixed(3) + ')');
+          rs.setProperty('--aur-bg-elev-stack-4', 'rgba(' + hexRgb(tc) + ', ' + Math.min(1, a1 + 0.44).toFixed(3) + ')');
+          rs.setProperty('--aur-bg-sidebar', 'rgba(' + hexRgb(tc) + ', ' + Math.min(1, a1 + 0.04).toFixed(3) + ')');
+        }
+        rs.setProperty('--aur-tile-blur', '3px');
+        if (p.textColour) {
+          rs.setProperty('--aur-text',      p.textColour);
+          rs.setProperty('--aur-text-soft', p.textColour);
+        }
+        if (p.headingColour) rs.setProperty('--aur-text-heading', p.headingColour);
+        else if (p.textColour) rs.setProperty('--aur-text-heading', p.textColour);
+        if (p.linkColour)    rs.setProperty('--aur-text-link',    p.linkColour);
+      } catch (e) { /* no-op */ }
+    })();
+  </script>
+</head>
+
+{#- Lesson position + total are computed once per build in
+    hooks/lesson_meta.py (on_nav) and stamped onto every page as
+    page.lesson_pos / page.lesson_total. base.html uses them for the
+    sidebar progress bar; main.html uses them for the "Page X of Y"
+    eyebrow. Single source of truth — see lesson_meta.py. -#}
+{%- set total_lessons = page.lesson_total or 0 -%}
+{%- set current_pos   = page.lesson_pos or 0 -%}
+{%- set page_section  = (page.meta and page.meta.section) or 'standalone' -%}
+
+<body data-section="{{ page_section }}">
+  <a class="aur-skip" href="#aur-main">Skip to content</a>
+
+  <div class="aur-backdrop" aria-hidden="true">
+    <div class="aur-backdrop__blob aur-backdrop__blob--1"></div>
+    <div class="aur-backdrop__blob aur-backdrop__blob--2"></div>
+    <div class="aur-backdrop__blob aur-backdrop__blob--3"></div>
+  </div>
+
+  {#- Noise dither layer — sibling of .aur-backdrop (NOT inside it, so
+      it isn't smeared by the backdrop's blur filter). Breaks up the
+      visible alpha banding in the gradient blobs. See .aur-noise rule
+      in aurora.css for full notes. -#}
+  <div class="aur-noise" aria-hidden="true"></div>
+
+  {#- §7.2 Star field: per-star twinkle, two parallax layers + gradient
+      dust + occasional shooting star. Generated by hooks/gen_stars.py
+      into a static fragment at assets/aurora-stars.html; aurora.js
+      fetches and injects it after first paint to keep ~25KB of
+      decorative markup off the critical path. Intensity scaled by
+      --aur-star-intensity (dev slider). -#}
+  <div class="aur-starfield-host" data-aur-stars-src="{{ 'assets/aurora-stars.html' | url }}" aria-hidden="true"></div>
+
+  {#- Mobile-only sticky top bar with the hamburger. Hidden on desktop via
+      media query; JS toggles `body.aur-sidebar-open` for the slide-in drawer. -#}
+  <header class="aur-shell-topbar" role="banner">
+    <button type="button"
+            class="aur-hamburger"
+            id="aur-hamburger"
+            aria-controls="aur-sidebar"
+            aria-expanded="false"
+            aria-label="Open navigation">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="4" y1="6" x2="20" y2="6"/>
+        <line x1="4" y1="12" x2="20" y2="12"/>
+        <line x1="4" y1="18" x2="20" y2="18"/>
+      </svg>
+    </button>
+    <span class="aur-shell-topbar__brand">
+      <span class="aur-brand__name-mind">Mind</span><span class="aur-brand__name-jam">Jam</span>
+    </span>
+  </header>
+
+  {#- Backdrop behind the slide-in sidebar drawer. Click to dismiss. -#}
+  <div class="aur-sidebar-backdrop" id="aur-sidebar-backdrop" aria-hidden="true"></div>
+
+  {#- Top-fade strip is rendered as `.aur-main::before` so it only
+      covers main-column content (sidebar + stars + backdrop pass
+      through unaffected). See aurora.css. -#}
+
+  <div class="aur-shell">
+    <aside class="aur-sidebar" id="aur-sidebar" aria-label="Course navigation" tabindex="-1">
+
+      {#- §7.15 Brand pill -#}
+      <a class="aur-brand" href="{{ nav.homepage.url | url }}">
+        <img class="aur-brand__icon"
+             src="{{ 'assets/images/brand/mindjam-icon.png' | url }}"
+             alt=""
+             width="40"
+             height="40"
+             aria-hidden="true">
+        <span class="aur-brand__name">
+          <span class="aur-brand__name-mind">Mind</span><span class="aur-brand__name-jam">Jam</span>
+        </span>
+      </a>
+
+      {#- §7.7 Progress bar -#}
+      <div class="aur-progress"
+           data-aur-progress-current="{{ current_pos }}"
+           data-aur-progress-total="{{ total_lessons }}"
+           role="progressbar"
+           aria-valuemin="0"
+           aria-valuemax="{{ total_lessons }}"
+           aria-valuenow="{{ current_pos }}">
+        <div class="aur-progress__track">
+          <div class="aur-progress__fill" style="width: 0%;">
+            <div class="aur-progress__shimmer" aria-hidden="true"></div>
+          </div>
+        </div>
+        <p class="aur-progress__label">
+          <span class="aur-progress__current">{{ current_pos }}</span>
+          <span class="aur-progress__sep">/</span>
+          <span class="aur-progress__total">{{ total_lessons }}</span>
+          <span class="aur-progress__caption">sections</span>
+        </p>
+      </div>
+
+      {#- §7.4 Sectioned nav.
+          ctr counts lessons globally (1..N) so the number prefix is correct
+          across sections and standalone pages. Home is unnumbered. -#}
+      <nav class="aur-nav" aria-label="Sections">
+        {%- set ctr = namespace(n=0) -%}
+        {%- for item in nav -%}
+          {%- if item.is_section -%}
+            {#- Section: collapsible. Slugify the title for unique ids/keys. -#}
+            {%- set sec_slug = item.title | lower | replace(' ', '-') | replace("'", '') -%}
+            {%- set sec_contains_current = namespace(v=false) -%}
+            {%- for child in item.children -%}
+              {%- if child == page -%}{%- set sec_contains_current.v = true -%}{%- endif -%}
+            {%- endfor -%}
+            <div class="aur-nav__section{% if sec_contains_current.v %} is-open{% endif %}"
+                 data-aur-nav-section="{{ sec_slug }}">
+              <button type="button"
+                      class="aur-nav__heading"
+                      aria-expanded="{% if sec_contains_current.v %}true{% else %}false{% endif %}"
+                      aria-controls="aur-nav-sec-{{ sec_slug }}">
+                <span class="aur-nav__heading-title">{{ item.title }}</span>
+                <svg class="aur-nav__chevron" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 6l4 4 4-4"/>
+                </svg>
+              </button>
+              <div class="aur-nav__collapsible" id="aur-nav-sec-{{ sec_slug }}" role="region">
+                <ul class="aur-nav__list">
+                  {%- for child in item.children -%}
+                    {%- if not child.is_homepage -%}{%- set ctr.n = ctr.n + 1 -%}{%- endif -%}
+                    <li>
+                      <a class="aur-nav-item{% if child == page %} is-current{% endif %}"
+                         href="{{ child.url|url }}"
+                         {% if child == page %}aria-current="page"{% endif %}>
+                        <span class="aur-nav-item__marker" aria-hidden="true"></span>
+                        <span class="aur-nav-item__label">
+                          {%- if not child.is_homepage -%}
+                            <span class="aur-nav-item__num">{{ ctr.n }}.</span>
+                          {%- endif %}
+                          <span class="aur-nav-item__title">{{ child.title }}</span>
+                        </span>
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            </div>
+          {%- elif item.is_page -%}
+            {%- if not item.is_homepage -%}{%- set ctr.n = ctr.n + 1 -%}{%- endif -%}
+            <ul class="aur-nav__list aur-nav__list--standalone">
+              <li>
+                <a class="aur-nav-item{% if item == page %} is-current{% endif %}"
+                   href="{{ item.url|url }}"
+                   {% if item == page %}aria-current="page"{% endif %}>
+                  <span class="aur-nav-item__marker" aria-hidden="true"></span>
+                  <span class="aur-nav-item__label">
+                    {%- if not item.is_homepage -%}
+                      <span class="aur-nav-item__num">{{ ctr.n }}.</span>
+                    {%- endif %}
+                    <span class="aur-nav-item__title">{{ item.title }}</span>
+                  </span>
+                </a>
+              </li>
+            </ul>
+          {%- endif -%}
+        {%- endfor -%}
+      </nav>
+
+      {#- §7.10 Help card -#}
+      <aside class="aur-help-card">
+        <div class="aur-help-card__heading">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-5 4v-4H6a2 2 0 0 1-2-2V6z"/>
+          </svg>
+          <span>Need help?</span>
+        </div>
+        <p class="aur-help-card__body">We are here to help if you need&nbsp;us</p>
+        <a class="aur-btn aur-btn-ghost aur-help-card__cta" href="{{ 'need-help/' | url }}">
+          <span>Contact support</span>
+          <span aria-hidden="true">→</span>
+        </a>
+      </aside>
+    </aside>
+
+    <main id="aur-main" class="aur-main" tabindex="-1">
+      {%- block content -%}
+        {{ page.content|safe }}
+      {%- endblock -%}
+    </main>
+  </div>
+
+  {#- Global animation-pause toggle. Captures the current frame of every
+      GIF into a <canvas> sibling and hides the original img while paused;
+      restores on resume. State persists in localStorage. Default state
+      follows the `prefers-reduced-motion` system preference.
+
+      Hidden by CSS (.aur-anim-toggle is display:none) — the FAB menu
+      below proxies clicks to it so all JS handlers stay intact. -#}
+  <button type="button"
+          class="aur-anim-toggle"
+          data-aur-anim-toggle
+          aria-pressed="false"
+          aria-label="Pause animations">
+    <svg class="aur-anim-toggle__icon aur-anim-toggle__icon-pause" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+      <rect x="6" y="5" width="4" height="14" rx="1"/>
+      <rect x="14" y="5" width="4" height="14" rx="1"/>
+    </svg>
+    <svg class="aur-anim-toggle__icon aur-anim-toggle__icon-play" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+      <path d="M7 4.5v15a1 1 0 0 0 1.55.83l11-7.5a1 1 0 0 0 0-1.66l-11-7.5A1 1 0 0 0 7 4.5z"/>
+    </svg>
+    <span class="aur-anim-toggle__label">Pause animations</span>
+  </button>
+
+  {#- Consolidated FAB. One round button at rest, bottom-left; click
+      opens a small popover menu with Appearance / Pause animations /
+      Dev (last is only visible when html[data-aur-dev="1"]). Menu
+      items dispatch clicks on the original hidden buttons so existing
+      JS keeps working unchanged. Implementation in aurora.js. -#}
+  <div class="aur-fab-wrap">
+    <div class="aur-fab-menu" id="aur-fab-menu" role="menu" aria-labelledby="aur-fab" aria-hidden="true">
+      <button type="button" class="aur-fab-menu__item" data-aur-fab-action="prefs" role="menuitem">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+          <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+          <line x1="1" y1="14" x2="7" y2="14"/>
+          <line x1="9" y1="8" x2="15" y2="8"/>
+          <line x1="17" y1="16" x2="23" y2="16"/>
+        </svg>
+        <span>Appearance</span>
+      </button>
+      <button type="button" class="aur-fab-menu__item aur-fab-menu__item--anim" data-aur-fab-action="anim" role="menuitem" aria-pressed="false">
+        <svg class="aur-fab-menu__icon-pause" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+          <rect x="6" y="5" width="4" height="14" rx="1"/>
+          <rect x="14" y="5" width="4" height="14" rx="1"/>
+        </svg>
+        <svg class="aur-fab-menu__icon-play" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+          <path d="M7 4.5v15a1 1 0 0 0 1.55.83l11-7.5a1 1 0 0 0 0-1.66l-11-7.5A1 1 0 0 0 7 4.5z"/>
+        </svg>
+        <span class="aur-fab-menu__label-pause">Pause animations</span>
+        <span class="aur-fab-menu__label-play">Resume animations</span>
+      </button>
+      <button type="button" class="aur-fab-menu__item aur-fab-menu__item--dev" data-aur-fab-action="dev" role="menuitem">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span>Dev controls</span>
+      </button>
+    </div>
+    <button type="button" class="aur-fab" id="aur-fab" aria-controls="aur-fab-menu" aria-expanded="false" aria-label="Open settings menu">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+  </div>
+
+  {#- §7.18 dev menu (Stage 3.5+). Always in DOM; CSS hides until
+      html[data-aur-dev="1"]. -#}
+  <button type="button"
+          class="aur-dev-toggle"
+          id="aur-dev-toggle"
+          aria-controls="aur-dev-panel"
+          aria-expanded="false"
+          title="Dev controls">⚙</button>
+
+  <aside class="aur-dev-panel" id="aur-dev-panel" role="dialog" aria-label="Dev controls">
+    <header class="aur-dev-panel__header">
+      <span class="aur-dev-panel__header-title">Dev controls</span>
+      <button type="button" class="aur-dev-panel__close" id="aur-dev-close" aria-label="Close">×</button>
+    </header>
+
+    <div class="aur-dev-panel__body">
+
+      {%- macro picker(id, label, target, default, alpha=None) -%}
+      <div class="aur-dev-field aur-picker"
+           data-aur-target="{{ target }}"
+           data-aur-default="{{ default }}"
+           {%- if alpha %} data-aur-alpha="{{ alpha }}"{% endif %}>
+        <span class="aur-dev-field__label" id="{{ id }}-label">{{ label }}</span>
+        <button type="button"
+                class="aur-picker__swatch"
+                id="{{ id }}"
+                aria-labelledby="{{ id }}-label"
+                aria-expanded="false"></button>
+        <div class="aur-picker__pop" hidden>
+          <div class="aur-picker__sv">
+            <div class="aur-picker__sv-cursor"></div>
+          </div>
+          <div class="aur-picker__row">
+            <input type="range" class="aur-picker__hue" min="0" max="360" step="1" value="0" aria-label="Hue">
+          </div>
+          <div class="aur-picker__row">
+            <input type="text" class="aur-picker__hex" maxlength="7" value="{{ default }}" aria-label="Hex value" spellcheck="false">
+          </div>
+        </div>
+      </div>
+      {%- endmacro -%}
+
+      {%- macro slider(id, label, target, default, mn, mx, step, unit='', precision='0', format='', display_unit=None) -%}
+      <div class="aur-dev-field">
+        <label class="aur-dev-field__label" for="{{ id }}">{{ label }}</label>
+        <div class="aur-slider"
+             data-aur-slider
+             data-aur-target="{{ target }}"
+             data-aur-default="{{ default }}"
+             data-aur-min="{{ mn }}"
+             data-aur-max="{{ mx }}"
+             data-aur-step="{{ step }}"
+             data-aur-unit="{{ unit }}"
+             {%- if display_unit is not none %} data-aur-display-unit="{{ display_unit }}"{% endif %}
+             data-aur-precision="{{ precision }}"
+             {%- if format %} data-aur-format="{{ format }}"{% endif %}>
+          <input type="range" class="aur-slider__input" id="{{ id }}"
+                 min="{{ mn }}" max="{{ mx }}" step="{{ step }}" value="{{ default }}"
+                 aria-label="{{ label }}">
+          <span class="aur-slider__value" aria-live="polite">{{ default }}{% if display_unit is not none %}{{ display_unit }}{% else %}{{ unit }}{% endif %}</span>
+        </div>
+      </div>
+      {%- endmacro -%}
+
+      <span class="aur-dev-group-label">Typography</span>
+      <div class="aur-dev-field">
+        <label class="aur-dev-field__label" for="aur-dev-font-title">Title font</label>
+        <select id="aur-dev-font-title" data-aur-font="--aur-font-title"></select>
+      </div>
+      <div class="aur-dev-field">
+        <label class="aur-dev-field__label" for="aur-dev-font-subtitle">Subtitle font</label>
+        <select id="aur-dev-font-subtitle" data-aur-font="--aur-font-subtitle"></select>
+      </div>
+      <div class="aur-dev-field">
+        <label class="aur-dev-field__label" for="aur-dev-font-body">Body font</label>
+        <select id="aur-dev-font-body" data-aur-font="--aur-font-body"></select>
+      </div>
+      {{ slider('aur-dev-font-scale', 'Font scale', '--aur-font-scale', '1', '0.85', '1.15', '0.01', '', '2', display_unit='×') }}
+
+      <hr class="aur-dev-divider">
+      <span class="aur-dev-group-label">Accent</span>
+
+      {{ picker('aur-dev-accent',     'Accent',     '--aur-accent',      '#d672e6') }}
+      {{ picker('aur-dev-glow',       'Tile glow',  '--aur-accent-glow', '#d672e6', alpha='0.45') }}
+
+      <hr class="aur-dev-divider">
+      <span class="aur-dev-group-label">Tile</span>
+
+      {{ slider('aur-dev-tile-opacity', 'Tile bg opacity', '--aur-bg-elev-1', '0.56', '0',  '1', '0.02', '', '2', 'rgba(20, 16, 32, {value})') }}
+      {{ slider('aur-dev-tile-radius',  'Corner radius', '--aur-tile-radius',  '16',  '0',  '28', '1', 'px', '0') }}
+
+      <hr class="aur-dev-divider">
+      <span class="aur-dev-group-label">Background</span>
+
+      {{ picker('aur-dev-bg', 'Body bg', '--aur-bg', '#0d0817') }}
+      {{ picker('aur-dev-backdrop-1', 'Backdrop 1', '--aur-backdrop-1',  '#ff8edf') }}
+      {{ picker('aur-dev-backdrop-2', 'Backdrop 2', '--aur-backdrop-2',  '#b14ad8') }}
+      {{ picker('aur-dev-backdrop-3', 'Backdrop 3', '--aur-backdrop-3',  '#6ee29a') }}
+      {{ slider('aur-dev-backdrop-opacity', 'Backdrop opacity', '--aur-backdrop-opacity', '0.42', '0', '1', '0.02', '', '2') }}
+      {{ slider('aur-dev-backdrop-blur',    'Backdrop blur',    '--aur-backdrop-blur',    '40',   '0', '160', '1', 'px', '0') }}
+
+      <hr class="aur-dev-divider">
+      <span class="aur-dev-group-label">Stars</span>
+
+      {{ slider('aur-dev-star-intensity', 'Star intensity', '--aur-star-intensity', '1', '0', '1', '0.02', '', '2') }}
+
+      <hr class="aur-dev-divider">
+      <span class="aur-dev-group-label">Section glow</span>
+
+      {{ picker('aur-dev-glow-standalone',                    'Standalone',  '--aur-section-glow-standalone',                    '#d672e6', alpha='0.45') }}
+      {{ picker('aur-dev-glow-getting-started',               'Getting Started', '--aur-section-glow-getting-started',           '#ff8edf', alpha='0.45') }}
+      {{ picker('aur-dev-glow-what-to-do-first',              'What to Do First', '--aur-section-glow-what-to-do-first',         '#b14ad8', alpha='0.45') }}
+      {{ picker('aur-dev-glow-understanding-the-difference',  'Understanding…',   '--aur-section-glow-understanding-the-difference', '#6ee29a', alpha='0.45') }}
+      {{ picker('aur-dev-glow-finding-your-mentees-and-sessions', 'Finding Mentees', '--aur-section-glow-finding-your-mentees-and-sessions', '#f0c66d', alpha='0.45') }}
+      {{ picker('aur-dev-glow-resources',                     'Resources', '--aur-section-glow-resources',                       '#8ed6ff', alpha='0.45') }}
+    </div>
+
+    <footer class="aur-dev-panel__footer">
+      <button type="button" class="aur-dev-btn" id="aur-dev-reset">Reset</button>
+      <button type="button" class="aur-dev-btn" id="aur-dev-copy">Copy JSON</button>
+    </footer>
+  </aside>
+
+  {#- User appearance preferences panel -#}
+  <button type="button"
+          class="aur-prefs-toggle"
+          id="aur-prefs-toggle"
+          aria-controls="aur-prefs-panel"
+          aria-expanded="false"
+          aria-label="Appearance settings">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+      <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+      <line x1="1" y1="14" x2="7" y2="14"/>
+      <line x1="9" y1="8" x2="15" y2="8"/>
+      <line x1="17" y1="16" x2="23" y2="16"/>
+    </svg>
+    <span class="aur-prefs-toggle__label">Appearance</span>
+  </button>
+
+  <aside class="aur-prefs-panel"
+         id="aur-prefs-panel"
+         role="dialog"
+         aria-label="Appearance settings"
+         aria-hidden="true"
+         inert>
+
+    <header class="aur-prefs-panel__header">
+      <span class="aur-prefs-panel__title">Appearance</span>
+      <button type="button" class="aur-prefs-panel__close" id="aur-prefs-close" aria-label="Close">×</button>
+    </header>
+
+    <div class="aur-prefs-panel__body">
+
+      <section class="aur-prefs-section is-open" data-aur-prefs-section>
+        <button type="button" class="aur-prefs-section__head" aria-expanded="true" aria-controls="aur-prefs-section-text-body">
+          <h3 class="aur-prefs-section__label">Text</h3>
+          <svg class="aur-prefs-section__chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="aur-prefs-section__body" id="aur-prefs-section-text-body">
+          <div class="aur-prefs-section__body-inner">
+            <div class="aur-prefs-field">
+              <label class="aur-prefs-label" for="aur-pref-font">Font</label>
+              <select class="aur-prefs-select" id="aur-pref-font"></select>
+            </div>
+            <div class="aur-prefs-field aur-prefs-field--fill">
+              <label class="aur-prefs-label" for="aur-pref-font-size">Size</label>
+              <div class="aur-prefs-range-row">
+                <input type="range" class="aur-prefs-range" id="aur-pref-font-size" min="0.85" max="1.15" step="0.05" value="1.05">
+                <span class="aur-prefs-range-val" id="aur-pref-font-size-val">105%</span>
+              </div>
+            </div>
+            <div class="aur-prefs-field">
+              <label class="aur-prefs-label">Header</label>
+              <div class="aur-prefs-picker" id="aur-pref-heading-colour-picker">
+                <button type="button" class="aur-picker__swatch" aria-expanded="false" aria-label="Pick header colour"></button>
+                <div class="aur-picker__pop" hidden>
+                  <div class="aur-picker__sv"><div class="aur-picker__sv-cursor"></div></div>
+                  <div class="aur-picker__row"><input type="range" class="aur-picker__hue" min="0" max="360" step="1" value="0" aria-label="Hue"></div>
+                  <div class="aur-picker__row"><input type="text" class="aur-picker__hex" maxlength="7" aria-label="Hex value" spellcheck="false"></div>
+                </div>
+              </div>
+            </div>
+            <div class="aur-prefs-field">
+              <label class="aur-prefs-label">Main text</label>
+              <div class="aur-prefs-picker" id="aur-pref-text-colour-picker">
+                <button type="button" class="aur-picker__swatch" aria-expanded="false" aria-label="Pick main text colour"></button>
+                <div class="aur-picker__pop" hidden>
+                  <div class="aur-picker__sv"><div class="aur-picker__sv-cursor"></div></div>
+                  <div class="aur-picker__row"><input type="range" class="aur-picker__hue" min="0" max="360" step="1" value="0" aria-label="Hue"></div>
+                  <div class="aur-picker__row"><input type="text" class="aur-picker__hex" maxlength="7" aria-label="Hex value" spellcheck="false"></div>
+                </div>
+              </div>
+            </div>
+            <div class="aur-prefs-field">
+              <label class="aur-prefs-label">Hyperlink</label>
+              <div class="aur-prefs-picker" id="aur-pref-link-colour-picker">
+                <button type="button" class="aur-picker__swatch" aria-expanded="false" aria-label="Pick hyperlink colour"></button>
+                <div class="aur-picker__pop" hidden>
+                  <div class="aur-picker__sv"><div class="aur-picker__sv-cursor"></div></div>
+                  <div class="aur-picker__row"><input type="range" class="aur-picker__hue" min="0" max="360" step="1" value="0" aria-label="Hue"></div>
+                  <div class="aur-picker__row"><input type="text" class="aur-picker__hex" maxlength="7" aria-label="Hex value" spellcheck="false"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <hr class="aur-prefs-divider">
+
+      <section class="aur-prefs-section is-open" data-aur-prefs-section>
+        <button type="button" class="aur-prefs-section__head" aria-expanded="true" aria-controls="aur-prefs-section-background-body">
+          <h3 class="aur-prefs-section__label">Background</h3>
+          <svg class="aur-prefs-section__chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="aur-prefs-section__body" id="aur-prefs-section-background-body">
+          <div class="aur-prefs-section__body-inner">
+            <div class="aur-prefs-field">
+              <span class="aur-prefs-label">Stars</span>
+              <label class="aur-prefs-switch">
+                <input type="checkbox" id="aur-pref-stars" checked>
+                <span class="aur-prefs-switch__track" aria-hidden="true"></span>
+              </label>
+            </div>
+            <div class="aur-prefs-field">
+              <span class="aur-prefs-label">Colours</span>
+              <label class="aur-prefs-switch">
+                <input type="checkbox" id="aur-pref-colours" checked>
+                <span class="aur-prefs-switch__track" aria-hidden="true"></span>
+              </label>
+            </div>
+            <div class="aur-prefs-field aur-prefs-field--colours">
+              <span class="aur-prefs-label">Colour mix</span>
+              <div class="aur-prefs-colour-row">
+                <div class="aur-prefs-picker" id="aur-pref-colour-1-picker">
+                  <button type="button" class="aur-picker__swatch" aria-expanded="false" aria-label="Backdrop colour 1"></button>
+                  <div class="aur-picker__pop" hidden>
+                    <div class="aur-picker__sv"><div class="aur-picker__sv-cursor"></div></div>
+                    <div class="aur-picker__row"><input type="range" class="aur-picker__hue" min="0" max="360" step="1" value="0" aria-label="Hue"></div>
+                    <div class="aur-picker__row"><input type="text" class="aur-picker__hex" maxlength="7" aria-label="Hex value" spellcheck="false"></div>
+                  </div>
+                </div>
+                <div class="aur-prefs-picker" id="aur-pref-colour-2-picker">
+                  <button type="button" class="aur-picker__swatch" aria-expanded="false" aria-label="Backdrop colour 2"></button>
+                  <div class="aur-picker__pop" hidden>
+                    <div class="aur-picker__sv"><div class="aur-picker__sv-cursor"></div></div>
+                    <div class="aur-picker__row"><input type="range" class="aur-picker__hue" min="0" max="360" step="1" value="0" aria-label="Hue"></div>
+                    <div class="aur-picker__row"><input type="text" class="aur-picker__hex" maxlength="7" aria-label="Hex value" spellcheck="false"></div>
+                  </div>
+                </div>
+                <div class="aur-prefs-picker" id="aur-pref-colour-3-picker">
+                  <button type="button" class="aur-picker__swatch" aria-expanded="false" aria-label="Backdrop colour 3"></button>
+                  <div class="aur-picker__pop" hidden>
+                    <div class="aur-picker__sv"><div class="aur-picker__sv-cursor"></div></div>
+                    <div class="aur-picker__row"><input type="range" class="aur-picker__hue" min="0" max="360" step="1" value="0" aria-label="Hue"></div>
+                    <div class="aur-picker__row"><input type="text" class="aur-picker__hex" maxlength="7" aria-label="Hex value" spellcheck="false"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="aur-prefs-field aur-prefs-field--fill aur-prefs-field--bg-intensity">
+              <label class="aur-prefs-label" for="aur-pref-bg-intensity">Intensity</label>
+              <div class="aur-prefs-range-row">
+                <input type="range" class="aur-prefs-range" id="aur-pref-bg-intensity" min="0" max="1" step="0.05" value="0.15">
+                <span class="aur-prefs-range-val" id="aur-pref-bg-intensity-val">15%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <hr class="aur-prefs-divider">
+
+      <section class="aur-prefs-section is-open" data-aur-prefs-section>
+        <button type="button" class="aur-prefs-section__head" aria-expanded="true" aria-controls="aur-prefs-section-cards-body">
+          <h3 class="aur-prefs-section__label">Cards</h3>
+          <svg class="aur-prefs-section__chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="aur-prefs-section__body" id="aur-prefs-section-cards-body">
+          <div class="aur-prefs-section__body-inner">
+            <div class="aur-prefs-field">
+              <label class="aur-prefs-label">Colour</label>
+              <div class="aur-prefs-picker" id="aur-pref-tile-colour-picker">
+                <button type="button" class="aur-picker__swatch" aria-expanded="false" aria-label="Pick tile colour"></button>
+                <div class="aur-picker__pop" hidden>
+                  <div class="aur-picker__sv"><div class="aur-picker__sv-cursor"></div></div>
+                  <div class="aur-picker__row"><input type="range" class="aur-picker__hue" min="0" max="360" step="1" value="0" aria-label="Hue"></div>
+                  <div class="aur-picker__row"><input type="text" class="aur-picker__hex" maxlength="7" aria-label="Hex value" spellcheck="false"></div>
+                </div>
+              </div>
+            </div>
+            <div class="aur-prefs-field aur-prefs-field--fill">
+              <label class="aur-prefs-label" for="aur-pref-tile-opacity">Glass effect</label>
+              <div class="aur-prefs-range-row">
+                <input type="range" class="aur-prefs-range" id="aur-pref-tile-opacity" min="0" max="1" step="0.05" value="1">
+                <span class="aur-prefs-range-val" id="aur-pref-tile-opacity-val">100%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <footer class="aur-prefs-panel__footer">
+      <button type="button" class="aur-dev-btn" id="aur-prefs-reset">Reset defaults</button>
+    </footer>
+  </aside>
+
+  {% block lightbox %}{% endblock %}
+
+  {% for script in extra_javascript %}<script src="{{ script|url }}?v=20260523-clean-pngs"></script>{% endfor %}
+</body>
+</html>
