@@ -1,4 +1,4 @@
-# Salesforce Training — v2 ("Aurora")
+# Salesforce Training
 
 A MkDocs training site for MindJam Salesforce mentors, built with a custom dark-mode "Aurora" theme.
 
