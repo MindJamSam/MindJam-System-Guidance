@@ -1,17 +1,11 @@
 ---
 title: How to Log a Support Ticket
-section: standalone
+section: resources
 description: How to raise a support case, report a bug, submit a query, or get help with a problem on the Community Site.
 media:
-  src: assets/images/support-ticket/open-support-ticket-form.gif
+  src: assets/images/support-ticket/open-support-ticket-form.webm
   alt: How to raise a support ticket
   header: Raising a support ticket
-what_you_learn:
-  - When to use support tickets vs other channels
-  - That safeguarding concerns must go through the safeguarding form, never tickets
-  - How to raise a ticket end-to-end
-  - What each field on the form means — Case Category, Priority, Subject, Description
-  - How to check your existing tickets and reply to updates
 steps:
   - title: Overview
     body: |
@@ -49,7 +43,7 @@ steps:
       When someone replies, you will receive an **email notification**. You can also check the **Chatter** section on the right-hand side of the ticket. This is where updates and replies appear. You can reply there yourself. To see the full history, click **More Comments**.
   - title: Key Point
     body: |
-      Use **Support Tickets** for general questions or to contact a department or senior leadership. Do **not** use tickets for safeguarding concerns. Use the safeguarding form instead.
+      Use **Support Tickets** for system, process, and department questions where you need a clear record. For training guide questions or anything personal, contact senior leadership directly via the [Need Help](../need-help/) page. Do **not** use tickets for safeguarding — use the safeguarding form instead.
 video:
   src: https://www.youtube-nocookie.com/embed/0AiFsROS2BY?rel=0
   title: Support Ticket video

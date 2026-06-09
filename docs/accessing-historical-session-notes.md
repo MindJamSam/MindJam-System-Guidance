@@ -3,15 +3,9 @@ title: Accessing Historical Session Notes
 section: finding-your-mentees-and-sessions
 description: How to find, view, and edit the session notes recorded against each of your mentees.
 media:
-  src: assets/images/accessing-historical-session-notes/session-notes.gif
+  src: assets/images/accessing-historical-session-notes/session-notes.webm
   alt: Opening a mentee's page from My Mentees to view their session notes
   header: Viewing a mentee's session notes
-what_you_learn:
-  - How session notes get saved to a mentee's profile
-  - How to log in and reach the My Mentees list
-  - How to navigate to a specific mentee's page
-  - How to view and edit historical session notes for that mentee
-  - That new notes appear automatically after each wrap-up
 steps:
   - title: Overview
     body: |

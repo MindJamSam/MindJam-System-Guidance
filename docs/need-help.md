@@ -1,51 +1,60 @@
 ---
 title: Need Help?
-section: standalone
+section: resources
+description: Where to go when you need help — support tickets for system questions, senior leadership for personal questions, and the safeguarding form for safeguarding concerns.
 ---
 
-<header class="aur-lesson-head">
-  <h1 class="aur-title">Need Help?</h1>
-  <p class="aur-description">We are here to help if you need us.</p>
-</header>
-
-<article class="aur-tile aur-info-card aur-contact-card is-tiltable">
-  <div class="aur-contact-row">
-    <span class="aur-contact-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="2" y="4" width="20" height="16" rx="2"/>
-        <path d="M2 7l10 7 10-7"/>
-      </svg>
-    </span>
-    <div class="aur-contact-detail">
-      <p class="aur-contact-label">Email</p>
-      <a class="aur-contact-value" href="mailto:samhollandt@mindjam.org.uk">samhollandt@mindjam.org.uk</a>
-    </div>
-  </div>
-
-  <div class="aur-contact-divider" aria-hidden="true"></div>
-
-  <div class="aur-contact-row">
-    <span class="aur-contact-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-      </svg>
-    </span>
-    <div class="aur-contact-detail">
-      <p class="aur-contact-label">Discord</p>
-      <span class="aur-contact-value">mindjamsam</span>
-    </div>
+<article class="aur-tile aur-info-card is-tiltable">
+  <h2 class="aur-info-card__heading">Which channel should I use?</h2>
+  <div class="aur-info-card__prose aur-prose">
+    <ul>
+      <li><strong>System or process questions</strong> — raise a <a href="../how-to-log-a-support-ticket/">support ticket</a>. Tickets give a clear record and route to the right team (Finance, Provision, SEND, General Advice).</li>
+      <li><strong>Training guide questions, or anything personal</strong> — contact a member of senior leadership directly using the details below.</li>
+      <li><strong>Safeguarding concerns</strong> — use the <a href="https://forms.gle/z5gaV3zXVATUjDHJ7" rel="noopener" target="_blank">safeguarding form</a>. Do <strong>not</strong> use tickets or email for safeguarding.</li>
+    </ul>
   </div>
 </article>
+
+<div class="aur-link-grid aur-need-help-contacts">
+
+  <article class="aur-tile aur-info-card aur-person-card is-tiltable">
+    <h2 class="aur-info-card__heading">Sam Hollandt</h2>
+    <div class="aur-person-card__actions">
+      <a class="aur-btn aur-btn-primary" href="mailto:samhollandt@mindjam.org.uk" aria-label="Email Sam Hollandt">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+          <path d="M2 7l10 7 10-7"/>
+        </svg>
+        <span>Email Sam</span>
+      </a>
+      <button type="button" class="aur-copy" data-aur-copy="mindjamsam" aria-label="Copy Discord username: mindjamsam">
+        <span class="aur-copy__icon" aria-hidden="true">
+          <svg class="aur-copy__icon-default" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <rect x="9" y="9" width="11" height="11" rx="2"/>
+            <path d="M5 15V6a2 2 0 0 1 2-2h9"/>
+          </svg>
+          <svg class="aur-copy__icon-done" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12l5 5L20 7"/>
+          </svg>
+        </span>
+        <span class="aur-copy__label">
+          <span class="aur-copy__label-default">Discord: mindjamsam</span>
+          <span class="aur-copy__label-done">Copied</span>
+        </span>
+      </button>
+    </div>
+  </article>
+
+  <!-- To add another senior leadership member, copy the <article> block above
+       and update: the name in the <h2>, the mailto: address, the "Email …"
+       button label, and the aria-labels. Remove the Discord <button> block
+       if the person does not use Discord. -->
+
+</div>
 
 <nav class="aur-page-nav" aria-label="Page navigation">
   <button class="aur-btn aur-btn-ghost" type="button" onclick="history.back()">
     <span aria-hidden="true">←</span>
     <span>Back</span>
   </button>
-  <a class="aur-btn aur-btn-primary"
-     href="mailto:samhollandt@mindjam.org.uk"
-     aria-label="Send an email to Sam">
-    <span>Contact support</span>
-    <span aria-hidden="true">→</span>
-  </a>
 </nav>

@@ -1,6 +1,6 @@
 ---
 title: Switching Systems Mid-Month
-section: standalone
+section: getting-started
 description: A short guide for moving from Google Sheets to Salesforce mid-month without affecting invoicing or payment.
 steps:
   - title: "Step 1: Choose Your Move Date"
@@ -33,10 +33,11 @@ steps:
   - title: If You Need Help
     body: |
       Contact via Discord or email — use the buttons below to copy either contact detail.
-
-      <button type="button" class="aur-copy" data-aur-copy="mindjamsam" aria-label="Copy Discord username: mindjamsam"><span class="aur-copy__icon" aria-hidden="true"><svg class="aur-copy__icon-default" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg><svg class="aur-copy__icon-done" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span><span class="aur-copy__label"><span class="aur-copy__label-default">Discord: <code>mindjamsam</code></span><span class="aur-copy__label-done">Copied</span></span></button>
-
-      <button type="button" class="aur-copy" data-aur-copy="samhollandt@mindjam.org.uk" aria-label="Copy email address: samhollandt@mindjam.org.uk"><span class="aur-copy__icon" aria-hidden="true"><svg class="aur-copy__icon-default" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg><svg class="aur-copy__icon-done" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span><span class="aur-copy__label"><span class="aur-copy__label-default">Email: <code>samhollandt@mindjam.org.uk</code></span><span class="aur-copy__label-done">Copied</span></span></button>
+    copy:
+      - label: "Discord: mindjamsam"
+        value: mindjamsam
+      - label: "Email: samhollandt@mindjam.org.uk"
+        value: samhollandt@mindjam.org.uk
 video:
   src: https://www.youtube-nocookie.com/embed/HhPB2pGHbOc?rel=0
   title: Switching Systems Mid-Month video

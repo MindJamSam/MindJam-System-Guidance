@@ -1,43 +1,127 @@
 # Salesforce Training — v2 ("Aurora")
 
-A parallel MkDocs site that uses the same content as the v1 Salesforce Training guide, presented in a dark-mode "Aurora" UI. The v1 site at `../salesforce-training/` is untouched.
+A MkDocs training site for MindJam Salesforce mentors, built with a custom dark-mode "Aurora" theme.
 
-## Build status
+---
 
-In progress. See `../salesforce-training/housekeeping/notes/v2-build-plan.md` for the staged plan and `v2-build-log.md` for the chronological rationale log.
+## Setup (first time on a new machine)
 
-The plan / log / content-map all live in the v1 project's `housekeeping/notes/` directory and apply to both projects. Single source of truth.
+**Requirements:** Python 3.10 or newer. Check with:
+
+```
+python --version
+```
+
+**Install dependencies:**
+
+```
+pip install -r requirements.txt
+```
+
+That installs MkDocs and all required packages. You only need to do this once.
+
+---
 
 ## Run the dev server
 
-```powershell
-mkdocs serve --dev-addr=127.0.0.1:8001
+```
+python -m mkdocs serve
 ```
 
-The v1 site runs on `:8000`. Both can run side-by-side.
+The site is served at `http://127.0.0.1:8000/`. Changes to any file are reflected live in the browser without restarting the server.
 
-## Enable the dev panel (when implemented in Stage 8)
+---
 
-Once Stage 8 is done, append `?dev=1` to any v2 URL once. A floating "Dev" button will appear and stay for that browser. `?dev=0` clears it. The panel writes overrides to `localStorage.auroraDevOverrides` and applies them via CSS variables on `:root`.
+## Build a static copy
 
-## Structure
+```
+python -m mkdocs build
+```
+
+Output goes to `site/`. This folder is excluded from git — it is always re-generated.
+
+---
+
+## Validate links and media
+
+Run this before sharing or publishing the guide:
+
+```
+python tools/validate_site.py
+```
+
+It checks local page links, local image/video/PDF files, WebM to MP4 fallbacks, and missing alt text. External links are checked for valid URL shape only; it does not contact Salesforce, YouTube, or Google Forms.
+
+---
+
+## Rebuild the PDF version
+
+```
+python tools/build_pdf.py
+python -m mkdocs build
+```
+
+The PDF is written to `docs/assets/PDFs/Salesforce_Training_Guide_Print_Edition.pdf`, then copied into `site/` by the MkDocs build.
+
+---
+
+## Dev panel
+
+Append `?dev=1` to any URL once. A floating "Dev" button appears and stays for that browser session. `?dev=0` clears it. The panel writes CSS overrides to `localStorage.auroraDevOverrides`.
+
+---
+
+## Restore points (git)
+
+Create a restore point before making significant changes:
+
+```
+git add .
+git commit -m "Restore point — describe what you are about to change"
+```
+
+Check what has changed since the last commit:
+
+```
+git diff HEAD
+```
+
+Roll back to a specific commit:
+
+```
+git log --oneline
+git checkout <hash> -- .
+```
+
+Undo a rollback:
+
+```
+git checkout HEAD -- .
+```
+
+---
+
+## Project structure
 
 ```
 salesforce-training-v2/
-├── mkdocs.yml
-├── requirements.txt
+├── mkdocs.yml              ← site config (nav, theme, plugins)
+├── requirements.txt        ← Python dependencies
 ├── README.md
 ├── .gitignore
+├── hooks/
+│   ├── lesson_meta.py      ← injects lesson number + section into page meta
+│   └── gen_stars.py        ← generates the SVG star field include
 ├── docs/
-│   ├── index.md              ← welcome page (placeholder until Stage 7)
-│   ├── overrides/            ← theme template overrides (populated Stage 3)
-│   └── assets/
-│       ├── stylesheets/
-│       │   └── aurora.css
-│       └── javascripts/
-│           └── aurora.js
+│   ├── overrides/
+│   │   ├── base.html       ← full custom theme template
+│   │   └── _aurora-stars.html
+│   ├── assets/
+│   │   ├── stylesheets/
+│   │   │   └── aurora.css
+│   │   └── javascripts/
+│   │       └── aurora.js
+│   └── *.md                ← content pages
 └── housekeeping/
-    └── notes/                ← stage-specific reports (e.g. text-preservation report)
+    └── notes/              ← build notes and stage reports
 ```
-
-The build plan and rationale log are NOT duplicated here — they live in the v1 project's `housekeeping/notes/`.

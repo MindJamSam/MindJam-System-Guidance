@@ -3,16 +3,13 @@ title: Availability
 section: what-to-do-first
 description: How to set and update your availability and time slots so mentoring sessions can be booked with you.
 media:
-  src: assets/images/availability/availabilityexample.gif
+  src: assets/images/availability/availabilityexample.webm
   alt: Example of split availability time slots
   header: Splitting your availability across the day
 steps:
-  - title: Overview
+  - title: Why Availability Matters
     body: |
-      Once you have updated your games, equipment and preferences, the next step is to set your availability. In Salesforce, your [availability](https://mindjam.my.site.com/Portal/s/operating-hours) is set up using operating hours.
-  - title: Set Your Availability (Operating Hours)
-    body: |
-      Before setting up your availability, it helps to know why it matters. Your availability tells the system and the assigning team when you want to work. This helps them see which time slots are free when matching mentees. If you do not want to work on a particular day or at a particular time, simply do not add that time slot. Any time in your availability that is not already blocked by a session can appear as available for matching.
+      Once you have updated your games, equipment and preferences, the next step is to set your availability. In Salesforce, this is called [operating hours](https://mindjam.my.site.com/Portal/s/operating-hours), and it tells the system and the assigning team when you want to work. If you do not want to work on a particular day or time, simply do not add that time slot — any time in your availability that is not already blocked by a session can appear as available for matching.
   - title: Example
     body: |
       If you usually work on Monday from 9:00 to 5:00, but take a break from 1:00 to 2:00, you would enter:
@@ -39,7 +36,7 @@ steps:
 
       If you are adding more than one time slot, **Save & New** is usually the easiest option.
     media:
-      - src: assets/images/availability/availabilityexample2.gif
+      - src: assets/images/availability/availabilityexample2.webm
         alt: Adding a new availability time slot end to end
   - title: Using the Example Above
     body: |

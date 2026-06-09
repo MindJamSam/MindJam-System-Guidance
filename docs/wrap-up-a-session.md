@@ -3,7 +3,7 @@ title: Wrap Up a Session
 section: understanding-the-difference
 description: How to complete session notes, close out a mentoring session, cancel a session, or handle a late notice cancellation. Also covers attendance, invoicing, and payment.
 media:
-  src: assets/images/wrap-up-a-session/open-session-notes.gif
+  src: assets/images/wrap-up-a-session/open-session-notes.webm
   alt: Opening a Service Appointment and clicking Wrap Up Session
   header: Opening Wrap Up Session
 steps:
@@ -14,7 +14,7 @@ steps:
     body: |
       Open the **Service Appointment**. This can usually be found by clicking on a hyperlink that contains **SA**. Click **Wrap Up Session** in the top right corner. You can open a Service Appointment from different places in the system, such as the homepage, calendar, or dashboard. Look for a link that starts with SA.
     media:
-      - src: assets/images/wrap-up-a-session/open-wrap-up-from-session.gif
+      - src: assets/images/wrap-up-a-session/open-wrap-up-from-session.webm
         alt: Opening Wrap Up Session from inside a Service Appointment
   - title: Funding Type
     body: |
@@ -25,7 +25,7 @@ steps:
 
       If you are not sure, you can check with Finance or Senior Leadership, or log a ticket with Finance. In many cases, there will only be one option. If there is more than one, choose the one that matches the arrangement for that mentee.
     media:
-      - src: assets/images/wrap-up-a-session/log-session-details.gif
+      - src: assets/images/wrap-up-a-session/log-session-details.webm
         alt: Logging the session details and choosing the funding type
   - title: Why This Matters
     body: |
@@ -46,7 +46,7 @@ steps:
       - an internal cancellation note — this will not be shared in any attendance emails
       - a cancellation reason from a dropdown — this will be shared in any attendance emails
     media:
-      - src: assets/images/wrap-up-a-session/open-session-recording.gif
+      - src: assets/images/wrap-up-a-session/open-session-recording.webm
         alt: Opening the session recording and starting a cancellation
   - title: If Something Is Missing
     body: |
@@ -56,18 +56,17 @@ steps:
       - Skip past the wrap up page if needed
       - Use the **Admin Details** box to explain the issue briefly
 
-      You can copy one of these standard messages into the Admin Details box, depending on the funding type:
-
-      <button type="button" class="aur-copy" data-aur-copy="This mentee is self funded but there is no self funded contact. Can you please find this for me and add it to the mentee's profile." aria-label="Copy self-funded contact message"><span class="aur-copy__icon" aria-hidden="true"><svg class="aur-copy__icon-default" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg><svg class="aur-copy__icon-done" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span><span class="aur-copy__label"><span class="aur-copy__label-default">Self-funded contact message</span><span class="aur-copy__label-done">Copied</span></span></button>
-
-      <button type="button" class="aur-copy" data-aur-copy="This mentee is funded but there is no funded contact. Can you please find this for me and add it to the mentee's profile." aria-label="Copy funded contact message"><span class="aur-copy__icon" aria-hidden="true"><svg class="aur-copy__icon-default" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg><svg class="aur-copy__icon-done" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span><span class="aur-copy__label"><span class="aur-copy__label-default">Funded contact message</span><span class="aur-copy__label-done">Copied</span></span></button>
-
-      Finance will then find the missing information, add it to the mentee's account, and wrap up that session for you.
+      You can copy one of these standard messages into the Admin Details box, depending on the funding type. Finance will then find the missing information, add it to the mentee's account, and wrap up that session for you.
+    copy:
+      - label: Self-funded contact message
+        value: This mentee is self funded but there is no self funded contact. Can you please find this for me and add it to the mentee's profile.
+      - label: Funded contact message
+        value: This mentee is funded but there is no funded contact. Can you please find this for me and add it to the mentee's profile.
   - title: After You Submit
     body: |
       Once everything has been completed, the Service Appointment will update and the session record will be complete. This is what the system uses for attendance, invoicing, and payment.
     media:
-      - src: assets/images/wrap-up-a-session/submit-session-record.gif
+      - src: assets/images/wrap-up-a-session/submit-session-record.webm
         alt: Submitting the completed session record
 video:
   src: https://www.youtube-nocookie.com/embed/aXAd8FRa784?rel=0

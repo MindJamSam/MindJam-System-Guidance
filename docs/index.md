@@ -16,6 +16,29 @@ section: standalone
   </div>
 </article>
 
+<aside class="aur-tile aur-info-card aur-welcome-card aur-tips-card is-tiltable" aria-label="Tips for using this site">
+  <ul class="aur-tips-card__list">
+    <li class="aur-tips-card__item">
+      <span class="aur-tips-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V3h6"/><path d="M21 9V3h-6"/><path d="M3 15v6h6"/><path d="M21 15v6h-6"/></svg>
+      </span>
+      <span><strong>Double-click</strong> any image or GIF to view it at full size. Double-click again to close it.</span>
+    </li>
+    <li class="aur-tips-card__item">
+      <span class="aur-tips-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+      </span>
+      <span><strong>Single-click</strong> a GIF or video to play or pause it.</span>
+    </li>
+    <li class="aur-tips-card__item">
+      <span class="aur-tips-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </span>
+      <span>The <strong>cog</strong> in the bottom-left opens settings, where you can change the appearance, pause all animations, or tile background colour.</span>
+    </li>
+  </ul>
+</aside>
+
 <nav class="aur-page-nav aur-welcome-nav" aria-label="Start the guide">
   <a class="aur-btn aur-btn-ghost" href="assets/PDFs/Salesforce_Training_Guide_Print_Edition.pdf" rel="noopener">
     <span aria-hidden="true">⤓</span>

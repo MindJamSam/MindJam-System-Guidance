@@ -2,10 +2,6 @@
 title: Using Calendar Events
 section: understanding-the-difference
 description: How to create, view, and manage calendar events and bookings for mentoring sessions. Includes session statuses such as attended, cancelled, late notice cancellation, and mentee no-show.
-media:
-  src: assets/images/using-calendar-events/split1.png
-  alt: Each calendar hour split into top half (on the hour) and bottom half (half past)
-  header: Working with calendar events
 steps:
   - title: Overview
     body: |
@@ -21,19 +17,22 @@ steps:
       - click the **bottom half** if the session starts at half past
 
       This will open a flow where you can enter the event details.
+    media:
+      - src: assets/images/using-calendar-events/split1.png
+        alt: Each calendar hour split into top half (on the hour) and bottom half (half past)
   - title: Event Details
     body: |
       - *Event Name* — This can be anything you choose. We recommend using the mentee's full name so it is easy to find later.
       - *Description* — If you are using Google Meet, you can paste the meeting link here.
-
-      <button type="button" class="aur-copy" data-aur-copy="https://meet.new/" aria-label="Copy Google Meet new-meeting URL: https://meet.new/"><span class="aur-copy__icon" aria-hidden="true"><svg class="aur-copy__icon-default" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg><svg class="aur-copy__icon-done" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span><span class="aur-copy__label"><span class="aur-copy__label-default">Google Meet URL: <code>https://meet.new/</code></span><span class="aur-copy__label-done">Copied</span></span></button>
-
       - *Type* — You will see a list of event types:
         - **Mentoring & Other Paid Work** — MindJam Mentoring: normal sessions at your hourly rate. Other Paid Work: work that is not mentoring, paid at your hourly rate.
         - **Group Sessions** — Adventure Guild: D&D (Dungeons & Dragons) sessions. Group Session: standard group sessions.
         - **Fixed Rate Meetings (£40)** — Meeting (Charged), Official Meeting, and Report (Charged): formal meetings or reports you can charge for at a fixed rate.
         - **Non-Chargeable / Internal** — Report, Parent/Carer Meeting, and Personal Time: for internal use, initial meetings, or blockers. These are not billed.
         - **Types to Ignore** — BlockJam Counselling, Counselling, Training (may be removed).
+    copy:
+      - label: "Google Meet URL: https://meet.new/"
+        value: https://meet.new/
   - title: Mentee Field
     body: |
       This field links the event to a specific mentee. When you click into the **Mentee Field** you will see a dropdown of all your mentees. If your mentee does not appear, press **Enter** on your keyboard to open a window with all your mentees. If the event is for a mentoring session or other work connected to a young person, make sure you select the correct mentee here. If no mentee is added, the system will not know who the event is for. If you are creating a Personal Time event or another event not linked to a young person, such as Other Paid Work, you do not need to add a mentee.
@@ -66,7 +65,7 @@ steps:
 
       So even though the button says Delete Series, you can still choose to remove only one event.
     media:
-      - src: assets/images/using-calendar-events/create-calendar-event.gif
+      - src: assets/images/using-calendar-events/create-calendar-event.webm
         alt: Using the Delete Series option to remove an event
   - title: Understanding the Coloured Square
     body: |
@@ -82,7 +81,7 @@ steps:
       - 🟧 **Late Notice Cancellation** — A cancellation outside the official policy. The parent/carer will be charged.
       - 🟨 **Did Not Attend** — The mentee did not show up for the session. The parent/carer will be charged.
     media:
-      - src: assets/images/using-calendar-events/open-existing-calendar-event.gif
+      - src: assets/images/using-calendar-events/open-existing-calendar-event.webm
         alt: Opening an existing calendar event to see the coloured status square
 video:
   src: https://www.youtube-nocookie.com/embed/DrtSBTkWnXg?rel=0

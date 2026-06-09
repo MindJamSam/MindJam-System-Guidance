@@ -24,18 +24,23 @@
 :root {
   /* COLOUR */
   --aur-bg:                #0d0817;
-  --aur-bg-elev-1:         rgba(20, 16, 32, 0.56);
-  --aur-bg-elev-2:         rgba(28, 22, 44, 0.66);
+  --aur-bg-elev-1:         rgba(20, 16, 32, 0.15);
+  --aur-bg-elev-2:         rgba(20, 16, 32, 0.25);
   --aur-bg-sidebar:        rgba(14, 10, 24, 0.62);
 
   --aur-border:            rgba(255, 255, 255, 0.06);
   --aur-border-strong:     rgba(255, 255, 255, 0.10);
   --aur-border-focus:      rgba(214, 114, 230, 0.55);
 
-  --aur-text:              #e6e2ef;
-  --aur-text-soft:         #a39db1;
+  --aur-text:              #dbc4e9;
+  --aur-text-soft:         #dbc4e9;
   --aur-text-muted:        #6f6a7d;
   --aur-text-on-accent:    #1a0d22;
+  /* User-customisable in the Appearance panel. Defaults are kept in
+     sync with DEFAULTS in aurora.js so first-visit users (no
+     localStorage yet) see the same palette as the JS would apply. */
+  --aur-text-heading:      #e7c5f3;
+  --aur-text-link:         #e75488;
 
   --aur-accent:            #d672e6;
   --aur-accent-soft:       #ffb6f0;
@@ -52,10 +57,10 @@
   /* AURORA BACKDROP (body-wide blurred colour layer; Stage 3.5).
      Three radial blobs at top-left / middle-right / bottom-centre.
      Stage 6 may animate drift on top of these. */
-  --aur-backdrop-1:        #ff8edf;
-  --aur-backdrop-2:        #b14ad8;
-  --aur-backdrop-3:        #6ee29a;
-  --aur-backdrop-opacity:  0.42;
+  --aur-backdrop-1:        #e6b71d;
+  --aur-backdrop-2:        #c52f64;
+  --aur-backdrop-3:        #9734e4;
+  --aur-backdrop-opacity:  0.15;
 
   /* SECTION GLOWS (Stage 4). Each nav section gets its own glow colour
      that replaces --aur-accent-glow when the user is on a page in that
@@ -68,7 +73,7 @@
   --aur-section-glow-resources:                             rgba(142, 214, 255, 0.45);
 
   /* STRUCTURE */
-  --aur-tile-blur:         8px;
+  --aur-tile-blur:         3px;
   --aur-tile-radius:       16px;
   --aur-tile-radius-sm:    10px;
   --aur-tile-radius-pill:  999px;
@@ -96,16 +101,16 @@
      scales with it automatically. */
   --aur-size-eyebrow:      0.78rem;
   --aur-size-body:         clamp(16px, 0.95vw, 20px);
-  --aur-size-body-lg:      1.06rem;
+  --aur-size-body-lg:      1.04rem;
   --aur-size-h3:           1.05rem;
   --aur-size-h2:           1.4rem;
-  --aur-size-h1:           clamp(2rem, 3.6vw, 3.4rem);
+  --aur-size-h1:           clamp(1.95rem, 3.35vw, 3.2rem);
 
   --aur-track-eyebrow:     0.18em;
   --aur-track-section:     0.22em;
 
   --aur-line-tight:        1.18;
-  --aur-line-body:         1.55;
+  --aur-line-body:         1.62;
 
   /* LAYOUT — all viewport-responsive via clamp/min so the design
      scales smartly: narrow gutters on big monitors, tight padding
@@ -133,8 +138,12 @@
 
   /* DEV-PANEL CONTROLLED (Stage 8) */
   --aur-star-intensity:    1;
-  --aur-backdrop-blur:     40px;
-  --aur-font-scale:        1;
+  /* No source pre-blur — leaves the gradient blobs with their full
+     radial-gradient detail so the Appearance > Cards > Blur slider
+     (tile backdrop-filter) does maximum visible work on them.
+     Dev panel "Backdrop blur" slider can still raise this for tuning. */
+  --aur-backdrop-blur:     8px;
+  --aur-font-scale:        1.05;
 
   color-scheme: dark;
 }
@@ -164,6 +173,11 @@ html {
   background: var(--aur-bg);
   color: var(--aur-text);
   font-family: var(--aur-font-body);
+  /* Root font-size is the viewport-responsive --aur-size-body
+     multiplied by the user's Appearance > Text > Size slider
+     (--aur-font-scale). Scaling here means rem-based text and
+     spacing grow with the slider, but image/GIF dimensions
+     (defined in px or % of px-based containers) stay put. */
   font-size: calc(var(--aur-size-body) * var(--aur-font-scale, 1));
   line-height: var(--aur-line-body);
   -webkit-font-smoothing: antialiased;
@@ -198,29 +212,163 @@ body {
   z-index: 0;
   pointer-events: none;
   opacity: var(--aur-backdrop-opacity);
-  filter: blur(var(--aur-backdrop-blur, 40px)) saturate(115%);
+  /* 135% saturate (was 115%) so the source blob colour is vivid
+     enough at the default 42% backdrop opacity that tile
+     backdrop-filter blur produces a perceptually visible smear,
+     not just a faint darkening. */
+  filter: blur(var(--aur-backdrop-blur, 8px)) saturate(118%);
   transition: filter var(--aur-dur-medium) var(--aur-ease-out-soft);
+}
+
+/* Dithering overlay — fixes the visible "rings" of colour-banding that
+   appear in long, low-contrast alpha gradients on 8-bit displays.
+   A tiled SVG noise (~1px luma grain) breaks adjacent colour bands into
+   a stippled transition the eye perceives as smooth.
+
+   Implemented as a FIXED full-viewport layer at z-index 0, ordered in
+   the DOM after .aur-backdrop so it stacks above the gradient blobs.
+   Crucially, it sits OUTSIDE .aur-backdrop — that element has
+   `filter: blur(10px)` which would smear the noise into a flat tint
+   and destroy the dithering effect. The feColorMatrix maps the
+   turbulence's grayscale R channel into the alpha channel so we get
+   actual transparency variation (not solid white). */
+.aur-noise {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* Two stacked noise layers at different scales — the fine grain
+     dithers narrow alpha steps (1–2 integer values apart) and the
+     coarser grain breaks up larger transitions. Together they cover
+     more spatial frequencies than a single tile can. */
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='1' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  1 0 0 0 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  1 0 0 0 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px, 240px 240px;
+  opacity: 0;
+  mix-blend-mode: normal;
 }
 
 /* Each blob: one large radial fade, full-size sibling overlay. Each
    has its own keyframes (different vector and prime-ish duration) so
    the three never resync. Range is ≤ 3.5vw/2.5vh — perceptible only
-   on close inspection. */
+   on close inspection.
+
+   Alpha decay uses 4 stops at 100% â†’ 55% â†’ 18% â†’ 0% to ease the
+   fall-off (a single 0%â†’100% transparent stop produces visible
+   concentric banding in dark hues).
+
+   All four stops are the SAME hue at decreasing alpha — built via
+   the CSS relative-colour syntax `rgb(from var(--X) r g b / Î±)` —
+   so the gradient never interpolates toward CSS `transparent` (which
+   is `rgba(0,0,0,0)` and would bleed a faint black halo into mid
+   stops on dark backgrounds). Live colour customisation via the
+   Appearance panel is preserved: `--aur-backdrop-N` is the single
+   source of truth for each blob's hue. */
 .aur-backdrop__blob {
   position: absolute;
-  inset: 0;
+  width: min(820px, 50vw);
+  height: min(620px, 58vh);
   will-change: transform;
+  border-radius: 999px;
+  opacity: 0.92;
+  filter: blur(56px);
 }
 .aur-backdrop__blob--1 {
-  background: radial-gradient(circle 560px at 15% 20%, var(--aur-backdrop-1) 0%, transparent 100%);
+  left: -8vw;
+  top: -10vh;
+  background:
+    radial-gradient(
+      ellipse 72% 56% at 48% 44%,
+      rgb(from var(--aur-backdrop-1) r g b / 0.90) 0%,
+      rgb(from var(--aur-backdrop-1) r g b / 0.58) 28%,
+      rgb(from var(--aur-backdrop-1) r g b / 0.24) 58%,
+      rgb(from var(--aur-backdrop-1) r g b / 0.07) 80%,
+      rgb(from var(--aur-backdrop-1) r g b / 0) 100%
+    ),
+    radial-gradient(
+      ellipse 44% 36% at 68% 28%,
+      rgb(from var(--aur-backdrop-1) r g b / 0.24) 0%,
+      rgb(from var(--aur-backdrop-1) r g b / 0) 74%
+    );
+  -webkit-mask-image: radial-gradient(
+    ellipse 78% 64% at 48% 45%,
+    #000 0%,
+    rgba(0,0,0,0.82) 48%,
+    transparent 100%
+  );
+          mask-image: radial-gradient(
+    ellipse 78% 64% at 48% 45%,
+    #000 0%,
+    rgba(0,0,0,0.82) 48%,
+    transparent 100%
+  );
   animation: aur-blob-drift-1 137s ease-in-out infinite;
 }
 .aur-backdrop__blob--2 {
-  background: radial-gradient(circle 520px at 82% 62%, var(--aur-backdrop-2) 0%, transparent 100%);
+  right: -5vw;
+  top: -4vh;
+  width: min(920px, 54vw);
+  height: min(680px, 60vh);
+  background:
+    radial-gradient(
+      ellipse 74% 58% at 54% 44%,
+      rgb(from var(--aur-backdrop-2) r g b / 0.92) 0%,
+      rgb(from var(--aur-backdrop-2) r g b / 0.60) 26%,
+      rgb(from var(--aur-backdrop-2) r g b / 0.27) 58%,
+      rgb(from var(--aur-backdrop-2) r g b / 0.08) 82%,
+      rgb(from var(--aur-backdrop-2) r g b / 0) 100%
+    ),
+    radial-gradient(
+      ellipse 42% 34% at 30% 70%,
+      rgb(from var(--aur-backdrop-2) r g b / 0.22) 0%,
+      rgb(from var(--aur-backdrop-2) r g b / 0) 70%
+    );
+  -webkit-mask-image: radial-gradient(
+    ellipse 80% 68% at 52% 45%,
+    #000 0%,
+    rgba(0,0,0,0.84) 48%,
+    transparent 100%
+  );
+          mask-image: radial-gradient(
+    ellipse 80% 68% at 52% 45%,
+    #000 0%,
+    rgba(0,0,0,0.84) 48%,
+    transparent 100%
+  );
   animation: aur-blob-drift-2 173s ease-in-out infinite;
 }
 .aur-backdrop__blob--3 {
-  background: radial-gradient(circle 480px at 50% 92%, var(--aur-backdrop-3) 0%, transparent 100%);
+  left: 14vw;
+  bottom: -20vh;
+  width: min(960px, 58vw);
+  height: min(700px, 64vh);
+  background:
+    radial-gradient(
+      ellipse 76% 60% at 42% 52%,
+      rgb(from var(--aur-backdrop-3) r g b / 0.92) 0%,
+      rgb(from var(--aur-backdrop-3) r g b / 0.62) 26%,
+      rgb(from var(--aur-backdrop-3) r g b / 0.28) 58%,
+      rgb(from var(--aur-backdrop-3) r g b / 0.08) 82%,
+      rgb(from var(--aur-backdrop-3) r g b / 0) 100%
+    ),
+    radial-gradient(
+      ellipse 44% 34% at 74% 34%,
+      rgb(from var(--aur-backdrop-3) r g b / 0.22) 0%,
+      rgb(from var(--aur-backdrop-3) r g b / 0) 72%
+    );
+  -webkit-mask-image: radial-gradient(
+    ellipse 82% 68% at 46% 50%,
+    #000 0%,
+    rgba(0,0,0,0.82) 50%,
+    transparent 100%
+  );
+          mask-image: radial-gradient(
+    ellipse 82% 68% at 46% 50%,
+    #000 0%,
+    rgba(0,0,0,0.82) 50%,
+    transparent 100%
+  );
   animation: aur-blob-drift-3 211s ease-in-out infinite;
 }
 
@@ -246,34 +394,33 @@ body {
 /* While the user is dragging in a colour picker, soften the blur so each
    frame is cheap to rasterize. The 50px blur snaps back when they release. */
 html.aur-is-dragging .aur-backdrop {
-  filter: blur(22px) saturate(140%);
+  filter: blur(8px) saturate(118%);
   transition: none;
 }
 
 /* ---------- Scroll optimisation ----------
-   backdrop-filter on tiles that scroll over an animated background is the
-   single most expensive GPU operation on this page: every frame the browser
-   must re-sample the animated blobs + stars through each tile's blur kernel.
-   JS adds `aur-is-scrolling` to <html> on scroll (passive listener, removed
-   150 ms after the last scroll event). While it's present:
-   - All tile/sidebar backdrop-filters are suspended (tiles fall back to their
-     semi-transparent background colour — visually barely noticeable while
-     the user is moving).
-   - Background animations are paused so the GPU source texture doesn't change
-     while we've already stopped sampling it.
-   Both classes restore immediately once scrolling stops. */
-html.aur-is-scrolling .aur-tile,
-html.aur-is-scrolling .aur-sidebar,
-html.aur-is-scrolling .aur-shell-topbar {
-  -webkit-backdrop-filter: none;
-          backdrop-filter: none;
-}
+   backdrop-filter on tiles re-samples its source texture every frame.
+   When the source is animated (drifting blobs, twinkling stars) and
+   the page is scrolling, that becomes the single most expensive GPU
+   operation on the page.
+
+   Earlier this optimisation also disabled tile backdrop-filter entirely
+   during scroll — but that produced a visible "blur on / blur off"
+   flicker on scroll start and stop that some users found jarring.
+   So we now keep backdrop-filter on; we just pause the BACKGROUND
+   animations during scroll. With a static source texture, the GPU
+   re-uses its cached backdrop sample instead of recomputing the blur
+   kernel each frame. The visual stays consistent (no flicker) and
+   most of the perf cost is still avoided.
+
+   JS adds `aur-is-scrolling` to <html> on every scroll event (passive
+   listener) and removes it 150 ms after the last scroll. */
 html.aur-is-scrolling .aur-backdrop__blob,
 html.aur-is-scrolling .aur-starfield__layer,
-html.aur-is-scrolling .aur-star {
+html.aur-is-scrolling .aur-star,
+html.aur-is-scrolling .aur-shooting-star {
   animation-play-state: paused;
 }
-
 
 /* ---------- §7.2 Animated star layer ----------
    Three fixed full-viewport divs behind the shell, on top of the
@@ -283,7 +430,7 @@ html.aur-is-scrolling .aur-star {
      - Per-layer alpha A on the pinpoint colour: 0.85 / 0.55 / 0.35.
      - Drift via transform (90s / 130s / 170s, distance ≤ 18px).
      - Breathing via opacity (9s / 12s / 16s), oscillating between
-       0.85 × intensity and 1.0 × intensity. `--aur-star-intensity`
+       0.85 Ã— intensity and 1.0 Ã— intensity. `--aur-star-intensity`
        (default 1) lets the Stage 8 dev slider dim all three in
        lockstep without re-rasterizing the gradients.
    will-change promotes each layer to its own compositor texture so
@@ -297,7 +444,7 @@ html.aur-is-scrolling .aur-star {
    plus a static CSS gradient dust layer behind for ambient density.
    A radial mask kills the wallpaper symmetry. One absolute-positioned
    shooting-star pseudo-bar fires on a 28s cycle.
-   All motion is transform/opacity → stays in the compositor. */
+   All motion is transform/opacity â†’ stays in the compositor. */
 
 .aur-starfield {
   position: fixed;
@@ -327,6 +474,68 @@ html.aur-is-scrolling .aur-star {
      it causes a full repaint every frame. Static dust still fills ambient density. */
 }
 
+.aur-shooting-star {
+  position: absolute;
+  left: var(--shoot-left, 50%);
+  top: var(--shoot-top, 20%);
+  width: var(--shoot-len, 150px);
+  height: 1.5px;
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: 0;
+  transform-origin: 100% 50%;
+  contain: paint;
+  backface-visibility: hidden;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(180, 210, 255, 0.00) 20%,
+    rgba(var(--shoot-glow-rgb, 204, 226, 255), 0.14) 52%,
+    rgba(var(--shoot-core-rgb, 245, 250, 255), 0.76) 82%,
+    rgba(var(--shoot-head-rgb, 255, 255, 255), 0.96) 100%
+  );
+  box-shadow: 0 0 6px rgba(var(--shoot-glow-rgb, 218, 233, 255), 0.22);
+  animation: aur-shooting-star var(--shoot-dur, 2100ms) linear forwards;
+  will-change: transform, opacity;
+}
+
+.aur-shooting-star::after {
+  content: "";
+  position: absolute;
+  right: -0.5px;
+  top: 50%;
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 999px;
+  background: rgb(var(--shoot-head-rgb, 255, 255, 255));
+  transform: translateY(-50%);
+  box-shadow:
+    0 0 5px rgba(var(--shoot-head-rgb, 255, 255, 255), 0.72),
+    0 0 10px rgba(var(--shoot-glow-rgb, 214, 232, 255), 0.30);
+}
+
+@keyframes aur-shooting-star {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(var(--shoot-angle, 28deg)) scaleX(0.22);
+  }
+  14% {
+    opacity: calc(var(--shoot-alpha, 0.9) * 0.72);
+    transform: translate3d(calc(var(--shoot-tx, 180px) * 0.14), calc(var(--shoot-ty, 90px) * 0.14), 0) rotate(var(--shoot-angle, 28deg)) scaleX(0.78);
+  }
+  34% {
+    opacity: var(--shoot-alpha, 0.9);
+    transform: translate3d(calc(var(--shoot-tx, 180px) * 0.34), calc(var(--shoot-ty, 90px) * 0.34), 0) rotate(var(--shoot-angle, 28deg)) scaleX(1);
+  }
+  70% {
+    opacity: calc(var(--shoot-alpha, 0.9) * 0.36);
+    transform: translate3d(calc(var(--shoot-tx, 180px) * 0.70), calc(var(--shoot-ty, 90px) * 0.70), 0) rotate(var(--shoot-angle, 28deg)) scaleX(0.68);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--shoot-tx, 180px), var(--shoot-ty, 90px), 0) rotate(var(--shoot-angle, 28deg)) scaleX(0.12);
+  }
+}
+
 /* Parallax-warp wrappers — each is 200vh tall and contains the same
    star markup twice (stacked top + bottom lanes). The layer translates
    upward by -50% per cycle, giving an infinite seamless flow that
@@ -349,34 +558,119 @@ html.aur-is-scrolling .aur-star {
 .aur-starfield__lane:first-child { top: 0; }
 .aur-starfield__lane:last-child  { top: 50%; }
 
-.aur-starfield__layer--far  { animation: aur-warp-far  240s linear infinite; }
-.aur-starfield__layer--near { animation: aur-warp-near 120s linear infinite; }
+.aur-starfield__layer--far  { animation: aur-warp 240s linear infinite; }
+.aur-starfield__layer--near { animation: aur-warp 120s linear infinite; }
 
-/* Individual star — a 1–3px absolutely positioned circle. Inline
-   styles per star: left/top (% of viewport), width/height (px),
-   background (tint), --bo (base opacity), and the animation spec.
-   Hero stars also carry an inline box-shadow halo (static — not
-   animated, so no paint cost during twinkle). */
+/* Individual star: a tiny radial point. Inline styles per star set
+   left/top, size, tint via color, base opacity, glow, and twinkle timing. */
 .aur-star {
   position: absolute;
   border-radius: 50%;
   opacity: var(--bo, 0.6);
   pointer-events: none;
+  background: radial-gradient(circle,
+    currentColor 0 28%,
+    currentColor 36%,
+    transparent 76%
+  ) !important;
+  background: radial-gradient(circle,
+    currentColor 0 28%,
+    color-mix(in srgb, currentColor 72%, transparent) 40%,
+    color-mix(in srgb, currentColor 22%, transparent) 58%,
+    transparent 82%
+  ) !important;
+  box-shadow:
+    0 0 var(--star-glow-blur, 4px) 0 color-mix(in srgb, currentColor calc(var(--star-glow-alpha, 0.16) * 100%), transparent),
+    0 0 calc(var(--star-glow-blur, 4px) * 2.6) 0 color-mix(in srgb, currentColor calc(var(--star-glow-alpha, 0.16) * 45%), transparent);
+  transform-origin: center center;
   /* No will-change here: 126 individual compositor layers overwhelms GPU memory.
      Stars share their parent layer's composite texture instead. */
 }
 
-/* Per-star twinkle — TWO peaks per cycle (at 25% and 70%) with a small
-   dip between them at 45%, giving each star a scintillating flicker
-   instead of a smooth breath. Range is calc(--bo × 0.55) at min to
-   --bo at peak — wide enough to read as twinkling, narrow enough to
-   feel atmospheric (not strobing). Random per-star duration + delay
-   on every <i.aur-star> means no two stars peak at the same time. */
+/* Larger foreground stars use per-star values generated in
+   _aurora-stars.html: size, tint, glow, ray balance, and twinkle timing.
+   The halo scales with star size so tiny stars do not carry giant blooms. */
+.aur-star--hero {
+  width:  var(--hero-size, 3px) !important;
+  height: var(--hero-size, 3px) !important;
+  --star-glow-blur: var(--hero-halo-blur, 8px);
+  --star-glow-alpha: var(--hero-halo-warm, 0.30);
+  box-shadow:
+    0 0 1px 0 color-mix(in srgb, currentColor 86%, transparent),
+    0 0 calc(var(--hero-halo-blur, 8px) * 0.72) 0 color-mix(in srgb, currentColor calc(var(--hero-halo-warm, 0.30) * 100%), transparent),
+    0 0 var(--hero-halo-blur, 8px) 1px rgba(160, 195, 255, var(--hero-halo-cool, 0.14)) !important;
+  filter: brightness(var(--hero-brightness, 1));
+}
+
+/* Four-point diffraction glints. The rays use a long transparent falloff
+   and a size-aware drop shadow so the shine fades out instead of ending
+   as a hard line. */
+.aur-star--hero::before,
+.aur-star--hero::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 1.2px;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    color-mix(in srgb, currentColor 0%, transparent) 15%,
+    color-mix(in srgb, currentColor 22%, transparent) 34%,
+    color-mix(in srgb, #fff 78%, currentColor) 50%,
+    color-mix(in srgb, currentColor 22%, transparent) 66%,
+    color-mix(in srgb, currentColor 0%, transparent) 85%,
+    transparent 100%
+  );
+  filter:
+    blur(0.25px)
+    drop-shadow(0 0 1px color-mix(in srgb, currentColor calc(var(--ray-glow, 0.32) * 100%), transparent))
+    drop-shadow(0 0 4px color-mix(in srgb, currentColor calc(var(--ray-glow, 0.32) * 45%), transparent));
+}
+.aur-star--hero::before {
+  width: calc(var(--spike-len, 22px) * var(--ray-main, 0.82));
+  opacity: var(--ray-main-opacity, 0.66);
+  transform: translate(-50%, -50%) rotate(var(--spike-rot, 0deg));
+}
+.aur-star--hero::after {
+  width: calc(var(--spike-len, 22px) * var(--ray-cross, 0.56));
+  opacity: var(--ray-cross-opacity, 0.54);
+  transform: translate(-50%, -50%) rotate(calc(var(--spike-rot, 0deg) + 90deg));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-aur-paused="1"]) .aur-star {
+    animation-duration: var(--twinkle-dur, 6s) !important;
+    animation-iteration-count: infinite !important;
+  }
+}
+
+/* Per-star twinkle — TWO peaks per cycle (at 25% and 70%) with a dip
+   between them at 45%, giving each star a scintillating flicker
+   instead of a smooth breath. Animates BOTH opacity (faint â†’ bright)
+   and transform: scale (small â†’ slightly bigger), so peaks visibly
+   pulse rather than just brightening. Hero stars' diffraction
+   spikes scale with the parent transform — they noticeably stretch
+   when the star peaks, which sells the "real starlight" effect.
+   Random per-star duration + delay on every <i.aur-star> means no
+   two stars peak at the same time. */
 @keyframes aur-twinkle {
-  0%, 100% { opacity: calc(var(--bo, 0.5) * 0.55); }
-  25%      { opacity: var(--bo, 0.5); }
-  45%      { opacity: calc(var(--bo, 0.5) * 0.7); }
-  70%      { opacity: var(--bo, 0.5); }
+  0%, 100% { opacity: calc(var(--bo, 0.5) * 0.42); transform: scale(0.94); }
+  32%      { opacity: var(--bo, 0.5);              transform: scale(1.04); }
+  52%      { opacity: calc(var(--bo, 0.5) * 0.68); transform: scale(0.98); }
+  78%      { opacity: calc(var(--bo, 0.5) * 0.92); transform: scale(1.02); }
+}
+
+/* Global pause (FAB menu â†’ "Pause animations") freezes the entire
+   starfield — each star holds at whatever opacity it had when paused,
+   and the parallax layers stop drifting. `animation-play-state:
+   paused` is gentler than `animation: none` because it preserves
+   the current frame instead of snapping the layer transform back to
+   identity (which would jump the warp position). */
+html[data-aur-paused="1"] .aur-star,
+html[data-aur-paused="1"] .aur-starfield__layer {
+  animation-play-state: paused !important;
 }
 
 /* One-direction warp — each layer translates upward by exactly the
@@ -385,27 +679,118 @@ html.aur-is-scrolling .aur-star {
    back to 0 is visually identical to the moment just before the snap.
    Linear easing keeps the motion uniform — no slow-down before the
    loop boundary. */
-@keyframes aur-warp-far  { from { transform: translateY(0); } to { transform: translateY(-50%); } }
-@keyframes aur-warp-near { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+@keyframes aur-warp { from { transform: translateY(0); } to { transform: translateY(-50%); } }
 
 /* Dust gradient: animate background-position downward by exactly one
    tile (240px) over a long duration. Since the gradient repeats every
    240px, the wraparound is invisible. The second background's tile
    (400px) is slightly off-sync per cycle but the dots are sparse so
    the very faint mismatch reads as natural sky-shimmer. */
-@keyframes aur-drift-dust {
-  from { background-position: 0 0,    110px 95px;  }
-  to   { background-position: 0 240px, 110px 335px; }
+/* ---------- Shooting star ----------
+   JS (initShootingStars in aurora.js) spawns one .aur-shoot every N ms;
+   each instance removes itself on animationend so there's no DOM build-up.
+
+   Hyper-realistic recipe (from research + meteor astronomy):
+     1. The brightness curve is NOT flat — meteors fade in, FLARE at peak,
+        then fade out as they cool. We model that with opacity keyframes
+        0 → 0.35 → 1.0 → 0.55 → 0 across the flight.
+     2. The tail is a tapered gradient attached BEHIND the head, in the
+        rotated local frame so it auto-aligns with the trajectory.
+     3. A bright cool-white head with a layered box-shadow halo (white
+        core → blue fringe) reads as incandescent point-light.
+     4. All motion is translate/opacity only — compositor-friendly, no
+        repaints. No backdrop-filter or per-frame filter changes.
+     5. Per-instance randomness via CSS vars: --ss-x/--ss-y (spawn),
+        --ss-angle (trajectory), --ss-distance (path length),
+        --ss-length (tail), --ss-brightness (peak alpha), --ss-duration. */
+
+.aur-shoot {
+  /* `fixed` (not `absolute`) so --ss-x/--ss-y are viewport coords and
+     the meteor doesn't shift on scroll. Lives at the body level (NOT
+     inside .aur-starfield) at a z-index above .aur-shell (z-index: 1)
+     so it paints OVER content tiles instead of behind them. Pointer
+     events disabled so it never intercepts clicks. */
+  position: fixed;
+  top: 0; left: 0;
+  width: 0; height: 0;
+  z-index: 60;
+  pointer-events: none;
+  transform-origin: 0 0;
+  /* Outer wrapper carries the spawn-point + trajectory rotation. The
+     inner __body then animates along the rotated +X axis, so all the
+     keyframes need to think about is "how far along the path are we". */
+  transform: translate3d(var(--ss-x, 0), var(--ss-y, 0), 0) rotate(var(--ss-angle, 35deg));
+}
+.aur-shoot__body {
+  position: absolute;
+  top: 0; left: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+  /* Long-form animation — CSS variables inside the `animation` shorthand
+     are technically fine but have historically been flaky across engines.
+     Splitting avoids that whole class of bug. */
+  animation-name: aur-shoot;
+  animation-duration: var(--ss-duration, 1.8s);
+  animation-timing-function: cubic-bezier(0.4, 0, 0.4, 1);
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
+}
+.aur-shoot__head {
+  position: absolute;
+  top: 0; left: 0;
+  width: 2.6px;
+  height: 2.6px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    #ffffff 0 30%,
+    rgba(255, 250, 225, 0.95) 55%,
+    rgba(200, 220, 255, 0) 100%);
+  box-shadow:
+    0 0 4px 0 rgba(255, 255, 255, 0.95),
+    0 0 12px 0 rgba(190, 220, 255, 0.55),
+    0 0 22px 0 rgba(150, 190, 255, 0.32);
+  transform: translate(-50%, -50%);
+}
+.aur-shoot__tail {
+  position: absolute;
+  top: 0;
+  /* Tail extends BEHIND the head (negative X in the rotated local
+     frame) so the head leads and the tail trails along the trajectory. */
+  left: calc(-1 * var(--ss-length, 160px));
+  width: var(--ss-length, 160px);
+  height: 1.4px;
+  transform: translateY(-50%);
+  background: linear-gradient(
+    90deg,
+    rgba(140, 180, 255, 0)    0%,
+    rgba(180, 210, 255, 0.18) 18%,
+    rgba(230, 240, 255, 0.55) 60%,
+    rgba(255, 255, 255, 0.95) 100%
+  );
+  filter: blur(0.4px);
+  border-radius: 999px;
 }
 
-/* Shooting star — single reusable bar at a top-level z-index (sibling
-   of .aur-starfield, not child). Sits above the shell so it's never
-   hidden behind content tiles. JS drives the animation via WAAPI. */
+/* Brightness scales the entire flight via --ss-brightness (0..1).
+   Position curve is slightly eased — meteors LOOK constant-velocity
+   to the eye, but a very slight ease-out matches how a falling streak
+   visually decelerates as it crosses the field of view. */
+@keyframes aur-shoot {
+  0%   { opacity: 0;                                          transform: translateX(0); }
+  12%  { opacity: calc(var(--ss-brightness, 0.85) * 0.35);    transform: translateX(calc(var(--ss-distance, 600px) * 0.12)); }
+  40%  { opacity: var(--ss-brightness, 0.85);                 transform: translateX(calc(var(--ss-distance, 600px) * 0.40)); }
+  75%  { opacity: calc(var(--ss-brightness, 0.85) * 0.55);    transform: translateX(calc(var(--ss-distance, 600px) * 0.75)); }
+  100% { opacity: 0;                                          transform: translateX(var(--ss-distance, 600px)); }
+}
 
-/* NOTE: the starfield animations (twinkle, warp, dust drift) are
-   explicitly requested decorative chrome — no prefers-reduced-motion
-   override here. The global "Pause animations" toggle (bottom-left)
-   remains the manual control. */
+html[data-aur-paused="1"] .aur-shoot__body {
+  animation-play-state: paused !important;
+}
+/* Reduced-motion: handled in JS by skipping spawns. We don't hide
+   in-flight nodes via @media here — a `display: none` rule would beat
+   any inline style and silently swallow every meteor (which it did
+   during development for a user whose OS had reduce-motion enabled). */
+
 
 
 ::selection {
@@ -551,6 +936,7 @@ html::-webkit-scrollbar-button,
    solid colour, no blur) so the starfield + backdrop blobs behind
    pass through completely unaffected. */
 .aur-main {
+  position: relative;       /* containing block for ::before fade strip */
   padding: var(--aur-main-pad);
   min-width: 0;
   height: calc(100vh  - var(--aur-shell-gap));
@@ -558,22 +944,51 @@ html::-webkit-scrollbar-button,
   overflow-y: auto;
   scrollbar-color: var(--aur-accent-ring) transparent;
   scrollbar-width: thin;
-  -webkit-mask-image: linear-gradient(to bottom,
-    transparent 0,
-    #000 calc(var(--aur-shell-gap) * 0.85),
-    #000 100%);
-          mask-image: linear-gradient(to bottom,
-    transparent 0,
-    #000 calc(var(--aur-shell-gap) * 0.85),
-    #000 100%);
+  /* Font-size scaling lives on `html` (multiplies --aur-size-body by
+     --aur-font-scale, see html rule). NOT `zoom` here — zoom scales
+     everything including images and GIFs to comical sizes. With root
+     font-size scaling, only rem-based text + spacing grow; images
+     (width: 100% of their tile, tile in px+vw) stay put. */
+  /* NB: NO mask-image here. mask-image creates an isolated rendering
+     context, which breaks backdrop-filter on descendant tiles — they
+     would no longer see the aurora backdrop (a sibling of .aur-shell)
+     and would render with empty blur. The top-fade effect is instead
+     produced by a sticky pseudo-element below, which leaves the
+     stacking context intact. */
+}
+
+/* Top-fade strip — a sticky pseudo-element pinned to the top of
+   .aur-main's scroll area. Solid background colour at the top fading
+   to transparent at the bottom of the strip, so content scrolling up
+   under it appears to dissolve into the page background. Does NOT
+   isolate stacking context, so .aur-tile backdrop-filter can still
+   sample the aurora through it. */
+.aur-main::before {
+  content: '';
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: block;
+  height: calc(var(--aur-shell-gap) * 0.85);
+  margin-bottom: calc(var(--aur-shell-gap) * -0.85);  /* don't push content */
+  z-index: 2;
+  pointer-events: none;
+  /* No visible scrim. The area beneath this strip is tinted by the
+     aurora backdrop blobs (lighter / more colourful than --aur-bg),
+     so any opaque-at-top gradient reads as a horizontal step against
+     it — and there's no fixed topbar above the strip for content to
+     "dissolve into" anyway. Element is kept (not display: none) so
+     it still reserves layout space via height + negative margin,
+     matching v1 spacing; only the background is removed. */
+  background: none;
 }
 @media (max-width: 800px) {
   .aur-main {
     height: auto;
     overflow-y: visible;
-    -webkit-mask-image: none;
-            mask-image: none;
   }
+  .aur-main::before { display: none; }   /* no top fade on mobile */
 }
 
 
@@ -590,7 +1005,6 @@ html::-webkit-scrollbar-button,
   transition: transform var(--aur-dur-small) var(--aur-ease-standard);
 }
 .aur-brand:hover { transform: translateY(-1px); }
-.aur-brand:hover .aur-brand__pill { background: var(--aur-accent-grad); color: var(--aur-text-on-accent); }
 
 .aur-brand__icon {
   width: 40px;
@@ -600,26 +1014,8 @@ html::-webkit-scrollbar-button,
   object-fit: contain;
 }
 
-.aur-brand__name-mind { color: #702EC6; }
-.aur-brand__name-jam  { color: #DC372B; }
-
-.aur-brand__pill {
-  width: 40px;
-  height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--aur-tile-radius-sm);
-  background: var(--aur-accent-grad-soft);
-  color: var(--aur-accent-soft);
-  font-family: var(--aur-font-title);
-  font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 0.04em;
-  transition:
-    background var(--aur-dur-small) var(--aur-ease-standard),
-    color var(--aur-dur-small) var(--aur-ease-standard);
-}
+.aur-brand__name-mind { color: color-mix(in srgb, #702EC6 80%, var(--aur-text-soft)); }
+.aur-brand__name-jam  { color: color-mix(in srgb, #DC372B 80%, var(--aur-text-soft)); }
 
 .aur-brand__name {
   font-family: var(--aur-font-title);
@@ -714,12 +1110,8 @@ html::-webkit-scrollbar-button,
 
 .aur-progress.is-advancing .aur-progress__shimmer {
   animation:
-    aur-progress-shimmer-fast var(--aur-dur-large) linear 1,
+    aur-progress-shimmer var(--aur-dur-large) linear 1,
     aur-progress-shimmer 4s linear infinite var(--aur-dur-large);
-}
-@keyframes aur-progress-shimmer-fast {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(400%); }
 }
 
 .aur-progress.is-advancing .aur-progress__current {
@@ -802,6 +1194,11 @@ html::-webkit-scrollbar-button,
   color: var(--aur-text-muted);
   cursor: pointer;
   text-align: left;
+  /* Prevent text selection so a double-click reads as two toggles
+     (back to the original state) rather than getting hijacked by
+     text-select on the heading label. */
+  user-select: none;
+  -webkit-user-select: none;
   transition:
     color var(--aur-dur-small) var(--aur-ease-standard),
     background-color var(--aur-dur-small) var(--aur-ease-standard);
@@ -817,30 +1214,41 @@ html::-webkit-scrollbar-button,
 .aur-nav__heading-title { flex: 1 1 auto; min-width: 0; }
 .aur-nav__chevron {
   flex-shrink: 0;
-  transition: transform var(--aur-dur-medium) var(--aur-ease-out-soft);
+  /* Balanced ease-in-out so the collapse motion feels smooth from
+     start to finish, not front-loaded. Was --aur-ease-out-soft which
+     does most of its motion immediately, reading as "sudden". */
+  transition: transform var(--aur-dur-medium) var(--aur-ease-standard);
 }
 .aur-nav__section.is-open .aur-nav__chevron {
   transform: rotate(180deg);
 }
 
-/* Collapsible body: grid-template-rows 0fr ↔ 1fr animates between 0 and
+/* Collapsible body: grid-template-rows 0fr â†” 1fr animates between 0 and
    the natural height of the inner <ul>. Smooth and JS-measurement-free. */
 .aur-nav__collapsible {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows var(--aur-dur-medium) var(--aur-ease-out-soft);
+  transition: grid-template-rows var(--aur-dur-medium) var(--aur-ease-standard);
 }
 .aur-nav__section.is-open .aur-nav__collapsible {
   grid-template-rows: 1fr;
 }
 .aur-nav__collapsible > .aur-nav__list {
+  min-height: 0;
   overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
   /* Subtle inner fade so items don't pop in/out, they ease */
   opacity: 0;
-  transition: opacity var(--aur-dur-medium) var(--aur-ease-out-soft);
+  transition:
+    opacity var(--aur-dur-medium) var(--aur-ease-standard),
+    visibility 0s linear var(--aur-dur-medium);
 }
 .aur-nav__section.is-open .aur-nav__collapsible > .aur-nav__list {
+  visibility: visible;
+  pointer-events: auto;
   opacity: 1;
+  transition-delay: 0s;
 }
 
 .aur-nav__list {
@@ -976,6 +1384,9 @@ html::-webkit-scrollbar-button,
   background: var(--aur-bg-elev-1);
   border: 1px solid var(--aur-border);
   border-radius: var(--aur-tile-radius-sm);
+  -webkit-backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  box-shadow: var(--aur-shadow-rest);
   padding: 14px;
   display: flex;
   flex-direction: column;
@@ -1033,7 +1444,93 @@ body[data-section="resources"]                             { --aur-accent-glow: 
 body[data-section="standalone"]                            { --aur-accent-glow: var(--aur-section-glow-standalone); }
 
 
+/* ---------- Depth-based card blur ---------- */
+
+:is(
+  .aur-tile,
+  .aur-step,
+  .aur-help-card,
+  .aur-video-panel,
+  .aur-sidebar,
+  .aur-shell-topbar,
+  .aur-prefs-panel,
+  .aur-dev-panel,
+  .aur-fab,
+  .aur-fab-menu
+) {
+  --aur-tile-blur: 3px;
+}
+
+:where(
+  .aur-tile,
+  .aur-step,
+  .aur-help-card,
+  .aur-video-panel,
+  .aur-sidebar,
+  .aur-prefs-panel,
+  .aur-dev-panel
+) :is(
+  .aur-tile,
+  .aur-step,
+  .aur-help-card,
+  .aur-video-panel
+) {
+  --aur-tile-blur: 22px;
+  background: var(--aur-bg-elev-stack-2, var(--aur-bg-elev-2));
+}
+
+:is(
+  .aur-tile,
+  .aur-step,
+  .aur-help-card,
+  .aur-video-panel,
+  .aur-sidebar,
+  .aur-prefs-panel,
+  .aur-dev-panel
+) :is(
+  .aur-tile,
+  .aur-step,
+  .aur-help-card,
+  .aur-video-panel
+) :is(
+  .aur-tile,
+  .aur-step,
+  .aur-help-card,
+  .aur-video-panel
+) {
+  --aur-tile-blur: 30px;
+  background: var(--aur-bg-elev-stack-3, var(--aur-bg-elev-2));
+}
+
 /* ---------- §7.3 Tile primitive (resting only) ---------- */
+
+:is(
+  .aur-tile,
+  .aur-step,
+  .aur-help-card,
+  .aur-video-panel,
+  .aur-sidebar,
+  .aur-prefs-panel,
+  .aur-dev-panel
+) :is(
+  .aur-tile,
+  .aur-step,
+  .aur-help-card,
+  .aur-video-panel
+) :is(
+  .aur-tile,
+  .aur-step,
+  .aur-help-card,
+  .aur-video-panel
+) :is(
+  .aur-tile,
+  .aur-step,
+  .aur-help-card,
+  .aur-video-panel
+) {
+  --aur-tile-blur: 40px;
+  background: var(--aur-bg-elev-stack-4, var(--aur-bg-elev-2));
+}
 
 .aur-tile {
   background: var(--aur-bg-elev-1);
@@ -1069,7 +1566,7 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
 
 .aur-title {
   font: 700 var(--aur-size-h1) / var(--aur-line-tight) var(--aur-font-title);
-  color: var(--aur-text);
+  color: var(--aur-text-heading);
   margin: 0 0 12px;
 }
 
@@ -1078,13 +1575,14 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
   font-size: var(--aur-size-body-lg);
   color: var(--aur-text-soft);
   line-height: var(--aur-line-body);
-  margin: 0 0 28px;
+  max-width: 68ch;
+  margin: 0 0 24px;
 }
 
 
 /* ---------- §7.11+ Lesson layout ---------- */
 
-.aur-lesson-head { margin: 8px 0 28px; }
+.aur-lesson-head { margin: 4px 0 24px; }
 
 
 /* ---------- §7.12 Media tile ---------- */
@@ -1092,22 +1590,28 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
 .aur-media-tile {
   padding: 0;
   overflow: hidden;
-  margin: 0 0 28px;
+  /* Cap default width and centre. The full-bleed shell would otherwise
+     stretch hero gifs to 1500+ px wide on a typical desktop. Lightbox
+     (click anywhere on the image) provides view-at-full-size; the
+     corner expand button does the same for videos. */
+  max-width: 880px;
+  margin: 0 auto 24px;
+  /* Anchor for the floating header chip below. */
+  position: relative;
 }
 
+/* Header hidden — the label chip wasn't adding value and competed
+   with the video content for attention. The label text stays in
+   the DOM for screen readers. */
 .aur-media-tile__header {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--aur-border);
+  display: none;
 }
 .aur-media-tile__label {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   color: var(--aur-text-soft);
-  font: 600 0.86rem var(--aur-font-subtitle);
+  font: 600 0.78rem var(--aur-font-subtitle);
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
@@ -1115,7 +1619,12 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
 
 .aur-media-tile__body {
   position: relative;
-  padding: 16px;
+  /* No padding: the media sits flush against the figure's edges so
+     the figure (which has overflow:hidden + tile radius) clips it
+     to a single cohesive rounded shape. Padding here used to create
+     a 16px frame that exposed the page background at the figure's
+     rounded corners — visible as a dark wedge at Glass 100%. */
+  padding: 0;
   cursor: zoom-in;
   /* Skeleton placeholder while loading: shimmer + min-height so the
      tile has a visible footprint before the image arrives. Once the
@@ -1141,11 +1650,31 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
   width: 100%;
   height: auto;
   max-width: 100%;
-  border-radius: var(--aur-tile-radius-sm);
+  /* Direct rounding on the media in addition to the figure's
+     overflow:hidden clip. Belt-and-suspenders so a 1px tile border
+     or browser-specific subpixel clipping can't expose a square
+     edge under the rounded figure. The header is absolute-positioned
+     so the video fills the whole figure and all four corners round. */
+  border-radius: var(--aur-tile-radius);
   opacity: 0;
   transition: opacity var(--aur-dur-medium) var(--aur-ease-out-soft);
 }
 .aur-media-tile__img.is-loaded { opacity: 1; }
+
+/* Video replacements of animated GIFs: autoplay, no skeleton wait. */
+video.aur-media-tile__img {
+  aspect-ratio: auto;
+  object-fit: contain;
+  background: rgba(10, 7, 18, 0.34);
+  opacity: 1;
+  cursor: default;
+}
+.aur-media-tile__body:has(video) {
+  background: none;
+  animation: none;
+  min-height: 0;
+  cursor: default;
+}
 
 @keyframes aur-media-skeleton {
   from { background-position: 200% 0; }
@@ -1160,17 +1689,287 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
 }
 
 
+.aur-media-control-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+  border-radius: inherit;
+}
+.aur-step__media .aur-media-control-wrap + .aur-media-control-wrap {
+  margin-top: 14px;
+}
+
+/* Per-tile pause/play button. Centered frosted-glass disc that only
+   appears when the media is paused — its primary job is "resume
+   this." When playing, the button is fully hidden + non-interactive;
+   clicking the video itself pauses it (see initPerTilePause in JS),
+   which then reveals this disc as the resume affordance. */
+.aur-media-pause {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  width: 72px;
+  height: 72px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  background: rgba(18, 12, 28, 0.48);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+          backdrop-filter: blur(22px) saturate(135%);
+  box-shadow:
+    0 10px 28px -12px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  transition:
+    opacity var(--aur-dur-small) var(--aur-ease-standard),
+    background-color var(--aur-dur-small) var(--aur-ease-standard),
+    transform var(--aur-dur-small) var(--aur-ease-standard);
+}
+
+/* Visible ONLY when paused. */
+.aur-media-pause.is-paused {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Colour glow lives on a separate halo <div> sibling (.aur-media-
+   pause-halo, injected by JS). Earlier attempts to render the glow
+   on the button itself (box-shadow, filter: drop-shadow, outline,
+   ::before pseudo) were all suppressed by the button's
+   backdrop-filter compositing in Firefox. The standalone halo div
+   has no backdrop-filter, so its background-color animates cleanly
+   and its filter: blur produces the soft outward glow. */
+
+.aur-media-pause:hover {
+  background: rgba(24, 16, 38, 0.58);
+  transform: translate(-50%, -50%) scale(1.06);
+}
+.aur-media-pause:active {
+  transform: translate(-50%, -50%) scale(0.96);
+  transition-duration: 80ms;
+}
+
+.aur-media-pause__icon {
+  pointer-events: none;
+  width: 30px;
+  height: 30px;
+  /* Soft drop shadow on the icon so it reads against any video
+     content showing through the glass. */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+}
+/* Only the triangle (play) icon is rendered — the disc only appears
+   when paused, so a pause-bars icon would never be visible anyway. */
+.aur-media-pause__icon--pause { display: none; }
+.aur-media-pause__icon--play  { display: inline-block; }
+
+/* Halo: a soft ring around the button where the three brand colours
+   slowly orbit clockwise. The visible ring is built by:
+     1. conic-gradient — places yellow / purple / red around the disc
+        (with yellow looped at 0% and 100% so there's no seam).
+     2. radial-gradient mask — carves the conic into a ring shape,
+        transparent at the centre (button sits clean on top) and
+        fading out at the outer rim.
+     3. filter: blur — softens the whole thing into a real glow.
+     4. keyframe transform — rotates the disc once every 24 seconds
+        so the colours appear to drift around the button.
+   This approach replaces the earlier box-shadow / background-color
+   fade because the user wanted motion (colours travelling around the
+   perimeter) rather than a colour-cycle pulse. */
+/* Single-element halo. The earlier two-pseudo split (a thin band
+   plus a wider outer halo) read as "two separate rings with empty
+   space between them", which wasn't the intent. One element with the
+   mask peak sitting AT the button's edge keeps the coloured glow
+   continuous with the button itself — no perceptual gap. The blur
+   turns the thin masked band into a "neon tube" glow rather than a
+   painted line. */
+.aur-media-pause-halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140px;
+  height: 140px;
+  border-radius: 999px;
+  pointer-events: none;
+  /* Below the button (button z-index: 3) but above the media. */
+  z-index: 2;
+  background: conic-gradient(
+    from -90deg,
+    color-mix(in srgb, #FFE42B 80%, var(--aur-text-soft)) 0%,
+    color-mix(in srgb, #702EC6 80%, var(--aur-text-soft)) 33%,
+    color-mix(in srgb, #DC372B 80%, var(--aur-text-soft)) 66%,
+    color-mix(in srgb, #FFE42B 80%, var(--aur-text-soft)) 100%
+  );
+  /* Closest-side = 70px on this 140px halo, so 51% â‰ˆ 36px from centre
+     — exactly the button's outer radius. The mask peaks AT the button
+     edge so the band and the button visually fuse, with the band's
+     soft inner falloff bleeding through the frosted glass and the
+     outer falloff radiating out as the glow. */
+  -webkit-mask: radial-gradient(
+    circle closest-side,
+    transparent 47%,
+    black 51%,
+    transparent 60%
+  );
+          mask: radial-gradient(
+    circle closest-side,
+    transparent 47%,
+    black 51%,
+    transparent 60%
+  );
+  filter: blur(3px);
+  opacity: 0;
+  transition: opacity var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-media-pause-halo.is-active {
+  opacity: 0.85;
+  /* The keyframes preserve `translate(-50%, -50%)` so the halo stays
+     centred on the button while it rotates around its own centre.
+     !important defeats the global reduced-motion rule at §6.4
+     (`* { animation-duration: 0.001ms !important }`). The user
+     explicitly asked for this slow motion so we keep it regardless
+     of motion preference. */
+  animation: aur-media-pause-halo-spin 24s linear infinite !important;
+}
+@keyframes aur-media-pause-halo-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg);   }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Per-tile expand button: small frosted-glass square in the top-right
+   corner of every media tile/step-media. Visible on hover or focus,
+   click opens the media in the lightbox at full size. Same visual
+   language as the centred pause button so they feel like siblings. */
+.aur-media-expand {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  /* Above the pause button (z-index: 3) so the corner button stays
+     clickable even when the pause button is visible. */
+  z-index: 4;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  background: rgba(18, 12, 28, 0.48);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 10px;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+          backdrop-filter: blur(22px) saturate(135%);
+  box-shadow:
+    0 10px 28px -12px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  transition:
+    opacity var(--aur-dur-small) var(--aur-ease-standard),
+    background-color var(--aur-dur-small) var(--aur-ease-standard),
+    transform var(--aur-dur-small) var(--aur-ease-standard);
+}
+/* Reveal on parent-tile hover or when the button itself is focused
+   (keyboard nav). Also stays visible while the cursor is on the button. */
+.aur-media-tile:hover .aur-media-expand,
+.aur-media-tile__body:hover .aur-media-expand,
+.aur-step__media:hover .aur-media-expand,
+.aur-media-expand:focus-visible,
+.aur-media-expand:hover {
+  opacity: 1;
+  pointer-events: auto;
+}
+.aur-media-expand:hover {
+  background: rgba(24, 16, 38, 0.58);
+  transform: scale(1.06);
+}
+.aur-media-expand:active {
+  transform: scale(0.96);
+  transition-duration: 80ms;
+}
+/* The icon SHAPE is loaded as an SVG-as-mask (URL-encoded data URL),
+   so the visible pixels inside the icon are masked-through to a
+   slowly rotating conic gradient painted by the ::before pseudo.
+   Net effect: the icon glyph itself displays the yellow â†’ purple â†’
+   red glow drifting around, while the button background stays
+   frosted glass. */
+.aur-media-expand__icon {
+  position: relative;
+  display: block;
+  pointer-events: none;
+  width: 16px;
+  height: 16px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+  -webkit-mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 9V3h6'/%3E%3Cpath d='M21 9V3h-6'/%3E%3Cpath d='M3 15v6h6'/%3E%3Cpath d='M21 15v6h-6'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 9V3h6'/%3E%3Cpath d='M21 9V3h-6'/%3E%3Cpath d='M3 15v6h6'/%3E%3Cpath d='M21 15v6h-6'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.aur-media-expand__icon::before {
+  content: '';
+  position: absolute;
+  /* Oversized (-50% on each side) so rotation never exposes the
+     parent's corners as the conic gradient spins. */
+  inset: -50%;
+  background: conic-gradient(
+    from -90deg,
+    color-mix(in srgb, #FFE42B 80%, var(--aur-text-soft)) 0%,
+    color-mix(in srgb, #702EC6 80%, var(--aur-text-soft)) 33%,
+    color-mix(in srgb, #DC372B 80%, var(--aur-text-soft)) 66%,
+    color-mix(in srgb, #FFE42B 80%, var(--aur-text-soft)) 100%
+  );
+  /* Matches the halo's spin tempo. !important defeats the global
+     reduced-motion `animation-duration: 0.001ms !important` rule
+     at §6.4 — the user explicitly asked for this glow. */
+  animation: aur-media-expand-icon-spin 24s linear infinite !important;
+}
+@keyframes aur-media-expand-icon-spin {
+  from { transform: rotate(0deg);   }
+  to   { transform: rotate(360deg); }
+}
+
+/* Safety net: round every image / GIF / video / canvas inside
+   the content area. 20px reads clearly even when media has white
+   content right up to its rectangle edge — a smaller radius gets
+   visually swallowed by white-bordered screenshots. Component
+   rules higher up (.aur-media-tile__img, .aur-step__media-img,
+   etc.) still win on the cascade. */
+.aur-main img,
+.aur-main video,
+.aur-main canvas {
+  border-radius: 20px;
+}
+
+
 /* ---------- Video panel (YouTube embed) ----------
    Renders below the info-cards when `video:` is set in front-matter.
    16:9 responsive aspect ratio; tile-styled wrapper. */
 
 .aur-video-panel {
   background: var(--aur-bg-elev-1);
-  border: 1px solid var(--aur-border);
+  /* No border: the panel's 1px border + the embed's own rounded
+     corners produce a ~1px crescent where the curves don't quite
+     match. At Glass 100% the page background (near-black) shows
+     through that crescent, reading as a dark ring around the
+     YouTube thumbnail. Box-shadow below still defines the outer
+     edge softly. */
+  border: 0;
   border-radius: var(--aur-tile-radius);
   -webkit-backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
   backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
-  padding: 22px;
+  /* No padding: the embed fills the panel edge-to-edge so the
+     panel's rounded clip is the visible shape of the video. */
+  padding: 0;
+  overflow: hidden;
   margin: 0 0 28px;
   box-shadow: var(--aur-shadow-rest);
 }
@@ -1178,8 +1977,9 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
   position: relative;
   aspect-ratio: 16 / 9;
   width: 100%;
-  border-radius: var(--aur-tile-radius-sm);
-  overflow: hidden;
+  /* No own border-radius / overflow: hidden — the .aur-video-panel
+     parent already clips. Nested clipping created subpixel aliasing
+     at the top edge that read as a thin black line. */
   background: rgba(0, 0, 0, 0.4);
 }
 .aur-video-panel__embed iframe {
@@ -1201,8 +2001,9 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
   border: 0;
   background: #000;
   cursor: pointer;
-  overflow: hidden;
-  border-radius: inherit;
+  /* No overflow:hidden / border-radius here — the .aur-video-panel
+     parent clips everything. Nested clipping was contributing to a
+     1px black artefact at the top edge. */
 }
 .aur-video-lite__poster {
   position: absolute;
@@ -1211,6 +2012,12 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
   height: 100%;
   object-fit: cover;
   z-index: 1;
+  /* The brand poster has dark motion-blur regions baked into the
+     image's top + bottom edges. Scale 1.06 crops 3% off each edge,
+     pushing the dark image edges out of view so the rounded top of
+     the panel meets the brighter mid-frame content of the poster. */
+  transform: scale(1.06);
+  transform-origin: center;
   transition: filter var(--aur-dur-medium) var(--aur-ease-out-soft),
               transform var(--aur-dur-medium) var(--aur-ease-out-soft);
 }
@@ -1279,8 +2086,8 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
 .aur-info-cards {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin: 0 0 28px;
+  gap: 18px;
+  margin: 0 0 24px;
 }
 @media (max-width: 960px) {
   .aur-info-cards {
@@ -1288,10 +2095,10 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
   }
 }
 
-.aur-info-card { padding: 22px; }
+.aur-info-card { padding: clamp(18px, 1.45vw, 22px); }
 
 .aur-info-card__heading {
-  margin: 0 0 14px;
+  margin: 0 0 12px;
   font: 600 var(--aur-size-h3) / 1.3 var(--aur-font-title);
   color: var(--aur-text);
   display: flex;
@@ -1305,10 +2112,14 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 .aur-info-card__head-row .aur-info-card__heading {
   margin-bottom: 0;
+}
+.aur-info-card__head-row--steps-actions {
+  justify-content: flex-end;
+  margin-bottom: 10px;
 }
 
 
@@ -1354,7 +2165,7 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
      - Each step shows just marker + title; .aur-step__detail collapses
        to 0 height.
      - Clicking the step title toggles `.is-expanded` on the step, which
-       reveals the detail inline using the grid-template-rows 0fr ↔ 1fr
+       reveals the detail inline using the grid-template-rows 0fr â†” 1fr
        trick (smooth height animation without JS measurement).
      - Each step can be expanded/collapsed independently. Multiple may be
        open at once. State is not persisted (page-local). */
@@ -1373,7 +2184,10 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
 [data-aur-steps].is-compact .aur-step__detail {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows var(--aur-dur-medium) var(--aur-ease-out-soft);
+  /* Balanced ease-in-out — consistent with the nav + appearance
+     panel collapsibles so every collapse feels smooth end-to-end
+     rather than front-loaded. */
+  transition: grid-template-rows var(--aur-dur-medium) var(--aur-ease-standard);
 }
 [data-aur-steps].is-compact .aur-step.is-expanded .aur-step__detail {
   grid-template-rows: 1fr;
@@ -1381,16 +2195,47 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
 [data-aur-steps].is-compact .aur-step__detail-inner {
   overflow: hidden;
   opacity: 0;
-  transition: opacity var(--aur-dur-medium) var(--aur-ease-out-soft);
+  transition: opacity var(--aur-dur-medium) var(--aur-ease-standard);
 }
 [data-aur-steps].is-compact .aur-step.is-expanded .aur-step__detail-inner {
   opacity: 1;
 }
 
+/* Non-compact mode also supports click-to-collapse: every step
+   starts visible, clicking the title folds just that step. Distinct
+   class (.is-folded) from the compact-mode .is-expanded so the two
+   modes can co-exist with opposite default states. */
+[data-aur-steps]:not(.is-compact) .aur-step__title {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: color var(--aur-dur-small) var(--aur-ease-standard);
+}
+[data-aur-steps]:not(.is-compact) .aur-step__title:hover {
+  color: var(--aur-accent-soft);
+}
+[data-aur-steps]:not(.is-compact) .aur-step__detail {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--aur-dur-medium) var(--aur-ease-standard);
+}
+[data-aur-steps]:not(.is-compact) .aur-step.is-folded .aur-step__detail {
+  grid-template-rows: 0fr;
+}
+[data-aur-steps]:not(.is-compact) .aur-step__detail-inner {
+  overflow: hidden;
+  transition: opacity var(--aur-dur-medium) var(--aur-ease-standard);
+}
+[data-aur-steps]:not(.is-compact) .aur-step.is-folded .aur-step__detail-inner {
+  opacity: 0;
+}
+
 /* Reduced motion: instant show/hide. */
 @media (prefers-reduced-motion: reduce) {
   [data-aur-steps].is-compact .aur-step__detail,
-  [data-aur-steps].is-compact .aur-step__detail-inner {
+  [data-aur-steps].is-compact .aur-step__detail-inner,
+  [data-aur-steps]:not(.is-compact) .aur-step__detail,
+  [data-aur-steps]:not(.is-compact) .aur-step__detail-inner {
     transition: none;
   }
 }
@@ -1411,7 +2256,21 @@ body[data-section="standalone"]                            { --aur-accent-glow: 
 
 .aur-info-card--learn .aur-info-card__heading svg { color: var(--aur-success); }
 
-.aur-info-card__prose { color: var(--aur-text-soft); }
+.aur-info-card__prose {
+  color: var(--aur-text-soft);
+  line-height: 1.68;
+}
+
+.aur-info-card__prose p,
+.aur-prose p {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.aur-info-card__prose p:last-child,
+.aur-prose p:last-child {
+  margin-bottom: 0;
+}
 
 /* ---------- Contact card (Need Help page) ---------- */
 .aur-contact-card { display: flex; flex-direction: column; gap: 0; }
@@ -1461,6 +2320,53 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
 }
 
 
+/* ---------- Senior leadership contact card (need-help page) ----------
+   The card hugs its widest child (the action button grid) instead of
+   stretching to the full grid track, so a single contact doesn't render
+   as a banner. The two pills live inside a one-column grid track sized
+   to `max-content`, so both pills auto-size to the wider button's
+   intrinsic width and read as a matched pair regardless of label length. */
+.aur-person-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: fit-content;
+  max-width: 100%;
+}
+.aur-person-card .aur-info-card__heading { margin: 0 0 4px; }
+.aur-person-card__actions {
+  display: grid;
+  grid-template-columns: max-content;
+  gap: 8px;
+}
+.aur-person-card__actions .aur-btn,
+.aur-person-card__actions .aur-copy {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  margin: 0;
+  font: 600 0.9rem var(--aur-font-body);
+  letter-spacing: 0.02em;
+}
+/* The Discord username was wrapped in <code>, which inherits the
+   monospace stack at 0.85em — visibly smaller than the "Discord:"
+   label. Force any inline code inside the pill to inherit the
+   parent font so the whole label reads as one consistent string. */
+.aur-person-card__actions .aur-copy code {
+  font: inherit;
+}
+
+.aur-need-help-contacts {
+  margin-top: 24px;
+}
+
+
 /* ---------- Glossary / Terminology ---------- */
 .aur-glossary {
   margin: 0;
@@ -1488,10 +2394,10 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
 .aur-glossary__def {
   color: var(--aur-text-soft);
   font-size: 0.92rem;
-  line-height: 1.65;
+  line-height: 1.68;
   margin: 0;
 }
-.aur-glossary__def p { margin: 0 0 8px; }
+.aur-glossary__def p { margin: 0 0 10px; }
 .aur-glossary__def p:last-child { margin-bottom: 0; }
 
 .aur-glossary__note {
@@ -1502,7 +2408,142 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
   border-radius: 0 var(--aur-tile-radius-sm) var(--aur-tile-radius-sm) 0;
   font-size: 0.88rem;
   color: var(--aur-text-soft);
-  line-height: 1.6;
+  line-height: 1.64;
+}
+
+.aur-glossary--term-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.aur-glossary--term-cards .aur-glossary__entry {
+  gap: 8px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--aur-border);
+  border-radius: var(--aur-tile-radius-sm);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015)),
+    var(--aur-bg-elev-1);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.035) inset,
+    0 12px 26px -24px rgba(0, 0, 0, 0.72);
+}
+
+.aur-glossary--term-cards .aur-glossary__entry:first-child,
+.aur-glossary--term-cards .aur-glossary__entry:last-child {
+  padding: 16px;
+  border: 1px solid var(--aur-border);
+}
+
+.aur-glossary--term-cards .aur-glossary__entry:last-child {
+  grid-column: 1 / -1;
+}
+
+.aur-glossary--term-cards .aur-glossary__term {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.98rem;
+  color: var(--aur-accent-soft);
+}
+
+.aur-glossary--term-cards .aur-glossary__term::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--aur-accent-grad);
+  box-shadow: 0 0 12px var(--aur-accent-glow);
+}
+
+.aur-glossary--term-cards .aur-glossary__def {
+  font-size: 0.9rem;
+  line-height: 1.58;
+}
+
+.aur-glossary--term-cards .aur-glossary__note {
+  margin-top: 12px;
+  border-left-color: var(--aur-accent);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+@media (max-width: 900px) {
+  .aur-glossary--term-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .aur-glossary--term-cards .aur-glossary__entry:last-child {
+    grid-column: auto;
+  }
+}
+
+.aur-term-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.aur-term-card {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--aur-border);
+  border-radius: var(--aur-tile-radius-sm);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015)),
+    var(--aur-bg-elev-1);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.035) inset,
+    0 12px 26px -24px rgba(0, 0, 0, 0.72);
+}
+
+.aur-term-card--full {
+  grid-column: 1 / -1;
+}
+
+.aur-term-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font: 700 0.98rem / 1.3 var(--aur-font-title);
+  color: var(--aur-accent-soft);
+}
+
+.aur-term-card h3::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--aur-accent-grad);
+  box-shadow: 0 0 12px var(--aur-accent-glow);
+}
+
+.aur-term-card p {
+  margin: 0;
+}
+
+.aur-term-card ul {
+  margin: 0;
+  padding-left: 1.05rem;
+}
+
+.aur-term-card li + li {
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .aur-term-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .aur-term-card--full {
+    grid-column: auto;
+  }
 }
 
 /* Status table (Session Statuses section) */
@@ -1526,7 +2567,7 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
   padding: 12px 12px 12px 0;
   vertical-align: top;
   border-bottom: 1px solid var(--aur-border);
-  line-height: 1.6;
+  line-height: 1.64;
 }
 .aur-status-table tr:last-child td { border-bottom: none; padding-bottom: 0; }
 .aur-status-table__emoji { width: 2em; font-size: 1.1em; padding-right: 4px !important; }
@@ -1580,7 +2621,7 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   counter-reset: aur-step;
 }
 
@@ -1595,11 +2636,14 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
   display: flex;
   flex-direction: row;
   align-items: baseline;
-  gap: 14px;
-  background: rgba(255, 255, 255, 0.025);
+  gap: 12px;
+  background: var(--aur-bg-elev-2);
   border: 1px solid var(--aur-border);
   border-radius: var(--aur-tile-radius);
-  padding: 18px 22px 20px;
+  -webkit-backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  box-shadow: var(--aur-shadow-rest);
+  padding: 16px 20px 18px;
   position: relative;
 }
 [data-aur-steps].is-compact .aur-step__title:focus-visible {
@@ -1642,9 +2686,6 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
    line-length cap so wide screens don't produce 120-char lines.
    `text-wrap: pretty` improves last-line balance in modern browsers;
    the JS "widont" pass guarantees no single-word last lines everywhere. */
-.aur-step__prose,
-.aur-step__prose p,
-.aur-step__prose li,
 .aur-info-card__prose,
 .aur-info-card__prose p,
 .aur-info-card__prose li,
@@ -1653,16 +2694,21 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
 .aur-description {
   text-wrap: pretty;
 }
+.aur-info-card__prose,
+.aur-prose {
+  max-width: 72ch;
+}
 .aur-step__prose {
   color: var(--aur-text-soft);
   font-size: 0.92rem;
-  line-height: 1.65;
-  letter-spacing: 0.01em;
+  line-height: 1.68;
+  letter-spacing: 0.006em;
+  max-width: none;
 }
-.aur-step__prose p { margin: 0 0 10px; }
+.aur-step__prose p { margin: 0 0 12px; }
 .aur-step__prose p:last-child { margin-bottom: 0; }
-.aur-step__prose ul { margin: 6px 0 10px; padding-left: 22px; }
-.aur-step__prose li { margin: 4px 0; }
+.aur-step__prose ul { margin: 8px 0 12px; padding-left: 22px; }
+.aur-step__prose li { margin: 5px 0; }
 /* Bullet markers in accent colour so they read as deliberate anchors,
    not decoration — helps with line-counting in long lists (ADHD). */
 .aur-step__prose ul li::marker {
@@ -1681,10 +2727,23 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
 }
 
 .aur-step__media {
-  margin-top: 10px;
+  margin: 12px auto 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  /* Cap default width and centre — same reasoning as .aur-media-tile.
+     Step media is slightly smaller than the hero since it's secondary
+     content sitting inside a step body. */
+  max-width: 700px;
+  /* Anchor for the absolutely-positioned pause/expand buttons. */
+  position: relative;
+  /* Round + clip on the wrapper, not the media inside. The video
+     element's bounding box otherwise extends past the rounded curve
+     and exposes the page background at the corners (visible as a
+     dark wedge at Glass 100%). With overflow:hidden here, the wrapper
+     is the rounded shape and the media fills it edge-to-edge. */
+  border-radius: 20px;
+  overflow: hidden;
 }
 .aur-step__media-img {
   display: block;
@@ -1693,9 +2752,16 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
   max-height: 60vh;
   max-height: 60svh;
   object-fit: contain;
-  border-radius: var(--aur-tile-radius-sm);
+  /* No border-radius here — the .aur-step__media wrapper clips. */
   border: 1px solid var(--aur-border);
   cursor: zoom-in;
+}
+video.aur-step__media-img {
+  aspect-ratio: auto;
+  background: rgba(10, 7, 18, 0.34);
+  opacity: 1;
+  cursor: default;
+  border: none;
 }
 
 /* Step prose and media stack vertically inside the card. The
@@ -1718,15 +2784,82 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  margin-top: 32px;
+  margin-top: 28px;
 
   opacity: 0;
   transform: translateY(24px);
   will-change: opacity, transform;
 }
 
+/* Scoped restyle of the Continue button: transparent + blurred glass
+   instead of the solid accent gradient, so it sits in the same family
+   as the Compact toggle / Copy pill but with an accent-tinted outline
+   and label that still reads as the primary CTA. Override is scoped to
+   .aur-page-nav so primary buttons elsewhere (help-card CTA, etc.)
+   keep their original gradient fill. */
+.aur-page-nav .aur-btn-primary {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--aur-accent-soft);
+  border: 1px solid var(--aur-accent-ring);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  box-shadow: none;
+}
+.aur-page-nav .aur-btn-primary:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--aur-text);
+  border-color: var(--aur-border-focus);
+  transform: translateY(-1px);
+  box-shadow: none;
+}
+/* Suspend backdrop-filter during scroll — matches the perf pattern
+   used elsewhere (.aur-is-scrolling) to avoid re-sampling blur every
+   frame while the user scrolls. */
+html.aur-is-scrolling .aur-page-nav .aur-btn-primary {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+
+/* Email icon + address link (need-help page) */
+.aur-email-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--aur-accent-soft);
+  font-size: 0.92rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition:
+    color var(--aur-dur-small) var(--aur-ease-standard),
+    border-color var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-email-link:hover {
+  color: var(--aur-text);
+  border-bottom-color: var(--aur-accent-soft);
+}
+.aur-email-link:focus-visible {
+  outline: none;
+  box-shadow: var(--aur-shadow-focus);
+  border-radius: 4px;
+}
+
 
 /* ---------- §7.9 Copy button ---------- */
+
+/* Wrapper for one or more copy pills rendered inside a step body (via
+   the `copy:` front-matter list). Flex-wrap so multiple pills can sit
+   on one row if they fit, or stack if they don't. The wrapper owns the
+   spacing so individual pills don't need their default margin-top. */
+.aur-step__copies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+.aur-step__copies .aur-copy { margin-top: 0; }
+
 
 .aur-copy {
   position: relative;
@@ -1884,11 +3017,11 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
   border-color: var(--aur-text-soft);
 }
 
-.aur-lightbox__img {
+.aur-lightbox__img,
+.aur-lightbox__video-wrap {
   max-width: 100%;
   max-height: 80vh;
   max-height: 80svh;
-  object-fit: contain;
   border-radius: var(--aur-tile-radius);
   box-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.6);
   transform: scale(0.96);
@@ -1897,9 +3030,198 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
     transform var(--aur-dur-medium) var(--aur-ease-out-soft),
     opacity var(--aur-dur-medium) var(--aur-ease-out-soft);
 }
-.aur-lightbox.is-open .aur-lightbox__img {
+.aur-lightbox__img { object-fit: contain; }
+.aur-lightbox.is-open .aur-lightbox__img,
+.aur-lightbox.is-open .aur-lightbox__video-wrap {
   transform: scale(1);
   opacity: 1;
+}
+.aur-lightbox__img[hidden],
+.aur-lightbox__video-wrap[hidden] { display: none; }
+
+/* Video wrap: holds the <video> + the custom frosted controls bar.
+   `position: relative` anchors the controls' absolute positioning. */
+.aur-lightbox__video-wrap {
+  position: relative;
+  overflow: hidden;
+  /* Fit-to-content so the wrap is the video's intrinsic size rather
+     than stretched to fill the lightbox padding box. */
+  display: inline-block;
+  line-height: 0;
+}
+.aur-lightbox__video {
+  display: block;
+  max-width: 100%;
+  max-height: 80vh;
+  max-height: 80svh;
+  object-fit: contain;
+}
+
+/* Cinematic dim at the bottom of the video — a soft dark gradient that
+   fades in from transparent to ~55% dark over the bottom third. The
+   purpose is twofold:
+     1. It's a familiar "video player" idiom (Netflix / YouTube /
+        Vimeo all do something similar), so it reads as polish rather
+        than as a UI bolted on top of the video.
+     2. It gives the frosted controls bar a guaranteed dark base no
+        matter what the underlying video content is — so the bar is
+        visible on white frames without needing to be opaque itself.
+   Pseudo-element + `z-index: 1` so it paints over the video but
+   under the controls bar (controls have z-index: 2). */
+.aur-lightbox__video-wrap::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34%;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(8, 4, 18, 0.55) 100%
+  );
+  z-index: 1;
+}
+
+/* Frosted custom controls bar — replaces the browser's native controls
+   so we can render the bar in the same glass language as the rest of
+   the app (native controls aren't styleable in Firefox). Sits over
+   the bottom of the video, fades in on hover/focus-within, and stays
+   visible while the video is paused so the play button is reachable.
+   A small dark tint in the background ensures the bar stays visible
+   even on near-pure-white frames; the cinematic dim above does most
+   of the heavy lifting. */
+.aur-lightbox__video-controls {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(15, 8, 30, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+          backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 12px 28px -16px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  color: #fff;
+  /* Hidden by default; auto-shown on hover or while paused (.is-paused
+     toggled by JS). pointer-events: none while hidden so the controls
+     don't capture clicks the user might want to send to the video. */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-lightbox__video-wrap:hover .aur-lightbox__video-controls,
+.aur-lightbox__video-wrap:focus-within .aur-lightbox__video-controls,
+.aur-lightbox__video-controls.is-paused {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.aur-lightbox__video-btn {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.10);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background-color var(--aur-dur-small) var(--aur-ease-standard),
+    transform var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-lightbox__video-btn:hover { background: rgba(255, 255, 255, 0.18); }
+.aur-lightbox__video-btn:active { transform: scale(0.96); }
+.aur-lightbox__video-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+}
+.aur-lightbox__video-icon { pointer-events: none; }
+.aur-lightbox__video-icon[hidden] { display: none; }
+
+.aur-lightbox__video-time {
+  flex: 0 0 auto;
+  font: 500 12px/1 var(--aur-font-subtitle);
+  color: rgba(255, 255, 255, 0.85);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Custom scrubber styling. Native <input type="range"> is styled per
+   vendor pseudo so it matches across Chromium / Firefox / WebKit. */
+.aur-lightbox__video-scrubber {
+  flex: 1 1 auto;
+  height: 24px;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  margin: 0;
+  /* The visible track is painted via the gradient on the input itself —
+     a filled portion plus an unfilled portion driven by a CSS variable
+     `--p` (set by JS as % progress). */
+  --p: 0%;
+}
+.aur-lightbox__video-scrubber::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(255, 255, 255, 0.85) var(--p),
+    rgba(255, 255, 255, 0.22) var(--p),
+    rgba(255, 255, 255, 0.22) 100%
+  );
+}
+.aur-lightbox__video-scrubber::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(24, 16, 38, 0.58);
+}
+.aur-lightbox__video-scrubber::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+}
+.aur-lightbox__video-scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  margin-top: -5px;
+  cursor: pointer;
+  transition: transform var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-lightbox__video-scrubber::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+.aur-lightbox__video-scrubber:hover::-webkit-slider-thumb { transform: scale(1.15); }
+.aur-lightbox__video-scrubber:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
 }
 
 .aur-lightbox__caption {
@@ -1949,32 +3271,93 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
 
 /* ---------- §7.5 Hyperlinks (inside .aur-prose) ---------- */
 
-.aur-prose a {
-  color: var(--aur-accent-soft);
-  text-decoration: underline;
-  text-decoration-color: rgba(255, 182, 240, 0.25);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
+.aur-prose a,
+.aur-step__prose a,
+.aur-info-card__prose a,
+.aur-glossary__term a {
+  position: relative;
+  display: inline;
+  color: var(--aur-text-link);
+  text-decoration: none;
+  border-radius: 2px;
+  background-image:
+    linear-gradient(90deg,
+      color-mix(in srgb, #702EC6 70%, var(--aur-text-soft)) 0%,
+      color-mix(in srgb, #DC372B 66%, var(--aur-text-soft)) 16.666%,
+      color-mix(in srgb, #FFE42B 56%, var(--aur-text-soft)) 33.333%,
+      color-mix(in srgb, #702EC6 70%, var(--aur-text-soft)) 50%,
+      color-mix(in srgb, #DC372B 66%, var(--aur-text-soft)) 66.666%,
+      color-mix(in srgb, #FFE42B 56%, var(--aur-text-soft)) 83.333%,
+      color-mix(in srgb, #702EC6 70%, var(--aur-text-soft)) 100%
+    ),
+    linear-gradient(var(--aur-text-link), var(--aur-text-link));
+  background-size: 0% 100%, 100% 100%;
+  background-position: 0% 50%, 0 50%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 0 rgb(from var(--aur-text-link) r g b / 0);
   transition:
-    color var(--aur-dur-small) var(--aur-ease-standard),
-    text-decoration-color var(--aur-dur-small) var(--aur-ease-standard),
-    text-shadow var(--aur-dur-small) var(--aur-ease-standard);
+    background-size 520ms var(--aur-ease-standard),
+    text-shadow 520ms var(--aur-ease-standard);
 }
-.aur-prose a:hover {
-  color: var(--aur-accent);
-  text-decoration-color: var(--aur-accent);
-  text-shadow: 0 0 14px var(--aur-accent-glow);
+.aur-prose a:hover,
+.aur-step__prose a:hover,
+.aur-info-card__prose a:hover,
+.aur-glossary__term a:hover {
+  background-size: 200% 100%, 100% 100%;
+  text-shadow:
+    0 0 7px rgba(255, 228, 43, 0.07),
+    0 0 9px rgba(220, 55, 43, 0.11),
+    0 0 15px rgba(112, 46, 198, 0.09);
+  animation: aur-link-brand-cycle 18s linear infinite;
 }
-.aur-prose a:active { color: var(--aur-accent-deep); }
-.aur-prose a:focus-visible {
+.aur-prose a:active,
+.aur-step__prose a:active,
+.aur-info-card__prose a:active,
+.aur-glossary__term a:active {
+  text-shadow: 0 0 6px rgb(from var(--aur-text-link) r g b / 0.18);
+}
+.aur-prose a:focus-visible,
+.aur-step__prose a:focus-visible,
+.aur-info-card__prose a:focus-visible,
+.aur-glossary__term a:focus-visible {
   outline: 2px solid var(--aur-accent-ring);
   outline-offset: 3px;
   border-radius: 2px;
 }
 
+@keyframes aur-link-brand-cycle {
+  from { background-position: 0% 50%, 0 50%; }
+  to   { background-position: 100% 50%, 0 50%; }
+}
+
+html[data-aur-paused="1"] .aur-prose a:hover,
+html[data-aur-paused="1"] .aur-step__prose a:hover,
+html[data-aur-paused="1"] .aur-info-card__prose a:hover,
+html[data-aur-paused="1"] .aur-glossary__term a:hover {
+  background-size: 0% 100%, 100% 100%;
+  animation: none !important;
+  text-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aur-prose a:hover,
+  .aur-step__prose a:hover,
+  .aur-info-card__prose a:hover,
+  .aur-glossary__term a:hover {
+    background-size: 200% 100%, 100% 100%;
+    animation: none !important;
+  }
+}
+
 /* External arrow (everything that's an http(s) link and NOT mindjam.my.site.com).
    Inline SVG via a CSS mask so the arrow inherits the link colour. */
-.aur-prose a[href^="http"]:not([href*="mindjam.my.site.com"])::after {
+.aur-prose a[href^="http"]:not([href*="mindjam.my.site.com"])::after,
+.aur-step__prose a[href^="http"]:not([href*="mindjam.my.site.com"])::after,
+.aur-info-card__prose a[href^="http"]:not([href*="mindjam.my.site.com"])::after,
+.aur-glossary__term a[href^="http"]:not([href*="mindjam.my.site.com"])::after {
   content: '';
   display: inline-block;
   width: 0.7em;
@@ -1987,7 +3370,10 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
   -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M5.5 3a.75.75 0 0 0 0 1.5h4.94L3.22 11.72a.75.75 0 1 0 1.06 1.06l7.22-7.22V10.5a.75.75 0 0 0 1.5 0V3.75A.75.75 0 0 0 12.25 3z'/%3E%3C/svg%3E") center / contain no-repeat;
           mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M5.5 3a.75.75 0 0 0 0 1.5h4.94L3.22 11.72a.75.75 0 1 0 1.06 1.06l7.22-7.22V10.5a.75.75 0 0 0 1.5 0V3.75A.75.75 0 0 0 12.25 3z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
-.aur-prose a[href^="http"]:not([href*="mindjam.my.site.com"]):hover::after { opacity: 1; }
+.aur-prose a[href^="http"]:not([href*="mindjam.my.site.com"]):hover::after,
+.aur-step__prose a[href^="http"]:not([href*="mindjam.my.site.com"]):hover::after,
+.aur-info-card__prose a[href^="http"]:not([href*="mindjam.my.site.com"]):hover::after,
+.aur-glossary__term a[href^="http"]:not([href*="mindjam.my.site.com"]):hover::after { opacity: 1; }
 
 
 /* ---------- §7.6 Buttons ---------- */
@@ -2004,6 +3390,7 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
   cursor: pointer;
   text-decoration: none;
   border: 1px solid transparent;
+  min-height: 42px;
   transition:
     background var(--aur-dur-small) var(--aur-ease-standard),
     color var(--aur-dur-small) var(--aur-ease-standard),
@@ -2070,6 +3457,7 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
 .aur-btn-icon {
   width: 36px;
   height: 36px;
+  min-height: 36px;
   border-radius: var(--aur-tile-radius-sm);
   padding: 0;
 }
@@ -2092,6 +3480,11 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+
+  .aur-shooting-star {
+    animation-duration: var(--shoot-dur, 2100ms) !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 
@@ -2108,10 +3501,11 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
 }
 
 /* ---------- Global animation-pause toggle ----------
-   Fixed bottom-left, always visible. Mirrors the dev toggle on the
-   right corner. Pressed state swaps the pause icon for a play icon
-   and changes the label. JS wires the actual GIF freeze behaviour. */
+   Originally a standalone fixed pill at bottom-left. Now consolidated
+   into the FAB menu — kept in the DOM so existing JS handlers stay
+   wired up; the FAB menu item dispatches clicks on this hidden button. */
 .aur-anim-toggle {
+  display: none !important;
   position: fixed;
   bottom: 20px;
   left: 20px;
@@ -2190,7 +3584,9 @@ canvas.aur-anim-frozen {
 
 
 html[data-aur-dev="1"] .aur-dev-toggle {
-  display: inline-flex;
+  /* Legacy standalone dev button — consolidated into the FAB menu.
+     Kept in the DOM for JS hooks, hidden visually even in dev mode. */
+  display: none;
 }
 html[data-aur-dev="1"] .aur-dev-panel.is-open {
   display: flex;
@@ -2546,7 +3942,10 @@ html[data-aur-dev="1"] .aur-dev-panel.is-open {
   font: 600 0.82rem var(--aur-font-body);
   letter-spacing: 0.02em;
   cursor: pointer;
-  transition: all var(--aur-dur-small) var(--aur-ease-standard);
+  transition:
+    background   var(--aur-dur-small) var(--aur-ease-standard),
+    color        var(--aur-dur-small) var(--aur-ease-standard),
+    border-color var(--aur-dur-small) var(--aur-ease-standard);
 }
 .aur-dev-btn:hover {
   background: rgba(255, 255, 255, 0.04);
@@ -2617,6 +4016,42 @@ html[data-aur-dev="1"] .aur-dev-panel.is-open {
 .aur-welcome-nav {
   max-width: 720px;
   margin: 32px auto;
+}
+
+/* Tips card on the home page — three brief notes about site
+   interactions. Icons match the in-page UI affordances (expand
+   arrows = corner expand button; pause bars = pause control; cog =
+   FAB menu) so the visual cue connects each line to a thing the
+   user will encounter. Tile shares .aur-welcome-card sizing so it
+   centres in the same column as the welcome card above. */
+.aur-tips-card__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.aur-tips-card__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  color: var(--aur-text-soft);
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+.aur-tips-card__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--aur-accent-soft);
+  margin-top: 1px;
 }
 
 
@@ -2693,8 +4128,22 @@ body.aur-sidebar-open .aur-sidebar-backdrop {
   }
   /* Info cards: drop to single column once the layout gets tight. */
   .aur-info-cards {
-    grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 16px;
+  }
+}
+
+
+/* ---------- Small tablet / large landscape phone (≤950px) ----------
+   Between the 1100px and 800px breakpoints the two-column layout still
+   holds but the sidebar was 280px (clamp floor), leaving only ~450px
+   for main content at 900px. Tighten sidebar + gaps so main gets room. */
+
+@media (max-width: 950px) {
+  :root {
+    --aur-sidebar-w: 210px;
+    --aur-shell-gap: 18px;
+    --aur-main-pad:  16px;
+    --aur-tile-pad:  16px;
   }
 }
 
@@ -2734,7 +4183,7 @@ body.aur-sidebar-open .aur-sidebar-backdrop {
   }
 
   .aur-main {
-    padding: 20px 16px 48px;
+    padding: 18px 16px 44px;
     min-height: calc(100vh  - var(--aur-topbar-h));
     min-height: calc(100dvh - var(--aur-topbar-h));
   }
@@ -2746,7 +4195,25 @@ body.aur-sidebar-open .aur-sidebar-backdrop {
 
   /* Step markers: stay 28px on mobile (don't shrink). The hover state's
      30px grow is fine. */
-  .aur-info-card { padding: 18px; }
+  .aur-info-card { padding: 17px; }
+
+  .aur-info-cards {
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+
+  .aur-media-tile {
+    margin-bottom: 22px;
+  }
+
+  .aur-steps {
+    gap: 14px;
+  }
+
+  .aur-step {
+    gap: 10px;
+    padding: 15px 16px 16px;
+  }
 
 
   /* Page nav: stack on the smallest screens if Back+Continue labels are long. */
@@ -2754,15 +4221,33 @@ body.aur-sidebar-open .aur-sidebar-backdrop {
   .aur-page-nav {
     flex-wrap: wrap;
     gap: 12px;
+    justify-content: center;
+    margin-top: 24px;
   }
   .aur-page-nav > * {
-    flex: 1 1 140px;
+    flex: 0 1 auto;
+    min-width: min(100%, 140px);
+    max-width: min(100%, 320px);
     justify-content: center;
   }
 
   /* Dev panel: pull away from the right edge a touch on mobile. */
   .aur-dev-toggle { right: 12px; bottom: 12px; }
   .aur-dev-panel  { right: 12px; bottom: 64px; max-width: calc(100vw - 24px); }
+
+  /* Touch targets: WCAG 2.5.5 recommends 44Ã—44px minimum.
+     Nav items and section headings get a taller hit area on mobile. */
+  .aur-nav-item,
+  .aur-nav__heading {
+    min-height: 44px;
+  }
+}
+
+/* iOS notch / Dynamic Island: pad the sticky top bar above the safe area. */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .aur-shell-topbar {
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
 }
 
 
@@ -2773,6 +4258,36 @@ body.aur-sidebar-open .aur-sidebar-backdrop {
 @media (max-width: 480px) {
   /* Shrink card padding so content has more room. */
   .aur-info-card { padding: 16px; }
+
+  .aur-lesson-head {
+    margin: 0 0 20px;
+  }
+
+  .aur-description {
+    margin-bottom: 20px;
+  }
+
+  .aur-step {
+    padding: 14px;
+  }
+
+  .aur-step__media {
+    margin-top: 10px;
+  }
+
+  .aur-step__media-img,
+  .aur-media-tile__img {
+    max-height: 72svh;
+    object-fit: contain;
+  }
+
+  .aur-page-nav {
+    margin-top: 22px;
+  }
+
+  .aur-page-nav > * {
+    width: min(100%, 320px);
+  }
 
   /* Title: bring the floor down a touch so long lesson titles don't wrap
      into three lines on a 360px phone. */
@@ -2786,9 +4301,23 @@ body.aur-sidebar-open .aur-sidebar-backdrop {
      phones that report a wider CSS pixel width than their physical grid). */
   .aur-link-grid { grid-template-columns: 1fr; }
 
-  /* Welcome card nav buttons: stack vertically instead of side by side. */
-  .aur-welcome-nav { flex-direction: column; align-items: stretch; gap: 10px; }
-  .aur-welcome-nav > * { text-align: center; justify-content: center; }
+  /* Welcome actions: stack vertically, but keep them button-sized. The
+     generic mobile page-nav rule uses flex-basis:140px for side-by-side
+     nav; in a column that becomes height, creating oversized pills. */
+  .aur-welcome-nav {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .aur-welcome-nav > .aur-btn {
+    flex: 0 1 auto;
+    width: min(100%, 320px);
+    min-height: 46px;
+    padding: 11px 18px;
+    text-align: center;
+    justify-content: center;
+  }
 
   /* Reduce bottom breathing room slightly on the shortest phones. */
   .aur-main { padding-bottom: 36px; }
@@ -2805,5 +4334,765 @@ body.aur-sidebar-open .aur-sidebar-backdrop {
   }
   body.aur-sidebar-open .aur-sidebar {
     visibility: visible;
+  }
+}
+
+
+/* =========================================================
+   User preferences panel
+   Floats above the animation toggle (bottom-left).
+   Styling mirrors the dev panel exactly for visual consistency.
+   ========================================================= */
+
+/* --- Toggle button --- */
+
+.aur-prefs-toggle {
+  display: none !important;       /* consolidated into the FAB menu */
+  position: fixed;
+  bottom: 70px;
+  left: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  background: var(--aur-bg-elev-1);
+  color: var(--aur-text-soft);
+  border: 1px solid var(--aur-border-strong);
+  border-radius: var(--aur-tile-radius-pill);
+  font: 600 0.82rem var(--aur-font-body);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+          backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  box-shadow: var(--aur-shadow-rest);
+  z-index: 8900;
+  transition:
+    background  var(--aur-dur-small) var(--aur-ease-standard),
+    color       var(--aur-dur-small) var(--aur-ease-standard),
+    transform   var(--aur-dur-small) var(--aur-ease-standard),
+    box-shadow  var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-prefs-toggle:hover {
+  color: var(--aur-text);
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+  box-shadow: var(--aur-shadow-hover);
+}
+.aur-prefs-toggle:active { transform: scale(0.98); transition-duration: 80ms; }
+.aur-prefs-toggle:focus-visible { outline: none; box-shadow: var(--aur-shadow-focus); }
+.aur-prefs-toggle[aria-expanded="true"] {
+  background: var(--aur-accent-grad-soft);
+  color: var(--aur-accent-soft);
+  border-color: var(--aur-border-focus);
+}
+
+
+/* --- Panel shell (matches .aur-dev-panel dimensions + style) --- */
+
+.aur-prefs-panel {
+  position: fixed;
+  bottom: 120px;
+  left: 20px;
+  width: 320px;
+  max-height: min(76vh, 580px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(20, 16, 32, 0.92);
+  border: 1px solid var(--aur-border-strong);
+  border-radius: var(--aur-tile-radius);
+  -webkit-backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+          backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  box-shadow: var(--aur-shadow-hover);
+  color: var(--aur-text);
+  font-family: var(--aur-font-body);
+  font-size: 0.9rem;
+  z-index: 8901;
+  overflow: hidden;
+  /* Open/close animation */
+  transform-origin: bottom left;
+  transform: scale(0.95) translateY(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--aur-dur-small) var(--aur-ease-out-soft),
+    opacity   var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-prefs-panel.is-open {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+/* --- Header (mirrors .aur-dev-panel__header) --- */
+
+.aur-prefs-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--aur-border);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.aur-prefs-panel__title {
+  font-size: var(--aur-size-eyebrow);
+  letter-spacing: var(--aur-track-eyebrow);
+  text-transform: uppercase;
+  color: var(--aur-text-soft);
+}
+.aur-prefs-panel__close {
+  background: transparent;
+  border: none;
+  color: var(--aur-text-muted);
+  font-size: 22px;
+  line-height: 1;
+  padding: 0 4px;
+  cursor: pointer;
+  border-radius: var(--aur-tile-radius-sm);
+  transition: color var(--aur-dur-micro) var(--aur-ease-standard);
+}
+.aur-prefs-panel__close:hover { color: var(--aur-text); }
+.aur-prefs-panel__close:focus-visible { outline: none; box-shadow: var(--aur-shadow-focus); }
+
+
+/* --- Scrollable body (mirrors .aur-dev-panel__body) --- */
+
+.aur-prefs-panel__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--aur-accent-ring) transparent;
+}
+
+
+/* --- Footer (mirrors dev panel footer + background) --- */
+
+.aur-prefs-panel__footer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--aur-border);
+  background: rgba(0, 0, 0, 0.18);
+  flex-shrink: 0;
+}
+/* The reused .aur-dev-btn has flex:1 for two-button rows; override here
+   so a single "Reset" button doesn't stretch to full width oddly. */
+.aur-prefs-panel__footer .aur-dev-btn { flex: 1; }
+
+
+/* --- Section group (mirrors .aur-dev-group-label rhythm) --- */
+
+.aur-prefs-divider {
+  border: none;
+  border-top: 1px solid var(--aur-border);
+  margin: 2px 0;
+}
+
+.aur-prefs-section {
+  display: block;
+}
+
+/* Section head: button row with the label + chevron. Clickable to
+   toggle the section open/closed. Uses the same grid-template-rows
+   0frâ†”1fr collapse pattern as .aur-nav__collapsible.
+
+   user-select: none stops a double-click from selecting the label
+   text instead of registering as two toggles (a real failure mode
+   that made the collapse "feel broken" intermittently). Generous
+   vertical padding gives a forgiving hit area. */
+.aur-prefs-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 10px 4px;
+  margin: 0;
+  cursor: pointer;
+  color: var(--aur-text-muted);
+  font: inherit;
+  text-align: left;
+  border-radius: var(--aur-tile-radius-sm);
+  user-select: none;
+  -webkit-user-select: none;
+  transition: color var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-prefs-section__head:hover { color: var(--aur-text-soft); }
+.aur-prefs-section__head:focus-visible {
+  outline: none;
+  box-shadow: var(--aur-shadow-focus);
+}
+
+.aur-prefs-section__label {
+  display: block;
+  margin: 0;
+  font-size: var(--aur-size-eyebrow);
+  letter-spacing: var(--aur-track-eyebrow);
+  color: inherit;
+  text-transform: uppercase;
+}
+
+.aur-prefs-section__chevron {
+  flex-shrink: 0;
+  /* Medium duration + balanced ease-in-out for a smooth, non-jarring
+     toggle. The user-select:none on the head (above) handles the
+     "double-click toggles back" failure mode without needing a fast
+     animation. */
+  transition: transform var(--aur-dur-medium) var(--aur-ease-standard);
+}
+.aur-prefs-section.is-open .aur-prefs-section__chevron {
+  transform: rotate(180deg);
+}
+
+.aur-prefs-section__body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--aur-dur-medium) var(--aur-ease-standard);
+}
+.aur-prefs-section.is-open .aur-prefs-section__body {
+  grid-template-rows: 1fr;
+}
+.aur-prefs-section__body-inner {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Top padding so the first field doesn't sit flush against the head;
+     bottom padding gives a touch of breathing room above the divider. */
+  padding: 8px 0 2px;
+  opacity: 0;
+  transition: opacity var(--aur-dur-medium) var(--aur-ease-standard);
+}
+.aur-prefs-section.is-open .aur-prefs-section__body-inner {
+  opacity: 1;
+}
+
+/* Reduced motion: skip the animation entirely so the toggle is
+   instant. Matches the nav-section collapse behaviour. */
+@media (prefers-reduced-motion: reduce) {
+  .aur-prefs-section__chevron,
+  .aur-prefs-section__body,
+  .aur-prefs-section__body-inner {
+    transition: none;
+  }
+}
+
+
+/* --- Field row (mirrors .aur-dev-field grid) --- */
+
+.aur-prefs-field {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+/* Rows where the control should fill available space */
+.aur-prefs-field--fill {
+  grid-template-columns: auto 1fr;
+}
+
+.aur-prefs-field.is-disabled {
+  opacity: 0.45;
+}
+
+.aur-prefs-field.is-disabled,
+.aur-prefs-field.is-disabled * {
+  cursor: not-allowed;
+}
+
+.aur-prefs-label {
+  font-size: 0.85rem;
+  color: var(--aur-text-soft);
+}
+
+
+/* --- Select (mirrors .aur-dev-field select exactly) --- */
+
+.aur-prefs-select {
+  background: rgba(0, 0, 0, 0.32);
+  color: var(--aur-text);
+  border: 1px solid var(--aur-border-strong);
+  border-radius: var(--aur-tile-radius-sm);
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  min-width: 130px;
+  transition: border-color var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-prefs-select:hover { border-color: var(--aur-text-soft); }
+.aur-prefs-select:focus { outline: none; box-shadow: var(--aur-shadow-focus); }
+.aur-prefs-select option { background: #130d22; }
+
+
+/* --- Range slider (mirrors .aur-slider__input exactly) --- */
+
+.aur-prefs-range-row {
+  display: grid;
+  grid-template-columns: 1fr 44px;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.aur-prefs-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: transparent;
+  border-radius: var(--aur-tile-radius-pill);
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  min-width: 0;
+}
+.aur-prefs-range::-webkit-slider-runnable-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--aur-tile-radius-pill);
+}
+.aur-prefs-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--aur-accent-grad);
+  border: none;
+  box-shadow: 0 4px 10px -4px var(--aur-accent-glow);
+  cursor: grab;
+  margin-top: -5px;
+  transition: transform var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-prefs-range::-webkit-slider-thumb:hover  { transform: scale(1.12); }
+.aur-prefs-range::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(0.95); }
+.aur-prefs-range::-moz-range-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--aur-tile-radius-pill);
+}
+.aur-prefs-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: none;
+  background: var(--aur-accent-grad);
+  box-shadow: 0 4px 10px -4px var(--aur-accent-glow);
+  cursor: grab;
+}
+.aur-prefs-range:focus-visible { outline: none; }
+.aur-prefs-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px var(--aur-bg), 0 0 0 4px var(--aur-accent-ring);
+}
+
+.aur-prefs-range-val {
+  font: 600 0.78rem / 1 var(--aur-font-mono);
+  color: var(--aur-accent-soft);
+  text-align: right;
+}
+
+
+/* --- Custom colour pickers (replaces native <input type=color>) --- */
+
+.aur-prefs-colour-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Picker wrapper — relative so the swatch sits in flow;
+   popup escapes via position:fixed + JS coords */
+.aur-prefs-picker {
+  position: relative;
+  display: inline-block;
+}
+
+/* Swatch button: square, same style as the rest of the panel */
+.aur-prefs-picker .aur-picker__swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+.aur-prefs-picker.is-open .aur-picker__swatch {
+  border-color: var(--aur-border-focus);
+  box-shadow: 0 0 0 3px var(--aur-accent-ring);
+}
+
+/* Popup is portaled to <body> by JS and gets position:fixed + width
+   set inline — no CSS rule needed here. The base .aur-picker__pop
+   styles (background, border, border-radius, flex layout) still apply. */
+
+
+/* --- Toggle switch (stars on/off) --- */
+
+.aur-prefs-switch {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.aur-prefs-switch input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.aur-prefs-switch__track {
+  display: block;
+  width: 44px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--aur-border-strong);
+  border-radius: var(--aur-tile-radius-pill);
+  position: relative;
+  transition:
+    background   var(--aur-dur-small) var(--aur-ease-standard),
+    border-color var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-prefs-switch__track::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--aur-text-muted);
+  transition:
+    transform  var(--aur-dur-small) var(--aur-ease-bounce-tiny),
+    background var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-prefs-switch input:checked + .aur-prefs-switch__track {
+  background: var(--aur-accent-grad-soft);
+  border-color: var(--aur-border-focus);
+}
+.aur-prefs-switch input:checked + .aur-prefs-switch__track::after {
+  transform: translateX(20px);
+  background: var(--aur-accent-soft);
+}
+.aur-prefs-switch:focus-within .aur-prefs-switch__track {
+  box-shadow: var(--aur-shadow-focus);
+}
+
+
+/* --- Mobile (mirrors dev panel mobile override) --- */
+
+@media (max-width: 800px) {
+  .aur-prefs-toggle {
+    bottom: 62px;
+    left: 12px;
+    padding: 8px 10px;
+  }
+  .aur-prefs-toggle__label { display: none; }
+  .aur-prefs-panel {
+    bottom: 108px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-height: min(70vh, 520px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aur-prefs-panel,
+  .aur-prefs-switch__track,
+  .aur-prefs-switch__track::after,
+  .aur-prefs-range::-webkit-slider-thumb { transition: none; }
+}
+
+
+/* ---------- Consolidated FAB + menu ----------
+   Replaces the trio of standalone floating buttons (animation pause,
+   appearance, dev) with one round FAB at bottom-left. The menu
+   popover lists each available action; menu items dispatch clicks
+   on the hidden legacy buttons so handlers in aurora.js stay wired. */
+
+.aur-fab-wrap {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 9000;
+}
+
+.aur-fab {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--aur-bg-elev-2);
+  color: var(--aur-text);
+  border: 1px solid var(--aur-border-strong);
+  border-radius: 50%;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+          backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  box-shadow: var(--aur-shadow-rest);
+  transition:
+    background var(--aur-dur-small) var(--aur-ease-standard),
+    color      var(--aur-dur-small) var(--aur-ease-standard),
+    transform  var(--aur-dur-small) var(--aur-ease-standard),
+    border-color var(--aur-dur-small) var(--aur-ease-standard),
+    box-shadow var(--aur-dur-small) var(--aur-ease-standard);
+}
+.aur-fab:hover {
+  transform: translateY(-1px);
+  border-color: var(--aur-text-soft);
+  color: var(--aur-text);
+  box-shadow: var(--aur-shadow-hover);
+}
+.aur-fab:focus-visible {
+  outline: none;
+  box-shadow: var(--aur-shadow-focus);
+}
+.aur-fab:active { transform: scale(0.97); transition-duration: 80ms; }
+.aur-fab[aria-expanded="true"] {
+  background: var(--aur-accent-grad-soft);
+  border-color: var(--aur-accent-soft);
+  color: var(--aur-text);
+}
+.aur-fab[aria-expanded="true"] svg { transform: rotate(60deg); transition: transform var(--aur-dur-small) var(--aur-ease-out-soft); }
+
+.aur-fab-menu {
+  position: absolute;
+  bottom: 56px;
+  left: 0;
+  min-width: 210px;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  gap: 2px;
+  background: rgba(20, 16, 32, 0.92);
+  border: 1px solid var(--aur-border-strong);
+  border-radius: var(--aur-tile-radius);
+  -webkit-backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+          backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
+  box-shadow: var(--aur-shadow-hover);
+  transform-origin: bottom left;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.94) translateY(8px);
+  transition:
+    opacity   var(--aur-dur-small) var(--aur-ease-out-soft),
+    transform var(--aur-dur-small) var(--aur-ease-out-soft),
+    visibility 0s linear var(--aur-dur-small);
+}
+.aur-fab-menu.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1) translateY(0);
+  transition-delay: 0s;
+}
+
+.aur-fab-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: transparent;
+  border: none;
+  border-radius: var(--aur-tile-radius-sm);
+  color: var(--aur-text);
+  font: 500 0.88rem var(--aur-font-body);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  /* Single-line labels — the menu's min-width was just shy of fitting
+     "Pause animations", causing it to wrap to two lines. nowrap makes
+     the menu auto-widen to fit the longest label. */
+  white-space: nowrap;
+  transition: background var(--aur-dur-micro) var(--aur-ease-standard);
+}
+.aur-fab-menu__item:hover { background: rgba(255, 255, 255, 0.06); }
+.aur-fab-menu__item:focus-visible {
+  outline: none;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 2px var(--aur-accent-ring);
+}
+.aur-fab-menu__item svg { color: var(--aur-accent-soft); flex-shrink: 0; }
+
+/* Pause/Resume swap for the animation menu item — matches aria-pressed
+   state mirrored from the hidden .aur-anim-toggle button via JS. */
+.aur-fab-menu__item--anim .aur-fab-menu__icon-play,
+.aur-fab-menu__item--anim .aur-fab-menu__label-play { display: none; }
+.aur-fab-menu__item--anim[aria-pressed="true"] .aur-fab-menu__icon-pause,
+.aur-fab-menu__item--anim[aria-pressed="true"] .aur-fab-menu__label-pause { display: none; }
+.aur-fab-menu__item--anim[aria-pressed="true"] .aur-fab-menu__icon-play,
+.aur-fab-menu__item--anim[aria-pressed="true"] .aur-fab-menu__label-play { display: inline; }
+
+/* Dev menu item hidden unless dev mode is on. */
+.aur-fab-menu__item--dev { display: none; }
+html[data-aur-dev="1"] .aur-fab-menu__item--dev { display: flex; }
+
+/* Mobile: slightly smaller FAB inset. */
+@media (max-width: 800px) {
+  .aur-fab-wrap { bottom: 12px; left: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aur-fab-menu,
+  .aur-fab[aria-expanded="true"] svg { transition: none; }
+}
+
+/* Small inline Salesforce view selector icon used in Knowledge Base guidance. */
+.aur-prose img.aur-inline-view-icon {
+  display: inline-block;
+  width: 1.05em;
+  height: 1.05em;
+  max-width: none;
+  margin: 0 0.12em;
+  vertical-align: -0.16em;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+
+/* Terminology accordion: compact reference sections with native details. */
+.aur-term-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.aur-term-actions {
+  margin: 0 0 14px;
+}
+
+.aur-term-section {
+  padding: 0;
+  overflow: hidden;
+}
+
+.aur-term-section__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 22px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.aur-term-section__summary::-webkit-details-marker { display: none; }
+
+.aur-term-section__summary:hover .aur-term-section__title {
+  color: var(--aur-accent-soft);
+}
+
+.aur-term-section__summary:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--aur-border-focus);
+}
+
+.aur-term-section__title {
+  display: block;
+  font: 700 var(--aur-size-h3) / 1.25 var(--aur-font-title);
+  color: var(--aur-text);
+  transition: color var(--aur-dur-small) var(--aur-ease-standard);
+}
+
+.aur-term-section__hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  color: var(--aur-text-soft);
+}
+
+.aur-term-section__chevron {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  color: var(--aur-text-soft);
+  transform: rotate(45deg);
+  transition:
+    transform var(--aur-dur-medium) var(--aur-ease-standard),
+    color var(--aur-dur-small) var(--aur-ease-standard);
+}
+
+.aur-term-section[open] .aur-term-section__chevron {
+  transform: rotate(225deg);
+  color: var(--aur-accent-soft);
+}
+
+.aur-term-section__body {
+  padding: 0 22px 22px;
+  border-top: 1px solid var(--aur-border);
+}
+
+.aur-term-section__body > :first-child {
+  margin-top: 18px;
+}
+
+@media (max-width: 720px) {
+  .aur-term-section__summary {
+    align-items: flex-start;
+    padding: 16px 18px;
+  }
+
+  .aur-term-section__body {
+    padding: 0 18px 18px;
+  }
+
+  .aur-status-table {
+    display: block;
+    font-size: 0.86rem;
+  }
+
+  .aur-status-table thead {
+    display: none;
+  }
+
+  .aur-status-table tbody,
+  .aur-status-table tr,
+  .aur-status-table td {
+    display: block;
+  }
+
+  .aur-status-table tr {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--aur-border);
+  }
+
+  .aur-status-table tr:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .aur-status-table td {
+    padding: 0 !important;
+    border-bottom: none;
+  }
+
+  .aur-status-table__emoji {
+    display: inline-block;
+    width: auto;
+    margin-right: 6px;
+    vertical-align: baseline;
+  }
+
+  .aur-status-table__name {
+    display: inline;
+    white-space: normal;
+    padding-right: 0 !important;
+  }
+
+  .aur-status-table__desc {
+    margin-top: 4px;
   }
 }

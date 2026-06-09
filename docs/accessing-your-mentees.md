@@ -3,16 +3,9 @@ title: Accessing Your Mentees
 section: finding-your-mentees-and-sessions
 description: How to find your assigned mentees, view their profiles, and manage your caseload on the Community Site.
 media:
-  src: assets/images/accessing-your-mentees/open-my-mentees.gif
+  src: assets/images/accessing-your-mentees/open-my-mentees.webm
   alt: Opening My Mentees from Appointment Management
   header: Opening My Mentees
-what_you_learn:
-  - Where to find your assigned mentees in the Community Site
-  - What information you can see on the My Mentees list
-  - How to open a mentee's profile and view their form submission
-  - How to accept or reject a newly assigned mentee
-  - How new mentees get added to your caseload
-  - How to off-board a mentee when they leave
 steps:
   - title: Overview
     body: |
@@ -29,7 +22,7 @@ steps:
     body: |
       To open a mentee's profile, click on their name. Inside the profile, you can view useful information about the young person, including background details that may help you prepare for sessions. You will also see a description box.
     media:
-      - src: assets/images/accessing-your-mentees/open-mentee-profile.gif
+      - src: assets/images/accessing-your-mentees/open-mentee-profile.webm
         alt: Opening a mentee profile by clicking on the mentee name
       - src: assets/images/accessing-your-mentees/mentee-description-box.png
         alt: Description box shown on the mentee profile
@@ -37,13 +30,13 @@ steps:
     body: |
       From the mentee's profile, you can also open the full form submission. This shows the information completed by the parent, school, or local authority when the young person was referred. This can help you understand more about the mentee before sessions begin.
     media:
-      - src: assets/images/accessing-your-mentees/open-form-submission.gif
+      - src: assets/images/accessing-your-mentees/open-form-submission.webm
         alt: Opening the full form submission from the mentee profile
   - title: Accepting or Rejecting a Mentee
     body: |
       The mentee profile is where you decide whether to accept or reject a mentee. The **Accept** and **Reject** buttons are located at the top right of the mentee's profile.
     media:
-      - src: assets/images/accessing-your-mentees/accept-or-reject-buttons.gif
+      - src: assets/images/accessing-your-mentees/accept-or-reject-buttons.webm
         alt: Accept or reject mentee buttons shown on the top right of the mentee profile
   - title: What Accepting or Rejecting a Mentee Means
     body: |
@@ -65,7 +58,7 @@ steps:
 
       Once submitted, the mentee will be removed from your mentee list from that date.
     media:
-      - src: assets/images/accessing-your-sessions/off-board-a-mentee.gif
+      - src: assets/images/accessing-your-sessions/off-board-a-mentee.webm
         alt: Off-boarding a mentee from their profile
   - title: Important!
     body: |
@@ -74,6 +67,7 @@ steps:
       If you have mentees that are no longer with you, please **off-board** them.
 
       If you have new mentees that should be on your mentee list but are not, please contact **Assigning** at the address below.
-
-      <button type="button" class="aur-copy" data-aur-copy="assigning@mindjam.org.uk" aria-label="Copy email address: assigning@mindjam.org.uk"><span class="aur-copy__icon" aria-hidden="true"><svg class="aur-copy__icon-default" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg><svg class="aur-copy__icon-done" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span><span class="aur-copy__label"><span class="aur-copy__label-default">Email: <code>assigning@mindjam.org.uk</code></span><span class="aur-copy__label-done">Copied</span></span></button>
+    copy:
+      - label: "Email: assigning@mindjam.org.uk"
+        value: assigning@mindjam.org.uk
 ---

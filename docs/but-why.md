@@ -1,6 +1,6 @@
 ---
 title: But Why?
-section: standalone
+section: getting-started
 description: As MindJam has grown, the number of processes involved in mentoring has increased — mentee profiles, mentor notes, attendance, timesheets, session details, and availability. Here's why we're moving to Salesforce.
 steps:
   - title: A Growing Number of Processes

@@ -3,7 +3,7 @@ title: Update Your Games, Equipment and Preferences
 section: what-to-do-first
 description: How to update your profile with the games, equipment, and preferences you use for mentoring.
 media:
-  src: assets/images/update-games-equipment-preferences/open-update-preferences-form.gif
+  src: assets/images/update-games-equipment-preferences/open-update-preferences-form.webm
   alt: Option 1 for opening Update Preferences
   header: Opening Update Preferences
 steps:
@@ -25,7 +25,7 @@ steps:
 
       This will open the **Update Games and Equipment** flow.
     media:
-      - src: assets/images/update-games-equipment-preferences/update-game-selection.gif
+      - src: assets/images/update-games-equipment-preferences/update-game-selection.webm
         alt: Option 2 for opening Update Preferences from the home page
   - title: What a Flow Means
     body: |
@@ -60,7 +60,7 @@ steps:
     body: |
       When you have completed everything, you will see a message confirming that your preferences have been updated. Click **Finish**.
     media:
-      - src: assets/images/update-games-equipment-preferences/update-equipment-selection.gif
+      - src: assets/images/update-games-equipment-preferences/update-equipment-selection.webm
         alt: Completing the Update Preferences flow
   - title: Keeping It Up to Date
     body: |

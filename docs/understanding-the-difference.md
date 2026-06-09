@@ -3,7 +3,7 @@ title: Understanding the Difference
 section: understanding-the-difference
 description: Understanding the difference between mentee profiles, calendar events, and service appointments (sessions) in Salesforce.
 media:
-  src: assets/images/understanding-the-difference/open-mentee-profile-view.gif
+  src: assets/images/understanding-the-difference/open-mentee-profile-view.webm
   alt: Opening a mentee profile by clicking on the young person's name
   header: Opening a mentee profile
 steps:
@@ -30,7 +30,7 @@ steps:
 
       It is used to organise and manage your schedule. It helps you plan the session, but it does not confirm that the session happened.
     media:
-      - src: assets/images/understanding-the-difference/open-calendar-event-view.gif
+      - src: assets/images/understanding-the-difference/open-calendar-event-view.webm
         alt: Opening a calendar event
   - title: 3. Service Appointments
     body: |
@@ -43,7 +43,7 @@ steps:
 
       This is what records what actually happened. The system uses this for attendance tracking, attendance emails, invoicing, and payment processing.
     media:
-      - src: assets/images/understanding-the-difference/open-service-appointment-view.gif
+      - src: assets/images/understanding-the-difference/open-service-appointment-view.webm
         alt: Opening a service appointment from a link starting with SA
   - title: Simple Way to Remember It
     body: |

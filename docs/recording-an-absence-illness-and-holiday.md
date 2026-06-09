@@ -1,9 +1,9 @@
 ---
 title: Recording an Absence (Illness and Holiday)
-section: standalone
+section: finding-your-mentees-and-sessions
 description: How to log sick leave, illness, holiday, annual leave, or any other absence. Covers recording time off and what to do about cancelling sessions when you are away.
 media:
-  src: assets/images/recording-an-absence/log-holiday-absence.gif
+  src: assets/images/recording-an-absence/log-holiday-absence.webm
   alt: Adding a new absence in the system
   header: Adding a new absence
 steps:
@@ -28,7 +28,7 @@ steps:
     body: |
       If you use this section regularly, it can help to pin the most useful view. Select **My Absences**, pin that view. This makes it quicker to return to your own absence records later.
     media:
-      - src: assets/images/recording-an-absence/log-illness-absence.gif
+      - src: assets/images/recording-an-absence/log-illness-absence.webm
         alt: Pinning the My Absences view for quicker access
   - title: Key Point
     body: |

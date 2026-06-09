@@ -2,3 +2,17 @@ site/
 __pycache__/
 *.pyc
 .DS_Store
+.claude/
+
+# Local generated/debug captures
+/mkdocs.out
+/mkdocs.err
+/acct.html
+/page.html
+/p.html
+/c.css
+/j.js
+/j2.js
+/served*.css
+/served_js.js
+/UsersSamAppDataLocalTempserved*.css

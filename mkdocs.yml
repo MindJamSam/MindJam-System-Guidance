@@ -1,8 +1,13 @@
 site_name: Salesforce Training
+# TODO: set to the real published URL — powers sitemap.xml absolute URLs,
+# <link rel="canonical">, and og:url/og:image. Trailing slash matters.
+site_url: https://example.invalid/salesforce-training/
+site_description: Training guide for MindJam mentors using the Salesforce Community Site to manage mentees, sessions, availability, and wrap-ups.
 
 theme:
   name: slate
   custom_dir: docs/overrides
+  favicon: assets/images/brand/favicon-v3.svg
 
 plugins:
   - search:
@@ -11,14 +16,15 @@ plugins:
 
 hooks:
   - hooks/lesson_meta.py
+  - hooks/gen_stars.py
 
 nav:
   - Home: index.md
   - Getting Started:
-      - But Why: but-why.md
-      - Switching Systems Mid-Month: switching-systems-mid-month.md
+      - But, why?: but-why.md
+      - Switching Systems: switching-systems-mid-month.md
       - First Time Logging In: first-time-logging-in.md
-      - How to Navigate the Community Site: how-to-navigate-the-community-site.md
+      - Site Navigation: how-to-navigate-the-community-site.md
       - My Account: my-account.md
   - What to Do First:
       - What to Do First: what-to-do-first.md
@@ -26,20 +32,22 @@ nav:
       - Availability: availability.md
   - Understanding the Difference:
       - Understanding the Difference: understanding-the-difference.md
-      - Using Calendar Events: using-calendar-events.md
+      - Calendar Events: using-calendar-events.md
       - Wrap Up a Session: wrap-up-a-session.md
   - Mentees and Sessions:
-      - Finding Your Mentees and Sessions: finding-your-mentees-and-sessions.md
-      - Accessing Your Mentees: accessing-your-mentees.md
-      - Accessing Historical Session Notes: accessing-historical-session-notes.md
-      - Accessing Your Sessions: accessing-your-sessions.md
-      - Recording an Absence (Illness and Holiday): recording-an-absence-illness-and-holiday.md
+      - Mentees and Sessions: finding-your-mentees-and-sessions.md
+      - Mentees: accessing-your-mentees.md
+      - Sessions: accessing-your-sessions.md
+      - Session Notes: accessing-historical-session-notes.md
+      - Absences: recording-an-absence-illness-and-holiday.md
+      - Dashboard: dashboard.md
+      - Payments: payments.md
   - Resources:
-      - How to Log a Support Ticket: how-to-log-a-support-ticket.md
+      - Knowledge Base: using-the-knowledge-base.md
+      - Support Tickets: how-to-log-a-support-ticket.md
       - Useful Links: useful-links.md
       - Terminology: terminology.md
-      - Dashboard: dashboard.md
-  - Need Help: need-help.md
+      - Need Help: need-help.md
 
 extra_css:
   - assets/stylesheets/aurora.css
