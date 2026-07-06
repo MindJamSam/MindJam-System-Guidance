@@ -323,43 +323,7 @@
      rotateX/Y. rAF-throttled so a high-DPI mouse doesn't overwhelm
      the compositor. Skipped under prefers-reduced-motion. */
 
-  (function initTilt() {
-    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) return;
-
-    var MAX_DEG = 5;
-    var tiles = document.querySelectorAll('.aur-tile.is-tiltable');
-
-    tiles.forEach(function (tile) {
-      var rect = null;
-      var pendingX = 0, pendingY = 0;
-      var rafScheduled = false;
-
-      function paint() {
-        rafScheduled = false;
-        tile.style.transform =
-          'perspective(900px) rotateX(' + pendingX.toFixed(2) + 'deg) rotateY(' + pendingY.toFixed(2) + 'deg)';
-      }
-
-      tile.addEventListener('pointerenter', function () {
-        rect = tile.getBoundingClientRect();
-      });
-      tile.addEventListener('pointermove', function (e) {
-        if (!rect) rect = tile.getBoundingClientRect();
-        var nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-        var ny = ((e.clientY - rect.top)  / rect.height) * 2 - 1;
-        // Rotate around the axis perpendicular to motion: x-axis tilt
-        // is driven by vertical position, y-axis tilt by horizontal.
-        pendingX = -ny * MAX_DEG;
-        pendingY =  nx * MAX_DEG;
-        if (!rafScheduled) { rafScheduled = true; requestAnimationFrame(paint); }
-      });
-      tile.addEventListener('pointerleave', function () {
-        rect = null;
-        tile.style.transform = '';
-      });
-    });
-  })();
+  // Tile hover tilt intentionally disabled.
 
 
   /* ---------- §7.9 Copy button ----------

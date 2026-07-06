@@ -67,6 +67,8 @@ steps:
       If you have mentees that are no longer with you, please **off-board** them.
 
       If you have new mentees that should be on your mentee list but are not, please contact **Assigning** at the address below.
+
+      If your mentee's **address or contact details are out of date**, please contact a member of **SLT** with the mentee's name and the new contact information. A member of SLT will then update this for you.
     copy:
       - label: "Email: assigning@mindjam.org.uk"
         value: assigning@mindjam.org.uk
