@@ -18,10 +18,12 @@ steps:
   - title: What to Do if a Mentee Is Missing
     body: |
       If someone is missing, all you need to do is send a quick email to the **Assigning** team and let them know. You can use the template below and pop the mentee's name in where it says.
+
+      > I've just logged into the new system and I am missing *[please replace with the mentees name]*
     copy:
       - label: "Email: assigning@mindjam.org.uk"
         value: assigning@mindjam.org.uk
-      - label: "Copy email template"
+      - label: "Copy template"
         value: "I've just logged into the new system and I am missing [please replace with the mentees name]"
   - title: Important
     body: |
