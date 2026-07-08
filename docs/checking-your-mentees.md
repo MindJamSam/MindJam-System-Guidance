@@ -19,12 +19,24 @@ steps:
     body: |
       If someone is missing, all you need to do is send a quick email to the **Assigning** team and let them know. You can use the template below and pop the mentee's name in where it says.
 
-      > I've just logged into the new system and I am missing *[please replace with the mentees name]*
+      <div style="background: var(--aur-bg-elev-1, rgba(255,255,255,0.03)); border: 1px solid var(--aur-border-strong, rgba(255,255,255,0.12)); border-radius: 12px; padding: 18px 20px; margin: 14px 0 4px; line-height: 1.65;">
+        <p style="margin: 0 0 10px;">Dear Assigning Team,</p>
+        <p style="margin: 0 0 10px;">I've just logged into the new system and noticed that <em>[please replace with the mentees name]</em> is not showing on my mentee list.</p>
+        <p style="margin: 0 0 10px;">Could you please arrange for their record to be transferred over so I can start setting up sessions with them?</p>
+        <p style="margin: 0;">Thanks!</p>
+      </div>
     copy:
       - label: "Email: assigning@mindjam.org.uk"
         value: assigning@mindjam.org.uk
       - label: "Copy template"
-        value: "I've just logged into the new system and I am missing [please replace with the mentees name]"
+        value: |
+          Dear Assigning Team,
+
+          I've just logged into the new system and noticed that [please replace with the mentees name] is not showing on my mentee list.
+
+          Could you please arrange for their record to be transferred over so I can start setting up sessions with them?
+
+          Thanks!
   - title: Important
     body: |
       If a mentee is not on your list yet, you will not be able to set up sessions with them. Their data may still be on its way over to Salesforce, or they might still be linked to another mentor while things are being tidied up. Without that link, the system has no way of knowing a session with them took place.
