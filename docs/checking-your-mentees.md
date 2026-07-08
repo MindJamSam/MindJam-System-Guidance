@@ -39,7 +39,7 @@ steps:
           Thanks!
   - title: Important
     body: |
-      If a mentee is not on your list yet, you will not be able to set up sessions with them. Their data may still be on its way over to Salesforce, or they might still be linked to another mentor while things are being tidied up. Without that link, the system has no way of knowing a session with them took place.
+      If a mentee is not on your list yet, you **will not be able to set up sessions with them**. Their data may **still be on its way over to Salesforce**, or they might still be **linked to another mentor** while things are being tidied up. Without that link, the system has **no way of knowing a session with them took place**.
 
-      The easiest thing to do is wait until all of your mentees are showing before you start using Salesforce for sessions. Once everyone is there, you are good to go.
+      The easiest thing to do is **wait until all of your mentees are showing** before you start using Salesforce for sessions. Once everyone is there, you are **good to go**.
 ---
