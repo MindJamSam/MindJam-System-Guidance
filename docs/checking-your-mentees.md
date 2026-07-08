@@ -1,5 +1,5 @@
 ---
-title: Checking Your Mentees
+title: Mentee Check
 section: what-to-do-first
 description: How to make sure all your assigned mentees have come across, and what to do if any of them are missing.
 steps:
