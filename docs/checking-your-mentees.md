@@ -12,7 +12,7 @@ steps:
 
       - Open your **Assigned Mentee folder** on Google Drive and look at the shortcuts inside
       - Check your **register** on your current timesheet (if you are still using the old system)
-      - Sign in and view your list on the [Assigned Mentors page](https://mindjam.my.site.com/Portal/s/assigned-mentors) in the Community Site
+      - Sign in and view your list on the [Assigned Mentees page](https://mindjam.my.site.com/Portal/s/assigned-mentors) in the Community Site
 
       Compare what you see there with the list showing in Salesforce. If any of your usual mentees are missing, follow the next step.
   - title: What to Do if a Mentee Is Missing
