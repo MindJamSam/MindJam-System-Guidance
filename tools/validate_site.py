@@ -258,6 +258,14 @@ def main() -> int:
     parser.add_argument("--quiet", action="store_true", help="Only print issues.")
     args = parser.parse_args()
 
+    if yaml is None:
+        print(
+            "PyYAML is required for validation (front-matter parsing). "
+            "Run: pip install -r requirements.txt",
+            file=sys.stderr,
+        )
+        return 2
+
     issues: list[Issue] = []
     issues.extend(validate_config())
     for path in sorted(DOCS.glob("*.md")):

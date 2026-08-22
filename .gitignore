@@ -7,6 +7,7 @@ __pycache__/
 # Local generated/debug captures
 /mkdocs.out
 /mkdocs.err
+/mkdocs.serve.log
 /acct.html
 /page.html
 /p.html
@@ -16,3 +17,8 @@ __pycache__/
 /served*.css
 /served_js.js
 /UsersSamAppDataLocalTempserved*.css
+
+# Playwright capture output and root debug screenshots
+.playwright-mcp/
+/link-*.png
+/manage-time-slots-*.png

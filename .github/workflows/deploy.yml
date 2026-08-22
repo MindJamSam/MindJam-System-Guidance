@@ -20,4 +20,6 @@ jobs:
           python-version: '3.x'
           cache: pip
       - run: pip install -r requirements.txt
+      - run: python tools/validate_site.py
+      - run: mkdocs build --clean --strict
       - run: mkdocs gh-deploy --force

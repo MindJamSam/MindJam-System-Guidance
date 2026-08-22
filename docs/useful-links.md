@@ -154,7 +154,7 @@ accordion_toolbar: true
   <div class="aur-term-section__body">
   <dl class="aur-glossary">
     <div class="aur-glossary__entry">
-      <dt class="aur-glossary__term"><a href="assets/PDFs/Salesforce_Training_Guide_Print_Edition.pdf">Text version</a></dt>
+      <dt class="aur-glossary__term"><a href="../assets/PDFs/Salesforce_Training_Guide_Print_Edition.pdf">Text version</a></dt>
       <dd class="aur-glossary__def">A PDF version of this guide.</dd>
     </div>
   </dl>
