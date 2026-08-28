@@ -1,14 +1,20 @@
+"""Build the print-edition PDF from the site's markdown + front-matter.
+
+Clean dark theme (no starfield, no aurora blobs). Every section header and
+page gets a bookmark + outline entry so PDF readers show a real navigable
+sidebar TOC. The printed Contents page uses clickable in-document links.
+"""
+
 from __future__ import annotations
 
 import html
-import random
 import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
 import yaml
-from PIL import Image as PILImage, ImageDraw, ImageFilter, ImageFont
+from PIL import Image as PILImage, ImageDraw, ImageFont
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.pagesizes import A4
@@ -16,8 +22,46 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.pdfdoc import PDFName
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas as _rl_canvas_mod
 from reportlab.platypus import Flowable, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+
+# --- Style PDF viewer hover-highlight on link annotations -----------------
+# Firefox (and some other viewers) draw a bright coloured box over every
+# link annotation on hover, which reads as garish. The PDF spec lets us
+# choose the highlight mode via the annotation's `H` key. Paragraph's
+# <link> tag doesn't expose that kwarg, so we patch the two canvas
+# methods that actually create link annotations to inject a sensible
+# default unless the caller already set one.
+_orig_linkURL = _rl_canvas_mod.Canvas.linkURL
+_orig_linkRect = _rl_canvas_mod.Canvas.linkRect
+
+
+def _linkURL_no_hover(self, url, rect, relative=0, thickness=0, color=None,
+                      dashArray=None, kind="URI", **kw):
+    # H (Highlight Mode): /O = thin outline on hover. /N would kill the
+    # hover cue entirely; /P (default) draws the ugly filled box some
+    # viewers render as bright yellow.
+    kw.setdefault("H", PDFName("O"))
+    return _orig_linkURL(self, url, rect, relative, thickness, color, dashArray, kind, **kw)
+
+
+def _linkRect_no_hover(self, contents, destinationname, Rect=None, addtopage=1,
+                       name=None, relative=1, thickness=0, color=None,
+                       dashArray=None, **kw):
+    # H (Highlight Mode): /O = thin outline on hover. /N would kill the
+    # hover cue entirely; /P (default) draws the ugly filled box some
+    # viewers render as bright yellow.
+    kw.setdefault("H", PDFName("O"))
+    return _orig_linkRect(self, contents, destinationname, Rect, addtopage,
+                          name, relative, thickness, color, dashArray, **kw)
+
+
+_rl_canvas_mod.Canvas.linkURL = _linkURL_no_hover
+_rl_canvas_mod.Canvas.linkRect = _linkRect_no_hover
+# --------------------------------------------------------------------------
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,17 +69,17 @@ DOCS = ROOT / "docs"
 OUT = DOCS / "assets" / "PDFs" / "Salesforce_Training_Guide_Print_Edition.pdf"
 PAGE_W, PAGE_H = A4
 
-BG = colors.HexColor("#090413")
-INK = colors.HexColor("#ead7f5")
-SOFT = colors.HexColor("#d7c2e6")
-MUTED = colors.HexColor("#a995b8")
-PINK = colors.HexColor("#e56bc5")
-RED = colors.HexColor("#c83267")
-PURPLE = colors.HexColor("#9338df")
-YELLOW = colors.HexColor("#f0c21d")
-TILE = colors.Color(20 / 255, 16 / 255, 32 / 255, 0.72)
-TILE_STACK = colors.Color(20 / 255, 16 / 255, 32 / 255, 0.84)
-STROKE = colors.Color(232 / 255, 162 / 255, 255 / 255, 0.16)
+# Dark-mode palette.
+BG            = colors.HexColor("#0e0a1c")   # page background
+PANEL         = colors.HexColor("#191230")   # base tile fill
+PANEL_2       = colors.HexColor("#1e1637")   # nested tile fill
+PANEL_BORDER  = colors.Color(1, 1, 1, 0.08)
+ACCENT        = colors.HexColor("#e56bc5")   # pink accent
+ACCENT_SOFT   = colors.HexColor("#d074c9")
+INK           = colors.HexColor("#ead7f5")   # heading text
+SOFT          = colors.HexColor("#d7c2e6")   # body text
+MUTED         = colors.HexColor("#a995b8")   # captions/small text
+RULE          = colors.Color(1, 1, 1, 0.10)  # subtle horizontal rule
 
 try:
     pdfmetrics.registerFont(TTFont("SegoeEmoji", r"C:\Windows\Fonts\seguiemj.ttf"))
@@ -50,11 +94,11 @@ def fix_text(value: str) -> str:
         "Â": "",
         "â€™": "'",
         "â€œ": '"',
-        "â€": '"',
+        "â€": '"',
         "â€“": "-",
         "â€”": "-",
         "â†’": "->",
-        "Ã¢â€ â€™": "->",
+        "Ã¢â€ â€™": "->",
     }
     for old, new in replacements.items():
         value = value.replace(old, new)
@@ -64,8 +108,12 @@ def fix_text(value: str) -> str:
     return value.strip()
 
 
+def slugify(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-") or "section"
+
+
 def split_front_matter(raw: str) -> tuple[dict, str]:
-    raw = raw.lstrip("\ufeff")
+    raw = raw.lstrip("﻿")
     if raw.startswith("---"):
         _, front, body = raw.split("---", 2)
         return yaml.safe_load(front) or {}, body
@@ -209,103 +257,51 @@ def load_pages() -> list[PageData]:
     return pages
 
 
-class StarCanvas:
-    def __init__(self) -> None:
-        self.rng = random.Random(42)
-        self.base_background = self._make_background()
-        self.page_cache: dict[int, PILImage.Image] = {}
+def draw_background(canvas, doc) -> None:
+    """Solid dark page + thin accent hairline near the bottom, plus page number."""
+    canvas.saveState()
+    canvas.setFillColor(BG)
+    canvas.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
 
-    def _make_background(self) -> PILImage.Image:
-        scale = 2
-        width = int(PAGE_W / mm * 8 * scale)
-        height = int(PAGE_H / mm * 8 * scale)
-        img = PILImage.new("RGB", (width, height), "#090413")
-        haze = PILImage.new("RGBA", (width, height), (0, 0, 0, 0))
-        draw = ImageDraw.Draw(haze, "RGBA")
-        blobs = [
-            (0.14, 0.13, 0.42, (150, 55, 224, 45)),
-            (0.86, 0.78, 0.46, (197, 47, 100, 36)),
-            (0.18, 0.90, 0.32, (240, 194, 29, 16)),
-            (0.72, 0.20, 0.34, (150, 55, 224, 22)),
-        ]
-        for x, y, r, colour in blobs:
-            cx, cy = width * x, height * y
-            radius = min(width, height) * r
-            draw.ellipse((cx - radius, cy - radius, cx + radius, cy + radius), fill=colour)
-        haze = haze.filter(ImageFilter.GaussianBlur(radius=int(min(width, height) * 0.11)))
-        img = PILImage.alpha_composite(img.convert("RGBA"), haze)
-        vignette = PILImage.new("L", (width, height), 0)
-        vdraw = ImageDraw.Draw(vignette)
-        vdraw.ellipse((-width * 0.18, -height * 0.1, width * 1.18, height * 1.08), fill=150)
-        vignette = vignette.filter(ImageFilter.GaussianBlur(radius=int(min(width, height) * 0.08)))
-        shade = PILImage.new("RGBA", (width, height), (0, 0, 0, 62))
-        shade.putalpha(PILImage.eval(vignette, lambda p: max(0, 125 - p)))
-        return PILImage.alpha_composite(img, shade).convert("RGB")
+    # Hairline separator above the page number
+    canvas.setStrokeColor(RULE)
+    canvas.setLineWidth(0.4)
+    canvas.line(18 * mm, 14 * mm, PAGE_W - 18 * mm, 14 * mm)
 
-    def page_background(self, page_number: int) -> PILImage.Image:
-        if page_number in self.page_cache:
-            return self.page_cache[page_number]
-        img = self.base_background.copy().convert("RGBA")
-        draw = ImageDraw.Draw(img, "RGBA")
-        sx = img.width / PAGE_W
-        sy = img.height / PAGE_H
-        page_rng = random.Random(4200 + page_number)
-        star_count = page_rng.randint(20, 27)
-        stars = []
-        for _ in range(star_count):
-            roll = page_rng.random()
-            if roll < 0.76:
-                size = page_rng.uniform(0.26, 0.58)
-                alpha = page_rng.uniform(0.10, 0.26)
-                hero = False
-            elif roll < 0.94:
-                size = page_rng.uniform(0.62, 0.92)
-                alpha = page_rng.uniform(0.18, 0.38)
-                hero = False
-            else:
-                size = page_rng.uniform(0.78, 1.02)
-                alpha = page_rng.uniform(0.24, 0.42)
-                hero = True
-            tint = page_rng.choice([(255, 255, 255), (228, 238, 255), (255, 244, 218), (241, 225, 255)])
-            stars.append((
-                page_rng.uniform(8 * mm, PAGE_W - 8 * mm),
-                page_rng.uniform(8 * mm, PAGE_H - 8 * mm),
-                size,
-                alpha,
-                hero,
-                tint,
-            ))
-        for x, y, size, alpha, hero, tint in stars:
-            px = x * sx
-            py = (PAGE_H - y) * sy
-            r = max(1, size * sx)
-            a = int(255 * alpha)
-            glow_r = r * page_rng.uniform(2.0, 4.2)
-            draw.ellipse((px - glow_r, py - glow_r, px + glow_r, py + glow_r), fill=(*tint, max(8, int(a * 0.13))))
-            draw.ellipse((px - r, py - r, px + r, py + r), fill=(*tint, a))
-            if hero:
-                line_alpha = int(255 * alpha * 0.42)
-                ray = r * page_rng.uniform(2.8, 4.6)
-                cross = r * page_rng.uniform(1.9, 3.2)
-                draw.line((px - ray, py, px + ray, py), fill=(*tint, line_alpha), width=1)
-                draw.line((px, py - cross, px, py + cross), fill=(*tint, int(line_alpha * 0.72)), width=1)
-        self.page_cache[page_number] = img
-        return img
+    canvas.setFillColor(MUTED)
+    canvas.setFont("Helvetica", 8.6)
+    canvas.drawString(18 * mm, 10 * mm, "MindJam · Salesforce Training Guide")
+    canvas.drawRightString(PAGE_W - 18 * mm, 10 * mm, str(canvas.getPageNumber()))
+    canvas.restoreState()
 
-    def draw(self, canvas, doc) -> None:
-        page_img = self.page_background(canvas.getPageNumber())
-        canvas._aur_page_image = page_img
-        canvas.saveState()
-        canvas.drawImage(ImageReader(page_img), 0, 0, PAGE_W, PAGE_H)
 
-        canvas.setFillColor(colors.Color(234 / 255, 215 / 255, 245 / 255, 0.58))
-        canvas.setFont("Helvetica-Bold", 9.6)
-        canvas.drawRightString(PAGE_W - 18 * mm, 10 * mm, str(canvas.getPageNumber()))
-        canvas.restoreState()
+class BookmarkAnchor(Flowable):
+    """Zero-height flowable that records a PDF bookmark + outline entry
+    at its position. Populates the sidebar TOC that PDF readers show and
+    provides destinations for in-document links.
+    """
+
+    def __init__(self, key: str, title: str, level: int = 0):
+        super().__init__()
+        self.key = key
+        self.title = title
+        self.level = level
+        self.width = 0
+        self.height = 0
+
+    def wrap(self, avail_width, avail_height):
+        return 0, 0
+
+    def draw(self):
+        self.canv.bookmarkPage(self.key)
+        # Sections closed by default; pages/steps hang beneath their section.
+        self.canv.addOutlineEntry(self.title, self.key, self.level, closed=(self.level == 0))
 
 
 class Card(Flowable):
-    def __init__(self, story: Iterable[Flowable], stack: int = 1, pad: float = 8 * mm, align: str = "left"):
+    """Rounded panel with body flowables inside."""
+
+    def __init__(self, story: Iterable[Flowable], stack: int = 1, pad: float = 7 * mm, align: str = "left"):
         super().__init__()
         self.story = list(story)
         self.stack = stack
@@ -349,37 +345,12 @@ class Card(Flowable):
         return chunks
 
     def draw(self):
-        alpha = 0.48 if self.stack <= 1 else 0.56 if self.stack == 2 else 0.64
-        fill = colors.Color(TILE.red, TILE.green, TILE.blue, alpha)
+        fill = PANEL if self.stack <= 1 else PANEL_2
         self.canv.saveState()
-        bg = getattr(self.canv, "_aur_page_image", None)
-        if bg is not None:
-            try:
-                abs_x, abs_y = self.canv.absolutePosition(0, 0)
-                sx = bg.width / PAGE_W
-                sy = bg.height / PAGE_H
-                left = max(0, int(abs_x * sx))
-                top = max(0, int((PAGE_H - (abs_y + self.height)) * sy))
-                right = min(bg.width, int((abs_x + self.width) * sx))
-                bottom = min(bg.height, int((PAGE_H - abs_y) * sy))
-                if right > left and bottom > top:
-                    target_w = max(42, int(self.width * 0.82))
-                    target_h = max(42, int(self.height * 0.82))
-                    blur_radius = 5 if self.stack <= 1 else 9 if self.stack == 2 else 14
-                    crop = bg.crop((left, top, right, bottom)).resize((target_w, target_h), PILImage.Resampling.LANCZOS)
-                    crop = crop.filter(ImageFilter.GaussianBlur(radius=blur_radius))
-                    mask = PILImage.new("L", crop.size, 0)
-                    draw = ImageDraw.Draw(mask)
-                    radius_px = max(8, int(6 * mm * 0.82))
-                    draw.rounded_rectangle((0, 0, crop.width - 1, crop.height - 1), radius=radius_px, fill=255)
-                    crop.putalpha(mask)
-                    self.canv.drawImage(ImageReader(crop), 0, 0, self.width, self.height, mask="auto")
-            except Exception:
-                pass
         self.canv.setFillColor(fill)
-        self.canv.setStrokeColor(STROKE)
+        self.canv.setStrokeColor(PANEL_BORDER)
         self.canv.setLineWidth(0.55)
-        self.canv.roundRect(0, 0, self.width, self.height, 6 * mm, fill=1, stroke=1)
+        self.canv.roundRect(0, 0, self.width, self.height, 4.5 * mm, fill=1, stroke=1)
         y = self.height - self.pad
         inner = self.width - self.pad * 2
         for item in self.story:
@@ -393,8 +364,40 @@ class Card(Flowable):
         self.canv.restoreState()
 
 
+class SectionDivider(Flowable):
+    """Big centred section title on its own page, with an accent rule."""
+
+    def __init__(self, title: str):
+        super().__init__()
+        self.title = title
+        self.width = 0
+        self.height = 0
+
+    def wrap(self, avail_width, avail_height):
+        self.width = avail_width
+        self.height = avail_height
+        return avail_width, avail_height
+
+    def draw(self):
+        c = self.canv
+        c.saveState()
+        # Eyebrow "Section" label
+        c.setFillColor(ACCENT_SOFT)
+        c.setFont("Helvetica-Bold", 10)
+        c.drawCentredString(self.width / 2, self.height / 2 + 22 * mm, "SECTION")
+        # Title
+        c.setFillColor(INK)
+        c.setFont("Helvetica-Bold", 30)
+        c.drawCentredString(self.width / 2, self.height / 2 + 8 * mm, self.title)
+        # Accent rule
+        c.setStrokeColor(ACCENT)
+        c.setLineWidth(1.2)
+        c.line(self.width / 2 - 30 * mm, self.height / 2 - 2 * mm, self.width / 2 + 30 * mm, self.height / 2 - 2 * mm)
+        c.restoreState()
+
+
 class RoundedImage(Flowable):
-    def __init__(self, path: Path, width: float, height: float, radius: int = 18):
+    def __init__(self, path: Path, width: float, height: float, radius: int = 14):
         super().__init__()
         self.path = path
         self.draw_width = width
@@ -405,15 +408,9 @@ class RoundedImage(Flowable):
         self.reader = ImageReader(self._rounded())
 
     def _alpha_base(self, img: PILImage.Image) -> tuple[int, int, int, int]:
-        """Choose a flattening colour for transparent PNGs.
-
-        Salesforce screenshots should flatten onto white; transparent
-        diagram-style artwork can keep the dark tile backing.
-        """
         name = self.path.stem.lower()
         if "flow" in name:
             return (16, 9, 26, 255)
-
         sample = img.resize((max(1, min(80, img.width)), max(1, min(80, img.height))))
         visible = []
         for r, g, b, alpha in sample.getdata():
@@ -496,15 +493,17 @@ class EmojiIcon(Flowable):
 
 def styles():
     return {
-        "title": ParagraphStyle("title", fontName="Helvetica-Bold", fontSize=34, leading=38, textColor=INK, alignment=TA_CENTER, spaceAfter=8 * mm),
-        "subtitle": ParagraphStyle("subtitle", fontName="Helvetica", fontSize=12.5, leading=17, textColor=SOFT, alignment=TA_CENTER),
+        "cover_eyebrow": ParagraphStyle("cover_eyebrow", fontName="Helvetica-Bold", fontSize=11, leading=14, textColor=ACCENT_SOFT, alignment=TA_CENTER, spaceAfter=4 * mm),
+        "title": ParagraphStyle("title", fontName="Helvetica-Bold", fontSize=36, leading=40, textColor=INK, alignment=TA_CENTER, spaceAfter=6 * mm),
+        "subtitle": ParagraphStyle("subtitle", fontName="Helvetica", fontSize=13, leading=18, textColor=SOFT, alignment=TA_CENTER),
         "body_center": ParagraphStyle("body_center", fontName="Helvetica", fontSize=10.8, leading=15.8, textColor=SOFT, alignment=TA_CENTER),
-        "h1": ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=24, leading=29, textColor=INK, spaceAfter=5 * mm),
-        "h2": ParagraphStyle("h2", fontName="Helvetica-Bold", fontSize=15, leading=19, textColor=PINK, spaceAfter=2 * mm),
-        "h3": ParagraphStyle("h3", fontName="Helvetica-Bold", fontSize=12.8, leading=16, textColor=INK, spaceAfter=1.5 * mm),
+        "h1": ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=22, leading=27, textColor=INK, spaceAfter=5 * mm),
+        "h2": ParagraphStyle("h2", fontName="Helvetica-Bold", fontSize=15, leading=19, textColor=ACCENT, spaceAfter=2 * mm),
+        "h3": ParagraphStyle("h3", fontName="Helvetica-Bold", fontSize=12.6, leading=16, textColor=INK, spaceAfter=1.5 * mm),
         "body": ParagraphStyle("body", fontName="Helvetica", fontSize=10.5, leading=15.2, textColor=SOFT, alignment=TA_LEFT),
         "small": ParagraphStyle("small", fontName="Helvetica", fontSize=9.2, leading=12.8, textColor=MUTED),
-        "toc": ParagraphStyle("toc", fontName="Helvetica", fontSize=10.5, leading=15, textColor=SOFT),
+        "toc_section": ParagraphStyle("toc_section", fontName="Helvetica-Bold", fontSize=13, leading=18, textColor=INK, spaceBefore=5 * mm, spaceAfter=1.5 * mm),
+        "toc_item": ParagraphStyle("toc_item", fontName="Helvetica", fontSize=10.8, leading=16, textColor=SOFT, leftIndent=6 * mm),
         "emoji": ParagraphStyle("emoji", fontName="SegoeEmoji" if "SegoeEmoji" in pdfmetrics.getRegisteredFontNames() else "Helvetica", fontSize=14, leading=17, textColor=INK, alignment=TA_CENTER),
     }
 
@@ -524,6 +523,9 @@ def inline_markup(text: str) -> str:
         pieces.append(html.escape(text[pos : match.start()]))
         label = html.escape(fix_text(match.group(1)))
         url = reportlab_link(match.group(2))
+        # Underlined + pink accent so URLs read as links in body copy.
+        # The canvas patch adds H=/N to the underlying annotation so PDF
+        # viewers won't draw a hover-highlight box over the link.
         pieces.append(f'<link href="{url}" color="#e56bc5"><u>{label}</u></link>')
         pos = match.end()
     pieces.append(html.escape(text[pos:]))
@@ -537,6 +539,18 @@ def inline_markup(text: str) -> str:
 
 def p(text: str, style: ParagraphStyle) -> Paragraph:
     return Paragraph(inline_markup(text), style)
+
+
+def toc_link(anchor: str, label: str, style: ParagraphStyle) -> Paragraph:
+    """A clickable TOC entry that jumps to a bookmark inside this PDF.
+
+    Renders as plain typography (no colour override, no underline) so
+    it blends in with the printed contents list. The link annotation
+    has H=/N applied by the module-level canvas patch, so PDF viewers
+    won't draw a hover-highlight box over it.
+    """
+    escaped = html.escape(fix_text(label))
+    return Paragraph(f'<link href="#{anchor}">{escaped}</link>', style)
 
 
 def video_url(video: dict | None) -> str | None:
@@ -594,9 +608,9 @@ def status_table(style_map: dict) -> Table:
         data.append([EmojiIcon(icon), p(status, style_map["body"]), p(meaning, style_map["body"])])
     table = Table(data, colWidths=[18 * mm, 40 * mm, 98 * mm], hAlign="CENTER", repeatRows=1)
     table_style = [
-        ("BACKGROUND", (0, 0), (-1, 0), colors.Color(229 / 255, 107 / 255, 197 / 255, 0.18)),
+        ("BACKGROUND", (0, 0), (-1, 0), colors.Color(229 / 255, 107 / 255, 197 / 255, 0.20)),
         ("TEXTCOLOR", (0, 0), (-1, 0), INK),
-        ("GRID", (0, 0), (-1, -1), 0.35, colors.Color(232 / 255, 162 / 255, 255 / 255, 0.18)),
+        ("GRID", (0, 0), (-1, -1), 0.35, colors.Color(1, 1, 1, 0.12)),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("ALIGN", (0, 1), (0, -1), "CENTER"),
         ("LEFTPADDING", (0, 0), (-1, -1), 6),
@@ -605,7 +619,7 @@ def status_table(style_map: dict) -> Table:
         ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
     ]
     for idx, _ in enumerate(rows, start=1):
-        table_style.append(("BACKGROUND", (0, idx), (-1, idx), colors.Color(20 / 255, 16 / 255, 32 / 255, 0.35)))
+        table_style.append(("BACKGROUND", (0, idx), (-1, idx), PANEL_2))
     table.setStyle(TableStyle(table_style))
     return table
 
@@ -618,51 +632,73 @@ def chunked(items: list[str], size: int) -> Iterable[list[str]]:
 def build() -> None:
     style = styles()
     pages = load_pages()
-    star_canvas = StarCanvas()
     doc = SimpleDocTemplate(
         str(OUT),
         pagesize=A4,
         rightMargin=18 * mm,
         leftMargin=18 * mm,
-        topMargin=18 * mm,
-        bottomMargin=18 * mm,
+        topMargin=22 * mm,
+        bottomMargin=22 * mm,
         title="Salesforce Training Guide",
         author="MindJam",
     )
 
     story: list[Flowable] = []
-    story.append(Spacer(1, 36 * mm))
+
+    # ---------- Cover page ----------
+    story.append(BookmarkAnchor("cover", "Cover", 0))
+    story.append(Spacer(1, 60 * mm))
+    story.append(p("MINDJAM", style["cover_eyebrow"]))
     story.append(p("Salesforce Training Guide", style["title"]))
-    story.append(Spacer(1, 12 * mm))
+    story.append(p("Mentor edition", style["subtitle"]))
+    story.append(Spacer(1, 18 * mm))
     intro = next((page for page in pages if page.path.name == "index.md"), None)
     if intro:
         intro_text = [text for text in intro.body[:4] if fix_text(text) != "Salesforce Training Guide"]
-        intro_lines = [p(text, style["body_center"]) for text in intro_text]
-        story.append(Card(intro_lines, stack=1, align="center"))
+        story.append(Card([p(text, style["body_center"]) for text in intro_text], stack=1, align="center"))
     story.append(PageBreak())
 
+    # ---------- Contents (clickable) ----------
+    story.append(BookmarkAnchor("contents", "Contents", 0))
     story.append(p("Contents", style["h1"]))
     current_section = None
     toc_items: list[Flowable] = []
     for idx, page in enumerate([pg for pg in pages if pg.path.name != "index.md"], start=1):
         if page.section != current_section:
             current_section = page.section
-            toc_items.append(p(str(current_section), style["h2"]))
-        toc_items.append(p(f"{idx}. {page.nav_title}", style["toc"]))
+            section_anchor = f"sec-{slugify(str(current_section))}"
+            toc_items.append(toc_link(section_anchor, str(current_section), style["toc_section"]))
+        page_anchor = f"page-{idx}"
+        toc_items.append(toc_link(page_anchor, f"{idx}. {page.nav_title}", style["toc_item"]))
     story.append(Card(toc_items, stack=1))
     story.append(PageBreak())
 
+    # ---------- Body ----------
     section = None
     number = 0
     for page in pages:
         if page.path.name == "index.md":
             continue
         number += 1
+
+        # Section divider page (starts a new section) — with outline entry.
         if page.section != section:
             section = page.section
-            story.append(p(str(section), style["h1"]))
-        story.append(Card([p(f"{number}. {page.nav_title}", style["h2"]), p(page.description or page.title, style["body"])], stack=1))
+            section_anchor = f"sec-{slugify(str(section))}"
+            story.append(BookmarkAnchor(section_anchor, str(section), 0))
+            story.append(SectionDivider(str(section)))
+            story.append(PageBreak())
+
+        # Page starts here — bookmark hangs off its section in the outline.
+        page_anchor = f"page-{number}"
+        story.append(BookmarkAnchor(page_anchor, f"{number}. {page.nav_title}", 1))
+
+        story.append(Card(
+            [p(f"{number}. {page.nav_title}", style["h2"]), p(page.description or page.title, style["body"])],
+            stack=1,
+        ))
         story.append(Spacer(1, 4 * mm))
+
         watch_url = video_url(page.video)
         if watch_url:
             video_title = fix_text(str(page.video.get("title") or f"{page.nav_title} video"))
@@ -670,13 +706,19 @@ def build() -> None:
             story.append(Spacer(1, 4 * mm))
 
         if page.steps:
-            for step in page.steps:
+            for step_idx, step in enumerate(page.steps, start=1):
                 title = str(step.get("title") or "Step")
                 raw_body = str(step.get("body") or "")
                 is_status_step = page.path.name == "using-calendar-events.md" and "Coloured Square" in title
                 if is_status_step:
                     raw_body = raw_body.split("**Key:**", 1)[0]
                 chunks = markdown_to_chunks(raw_body)
+
+                # Bookmark each step as a level-2 outline entry so the sidebar
+                # tree lets the reader jump straight to a specific step.
+                step_anchor = f"page-{number}-step-{step_idx}"
+                story.append(BookmarkAnchor(step_anchor, f"{step_idx}. {fix_text(title)}", 2))
+
                 first = True
                 for group in chunked(chunks, 3):
                     flows: list[Flowable] = []
@@ -715,7 +757,7 @@ def build() -> None:
                     story.append(Spacer(1, 4 * mm))
         story.append(PageBreak())
 
-    doc.build(story, onFirstPage=star_canvas.draw, onLaterPages=star_canvas.draw)
+    doc.build(story, onFirstPage=draw_background, onLaterPages=draw_background)
     print(f"Wrote {OUT} ({OUT.stat().st_size:,} bytes)")
 
 
