@@ -19,9 +19,26 @@ steps:
   - title: Open the Mentee's Page
     body: |
       In the **Assigned Mentee Name** column — the second column in the table — click on the mentee's name. The name is shown as a hyperlink. You will then be taken to the mentee's page, where you can view their session notes.
+
+      **Tip:** Hover your mouse over the image below to highlight the correct column.
+
+      <figure class="aur-hover-swap" tabindex="0" aria-label="Hover to highlight the Assigned Mentee Name column">
+        <img class="aur-hover-swap__base" src="../assets/images/accessing-historical-session-notes/assigned-mentees-table.png" alt="Assigned Mentees table with Client, Assigned Mentee Name, and Mentee ID columns">
+        <img class="aur-hover-swap__hover" src="../assets/images/accessing-historical-session-notes/assigned-mentees-table-highlight.png" alt="Assigned Mentees table with the Assigned Mentee Name column highlighted">
+      </figure>
+  - title: Find the Session Notes Section
+    body: |
+      On the mentee's page, look for the **Session Notes** section. This is where notes from wrapped-up sessions are listed. If the section is collapsed, click the arrow next to **Session Notes** to open it.
+
+      **Tip:** Hover your mouse over the image below to highlight the Session Notes section.
+
+      <figure class="aur-hover-swap" tabindex="0" aria-label="Hover to highlight the Session Notes section">
+        <img class="aur-hover-swap__base" src="../assets/images/accessing-historical-session-notes/assigned-mentee-page-session-notes.png" alt="Assigned mentee page showing the Session Notes section below the status area">
+        <img class="aur-hover-swap__hover" src="../assets/images/accessing-historical-session-notes/assigned-mentee-page-session-notes-highlight.png" alt="Assigned mentee page with the Session Notes section highlighted">
+      </figure>
   - title: Edit a Note
     body: |
-      To edit any of your notes, click the small **pencil icon** next to the relevant note. This will allow you to make changes to that note and save them.
+      To edit any of your notes, click the small **pencil icon** <span class="aur-pencil-example" role="img" aria-label="Pencil icon example">"🖉"</span> next to the relevant note. This will allow you to make changes to that note and save them.
   - title: How Notes Get Here
     body: |
       Each time you [wrap up a session](../wrap-up-a-session/), the session notes will be added to this section automatically. You do not need to copy or move them yourself — they will appear against the mentee as soon as the session is wrapped up.

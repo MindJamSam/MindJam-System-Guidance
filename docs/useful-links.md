@@ -5,7 +5,7 @@ description: Quick access to all key links from across the training guide, group
 accordion_toolbar: true
 ---
 
-<div class="aur-term-accordion" data-aur-accordion>
+<div class="aur-term-accordion aur-term-accordion--useful-links" data-aur-accordion>
 
 <details class="aur-term-section aur-tile" open>
   <summary class="aur-term-section__summary">

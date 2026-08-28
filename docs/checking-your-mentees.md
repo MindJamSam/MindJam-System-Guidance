@@ -5,7 +5,7 @@ description: How to make sure all your assigned mentees have come across, and wh
 steps:
   - title: Why This Step Matters
     body: |
-      Before you start using Salesforce properly, it is worth taking a moment to check that all of your mentees are on your assigned mentee list. Because of the timing of the recent data transfer, a small number of mentees may not have come across yet, and you will not be able to set up sessions with anyone who is missing from the list.
+      Before you start using Salesforce properly, it is worth taking a moment to **check that all of your mentees are on your assigned mentee list**. Because of the timing of the **recent data transfer**, a small number of mentees may not have come across yet, and you **will not be able to set up sessions** with anyone who is missing from the list.
   - title: How to Check Your Mentees
     body: |
       There are a few quick ways to see who should be on your list:
@@ -19,12 +19,18 @@ steps:
     body: |
       If someone is missing, all you need to do is send a quick email to the **Assigning** team and let them know. You can use the template below and pop the mentee's name in where it says.
 
-      <div style="background: var(--aur-bg-elev-1, rgba(255,255,255,0.03)); border: 1px solid var(--aur-border-strong, rgba(255,255,255,0.12)); border-radius: 12px; padding: 18px 20px; margin: 14px 0 4px; line-height: 1.65;">
-        <p style="margin: 0 0 10px;">Dear Assigning Team,</p>
-        <p style="margin: 0 0 10px;">I've just logged into the new system and noticed that <em>[please replace with the mentees name]</em> is not showing on my mentee list.</p>
-        <p style="margin: 0 0 10px;">Could you please arrange for their record to be transferred over so I can start setting up sessions with them?</p>
-        <p style="margin: 0;">Thanks!</p>
+      <div class="aur-email-template" aria-label="Email template">
+        <div class="aur-email-template__bar">
+          <span class="aur-email-template__to">To: assigning@mindjam.org.uk</span>
+        </div>
+        <div class="aur-email-template__body">
+          <p>Dear Assigning Team,</p>
+          <p>I've just logged into the new system and noticed that <em>[please replace with the mentees name]</em> is not showing on my mentee list.</p>
+          <p>Could you please arrange for their record to be transferred over so I can start setting up sessions with them?</p>
+          <p>Thanks!</p>
+        </div>
       </div>
+    copy_align: center
     copy:
       - label: "Email: assigning@mindjam.org.uk"
         value: assigning@mindjam.org.uk
@@ -37,7 +43,14 @@ steps:
           Could you please arrange for their record to be transferred over so I can start setting up sessions with them?
 
           Thanks!
+        html: |
+          <p>Dear Assigning Team,</p>
+          <p>I've just logged into the new system and noticed that <strong>[please replace with the mentees name]</strong> is not showing on my mentee list.</p>
+          <p>Could you please arrange for their record to be transferred over so I can start setting up sessions with them?</p>
+          <p>Thanks!</p>
   - title: Important
+    marker: "!"
+    variant: warning
     body: |
       If a mentee is not on your list yet, you **will not be able to set up sessions with them**. Their data may **still be on its way over to Salesforce**, or they might still be **linked to another mentor** while things are being tidied up. Without that link, the system has **no way of knowing a session with them took place**.
 

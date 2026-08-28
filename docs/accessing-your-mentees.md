@@ -10,22 +10,68 @@ steps:
   - title: Overview
     body: |
       To access your mentees, go to **Appointment Management** and then click **My Mentees**.
-  - title: What You Can See in My Mentees
+  - title: Understanding the My Mentees List
     body: |
-      Here, you can see:
+      When you click **My Mentees**, you will be taken to a list of the young people currently assigned to you.
 
-      - the mentee's name
-      - the start date
+      In this list, the mentee's name appears in two places. This is intentional. Each name opens a different type of record.
 
-      This gives you a quick view of the young people currently linked to you.
+      Click each **Joe Bloggs** name below to compare the shared **Client** record with your **Assigned Mentee Name** record.
+
+      <div class="aur-mentee-picker" data-aur-mentee-picker aria-label="Assigned Mentees clickable example">
+        <div class="aur-mentee-picker__list">
+          <h4 class="aur-mentee-picker__heading">Assigned Mentees</h4>
+          <div class="aur-mentee-picker__table" role="table" aria-label="Assigned Mentees example list">
+            <div class="aur-mentee-picker__cell aur-mentee-picker__cell--head" role="columnheader">Client</div>
+            <div class="aur-mentee-picker__cell aur-mentee-picker__cell--head" role="columnheader">Assigned Mentee Name</div>
+            <div class="aur-mentee-picker__cell aur-mentee-picker__cell--head" role="columnheader">Mentee ID</div>
+            <div class="aur-mentee-picker__cell" role="cell">
+              <button class="aur-mentee-picker__link" type="button" data-aur-mentee-record="client" aria-pressed="true">Joe Bloggs</button>
+            </div>
+            <div class="aur-mentee-picker__cell" role="cell">
+              <button class="aur-mentee-picker__link" type="button" data-aur-mentee-record="assigned" aria-pressed="false">Joe Bloggs</button>
+            </div>
+            <div class="aur-mentee-picker__cell" role="cell">MRVJV4</div>
+          </div>
+        </div>
+
+        <div class="aur-mentee-picker__detail" aria-live="polite">
+          <div class="aur-mentee-picker__selected">
+            <span class="aur-mentee-picker__selected-label">Selected column</span>
+            <strong class="aur-mentee-picker__selected-title">Client</strong>
+            <span class="aur-mentee-picker__selected-type">Universal account</span>
+          </div>
+          <div class="aur-mentee-picker__panel" data-aur-mentee-panel="client">
+            <ul class="aur-mentee-picker__bullets">
+              <li><strong>Shared record</strong> for the young person.</li>
+              <li>Other mentors may see this <strong>shared record</strong> if they also work with this mentee.</li>
+              <li>Use this for <strong>general information</strong> about the young person.</li>
+            </ul>
+            <div class="aur-mentee-picker__important">
+              <strong>Important</strong>
+              <ul>
+                <li>You will <strong>not be able to see another mentor's session notes here</strong>.</li>
+                <li>Your own <strong>session notes</strong> and <strong>historic notes from the previous system</strong> are <strong>not stored under Client</strong>.</li>
+                <li>For <strong>notes linked to your work with the mentee</strong>, click <strong>Assigned Mentee Name</strong> instead.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="aur-mentee-picker__panel" data-aur-mentee-panel="assigned" hidden>
+            <ul class="aur-mentee-picker__bullets">
+              <li><strong>Mentor-specific record</strong> for this mentee.</li>
+              <li>Visible to <strong>you as the mentor</strong>, and to <strong>SLT</strong> in the background if needed.</li>
+              <li>Use this to find the link to their <strong>historic notes on Google Drive</strong>.</li>
+              <li>Use this to see <strong>your session notes</strong> from sessions with this mentee.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
   - title: Opening a Mentee Profile
     body: |
-      To open a mentee's profile, click on their name. Inside the profile, you can view useful information about the young person, including background details that may help you prepare for sessions. You will also see a description box.
+      To open a mentee's profile, click on their name. Inside the profile, you can view useful information about the young person, including background details that may help you prepare for sessions.
     media:
       - src: assets/images/accessing-your-mentees/open-mentee-profile.webm
         alt: Opening a mentee profile by clicking on the mentee name
-      - src: assets/images/accessing-your-mentees/mentee-description-box.png
-        alt: Description box shown on the mentee profile
   - title: Viewing the Full Form Submission
     body: |
       From the mentee's profile, you can also open the full form submission. This shows the information completed by the parent, school, or local authority when the young person was referred. This can help you understand more about the mentee before sessions begin.
@@ -61,14 +107,30 @@ steps:
       - src: assets/images/accessing-your-sessions/off-board-a-mentee.webm
         alt: Off-boarding a mentee from their profile
   - title: Important!
+    marker: "!"
+    variant: warning
     body: |
-      As part of the data transfer from Google Workspace to Salesforce, there could be some discrepancies, so please check your mentee list carefully.
+      <div class="aur-transfer-check">
+        <p class="aur-transfer-check__lead"><strong>Check your mentee list carefully.</strong> As part of the data transfer from Google Workspace to Salesforce, there could be some discrepancies.</p>
 
-      If you have mentees that are no longer with you, please **off-board** them.
+        <div class="aur-transfer-check__items">
+          <div class="aur-transfer-check__item">
+            <strong>Mentees no longer with you?</strong>
+            <span>Please <strong>off-board</strong> them.</span>
+          </div>
 
-      If you have new mentees that should be on your mentee list but are not, please contact **Assigning** at the address below.
+          <div class="aur-transfer-check__item">
+            <strong>New mentees missing from your list?</strong>
+            <span>Please contact <strong>Assigning</strong> at the address below.</span>
+          </div>
 
-      If your mentee's **address or contact details are out of date**, please contact a member of **SLT** with the mentee's name and the new contact information. A member of SLT will then update this for you.
+          <div class="aur-transfer-check__item">
+            <strong>Address or contact details out of date?</strong>
+            <span>Please contact a member of <strong>SLT</strong> with the mentee's name and the new contact information. A member of SLT will update this for you.</span>
+          </div>
+        </div>
+      </div>
+    copy_align: center
     copy:
       - label: "Email: assigning@mindjam.org.uk"
         value: assigning@mindjam.org.uk

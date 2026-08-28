@@ -6,6 +6,9 @@ media:
   src: assets/images/update-games-equipment-preferences/open-update-preferences-form.webm
   alt: Option 1 for opening Update Preferences
   header: Opening Update Preferences
+video:
+  src: https://www.youtube-nocookie.com/embed/fMMA673ZBf4?rel=0
+  title: Update Games and Equipment video
 steps:
   - title: How to Open Update Preferences
     body: |
@@ -13,20 +16,22 @@ steps:
 
       *Option 1:*
 
-      - Go to **My Account**
+      - Go to [**My Account**](https://mindjam.my.site.com/Portal/s/comm-my-account)
       - Click **My Account** again
       - In the top right, click **Update Games and Equipment** Flow
 
+      ![Update Games and Equipment flow prompt](assets/images/update-games-equipment-preferences/update-games-equipment-flow-prompt.png)
+
       *Option 2:*
 
-      - Go to the **Home Page**
+      - Go to the [**Home Page**](https://mindjam.my.site.com/Portal/s/)
       - Scroll to the bottom
       - Click **Update Preferences**
 
       This will open the **Update Games and Equipment** flow.
     media:
-      - src: assets/images/update-games-equipment-preferences/update-game-selection.webm
-        alt: Option 2 for opening Update Preferences from the home page
+      - src: assets/images/update-games-equipment-preferences/update-preferences-tile.png
+        alt: Update Preferences tile on the home page
   - title: What a Flow Means
     body: |
       A flow in Salesforce is a **step-by-step form** that guides you through a process. In this case, it simply asks you to enter information about your: games, equipment, interests, skills, preferences. Click **Next** to begin.
@@ -35,7 +40,7 @@ steps:
         alt: Start of the Update Preferences flow
   - title: "Step 1: Add Your Games"
     body: |
-      You will first see a list of games. Tick the games you currently have access to. Some of the game options may be a little **out of date**. These are being reviewed and updated over time. If you have access to any of MindJam's most commonly used games, please make sure you tick them where relevant, including:
+      You will first see a list of games. Tick the games you currently have access to. If you have access to any of MindJam's most commonly used games, please make sure you tick them where relevant, including:
 
       - Roblox
       - Fortnite

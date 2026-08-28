@@ -48,6 +48,24 @@ steps:
     media:
       - src: assets/images/wrap-up-a-session/open-session-recording.webm
         alt: Opening the session recording and starting a cancellation
+  - title: If You Need to Pause a Repeating Session
+    body: |
+      If you need to cancel **one session**, use the normal **Cancel Session** option above.
+
+      If there is a planned break, such as a school holiday, annual leave, or a mentee being away for a few weeks, it may be quicker to pause the repeating pattern instead of cancelling each session one by one.
+
+      To do this:
+
+      - open the first session that should not go ahead
+      - use **Delete Series**
+      - choose the option that removes **this event and the following series**
+      - set the repeating session back up again from the date sessions should restart
+
+      This keeps the calendar cleaner and avoids you having to cancel several sessions individually.
+
+      **Important:** only use this when the repeating sessions are stopping for a planned period. If you are only cancelling one session, use **Cancel Session** instead.
+
+      For more detail on how **Delete Series** works, see the [Deleting an Event](../using-calendar-events/#step-8) section.
   - title: If Something Is Missing
     body: |
       Occasionally, the system may stop you from finishing the wrap up because some information is missing. In that case:

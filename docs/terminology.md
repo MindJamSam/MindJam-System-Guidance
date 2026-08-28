@@ -5,7 +5,7 @@ description: A plain-English guide to common Salesforce terms used across the Co
 accordion_toolbar: true
 ---
 
-<div class="aur-term-accordion" data-aur-accordion>
+<div class="aur-term-accordion aur-term-accordion--terminology" data-aur-accordion>
 
 <details class="aur-term-section aur-tile" open>
   <summary class="aur-term-section__summary">
