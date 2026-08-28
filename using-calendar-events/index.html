@@ -17,9 +17,59 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Calendar Events">
   <meta name="twitter:description" content="How to create, view, and manage calendar events and bookings for mentoring sessions. Includes session statuses such as attended, cancelled, late notice cancellation, and mentee no-show.">
-  <meta name="twitter:image" content="https://mindjamsam.github.io/MindJam-System-Guidance/assets/images/brand/video-poster.jpg">
+  <meta name="twitter:image" content="https://mindjamsam.github.io/MindJam-System-Guidance/assets/images/brand/video-poster.jpg"><style id="aur-fouc-guard">
+    html.aur-fouc-hide { visibility: hidden; }
+    /* While `aur-preload` is on <html>, ALL CSS transitions and
+       animations are suppressed — this prevents grid-template-rows,
+       chevron rotate, and other stateful transitions from animating
+       from their default to their initial state on first paint (which
+       reads as "sidebar sections flash open then close" on navigation).
+       Removed a couple of frames after `load` so real user interactions
+       animate normally. */
+    html.aur-preload *,
+    html.aur-preload *::before,
+    html.aur-preload *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  </style>
+  <script>
+    (function () {
+      var root = document.documentElement;
+      root.classList.add('aur-fouc-hide');
+      root.classList.add('aur-preload');
+      function reveal() { root.classList.remove('aur-fouc-hide'); }
+      function enableTransitions() { root.classList.remove('aur-preload'); }
+      function afterPaint() {
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            reveal();
+            /* Wait one more frame after reveal so the browser has
+               painted the final state before transitions turn on. */
+            requestAnimationFrame(enableTransitions);
+          });
+        });
+      }
+      /* Fire on DOMContentLoaded rather than `load` — CSS is applied
+         and the DOM is parsed by then, but images are still loading.
+         Waiting for `load` on a cold cache could take multiple seconds,
+         long enough for the safety-timeout escape hatch to trigger and
+         re-introduce the chevron-flash bug this guard was built to
+         prevent. */
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', afterPaint, { once: true });
+      } else {
+        afterPaint();
+      }
+      /* Safety net — reveal + enable transitions after 3s no matter
+         what. Long enough that a slow cold-cache DOMContentLoaded
+         beats it in practice; short enough that a genuinely broken
+         page still becomes visible. */
+      setTimeout(function () { reveal(); enableTransitions(); }, 3000);
+    })();
+  </script>
 
-  <link rel="stylesheet" href="../assets/stylesheets/aurora.css?v=20260523-clean-pngs"><script>
+  <link rel="stylesheet" href="../assets/stylesheets/aurora.css?v=20260828-new-defaults"><script>
     window.__AURORA_DEFAULTS__ = {
       fontStack:     null,
       fontSize:      1.05,
@@ -28,9 +78,9 @@
       colour1:       '#e6b71d',
       colour2:       '#c52f64',
       colour3:       '#9734e4',
-      bgOpacity:     0.15,
-      tileColour:    '#141020',
-      tileOpacity:   1,
+      bgOpacity:     0.25,
+      tileColour:    '#261b48',
+      tileOpacity:   0.75,
       tileBlur:      3,
       headingColour: '#e7c5f3',
       textColour:    '#dbc4e9',
@@ -531,37 +581,78 @@
                 <div class="aur-step__detail">
                   <div class="aur-step__detail-inner">
                     
-                      <div class="aur-step__prose aur-prose"><ul>
-<li><em>Event Name</em> — This can be anything you choose. We recommend using the mentee's full name so it is easy to find later.</li>
-<li><em>Description</em> — If you are using Google Meet, you can paste the meeting link here.</li>
-<li><em>Type</em> — You will see a list of event types:</li>
-<li><strong>Mentoring &amp; Other Paid Work</strong> — MindJam Mentoring: normal sessions at your hourly rate. Other Paid Work: work that is not mentoring, paid at your hourly rate.</li>
-<li><strong>Group Sessions</strong> — Adventure Guild: D&amp;D (Dungeons &amp; Dragons) sessions. Group Session: standard group sessions.</li>
-<li><strong>Fixed Rate Meetings (£40)</strong> — Meeting (Charged), Official Meeting, and Report (Charged): formal meetings or reports you can charge for at a fixed rate.</li>
-<li><strong>Non-Chargeable / Internal</strong> — Report, Parent/Carer Meeting, and Personal Time: for internal use, initial meetings, or blockers. These are not billed.</li>
-<li><strong>Types to Ignore</strong> — BlockJam Counselling, Counselling, Training (may be removed).</li>
-</ul></div>
-                    
-                      <div class="aur-step__copies">
-                        <button type="button"
-          class="aur-copy"
-          data-aur-copy="https://meet.new/"
-          aria-label="Copy Google Meet URL: https://meet.new/">
-    <span class="aur-copy__icon" aria-hidden="true">
-      <svg class="aur-copy__icon-default" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
-        <rect x="9" y="9" width="11" height="11" rx="2"/>
-        <path d="M5 15V6a2 2 0 0 1 2-2h9"/>
-      </svg>
-      <svg class="aur-copy__icon-done" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M5 12l5 5L20 7"/>
-      </svg>
-    </span>
-    <span class="aur-copy__label">
-      <span class="aur-copy__label-default">Google Meet URL: https://meet.new/</span>
-      <span class="aur-copy__label-done">Copied</span>
-    </span>
-  </button>
-                      </div>
+                      <div class="aur-step__prose aur-prose"><div class="aur-calendar-details">
+  <div class="aur-calendar-details__head">
+    <p class="aur-calendar-details__lead">Add the key information first, then choose the event type that matches the work you are recording.</p>
+    <button type="button" class="aur-copy aur-calendar-details__copy" data-aur-copy="https://meet.new/" aria-label="Copy Google Meet URL: https://meet.new/">
+      <span class="aur-copy__icon" aria-hidden="true">
+        <svg class="aur-copy__icon-default" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+          <rect x="9" y="9" width="11" height="11" rx="2"/>
+          <path d="M5 15V6a2 2 0 0 1 2-2h9"/>
+        </svg>
+        <svg class="aur-copy__icon-done" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12l5 5L20 7"/>
+        </svg>
+      </span>
+      <span class="aur-copy__label">
+        <span class="aur-copy__label-default">Google Meet URL: https://meet.new/</span>
+        <span class="aur-copy__label-done">Copied</span>
+      </span>
+    </button>
+  </div>
+
+  <div class="aur-calendar-details__layout">
+    <div class="aur-calendar-details__fields">
+      <div class="aur-calendar-details__field">
+        <span class="aur-calendar-details__label">Event Name</span>
+        <p>Use anything clear. The mentee's full name is usually easiest to find later.</p>
+        <span class="aur-calendar-details__example">Example: Joe Bloggs session</span>
+      </div>
+
+      <div class="aur-calendar-details__field">
+        <span class="aur-calendar-details__label">Description</span>
+        <p>If you are using Google Meet, paste the meeting link here.</p>
+        <span class="aur-calendar-details__example">https://meet.new/</span>
+      </div>
+    </div>
+
+    <div class="aur-calendar-details__types">
+      <div class="aur-calendar-details__types-title">Type options</div>
+
+      <div class="aur-calendar-details__type-row">
+        <span class="aur-calendar-details__type-name">Mentoring &amp; Other Paid Work</span>
+        <ul>
+          <li><strong>MindJam Mentoring:</strong> normal sessions at your hourly rate.</li>
+          <li><strong>Other Paid Work:</strong> work that is not mentoring, paid at your hourly rate.</li>
+        </ul>
+      </div>
+
+      <div class="aur-calendar-details__type-row">
+        <span class="aur-calendar-details__type-name">Group Sessions</span>
+        <ul>
+          <li><strong>Adventure Guild:</strong> D&amp;D sessions.</li>
+          <li><strong>Group Session:</strong> standard group sessions.</li>
+        </ul>
+      </div>
+
+      <div class="aur-calendar-details__type-row">
+        <span class="aur-calendar-details__type-name">Fixed Rate Meetings (£40)</span>
+        <ul>
+          <li><strong>Meeting (Charged), Official Meeting, Report (Charged):</strong> formal meetings or reports charged at a fixed rate.</li>
+        </ul>
+      </div>
+
+      <div class="aur-calendar-details__type-row">
+        <span class="aur-calendar-details__type-name">Non-Chargeable / Internal</span>
+        <ul>
+          <li><strong>Report, Parent/Carer Meeting, Personal Time:</strong> internal use, initial meetings, or blockers. These are not billed.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <p class="aur-calendar-details__ignore"><strong>Types to Ignore:</strong> BlockJam Counselling, Counselling, and Training may appear in the list, but mentors should ignore them.</p>
+</div></div>
                     
                     
                   </div>
@@ -590,7 +681,7 @@
                   <div class="aur-step__detail-inner">
                     
                       <div class="aur-step__prose aur-prose"><ul>
-<li><em>Repeat</em> — If the session repeats, you can choose how often: weekly, monthly, yearly. If needed, you can also add an end date for the series. For example, if a session will only run for a set number of weeks, you can set when it should stop.</li>
+<li><em>Repeat</em> — If the <strong>session repeats</strong>, you can choose how often: <strong>weekly, monthly, or yearly</strong>. If needed, you can also add an <strong>end date</strong> for the series. We encourage setting repeating sessions to <strong>end in September</strong>. This can save time during the <strong>summer holidays</strong>, when you may otherwise need to <strong>cancel lots of sessions one by one</strong>.</li>
 <li><em>Related To and System Information</em> — You can ignore these fields. <strong>Please do not change them.</strong></li>
 </ul>
 <p>Once everything is complete, click <strong>Save</strong>.</p></div>
@@ -634,12 +725,74 @@
                 <div class="aur-step__detail">
                   <div class="aur-step__detail-inner">
                     
-                      <div class="aur-step__prose aur-prose"><p>To delete an event, open it and use the <strong>Delete Series</strong> option. Despite the name, this does more than one thing. You will then be asked whether you want to delete:</p>
-<ul>
-<li>just this event, or</li>
-<li>this event and the following series</li>
-</ul>
-<p>So even though the button says Delete Series, you can still choose to remove only one event.</p></div>
+                      <div class="aur-step__prose aur-prose"><div class="aur-delete-demo__intro">
+  <p>To delete an event, open it and use the <strong>Delete Series</strong> option. Despite the name, this does more than one thing. You will then be asked whether you want to delete:</p>
+
+  <ul>
+    <li>just this event, or</li>
+    <li>this event and the following series</li>
+  </ul>
+
+  <p>So even though the button says Delete Series, you can still choose to remove only one event.</p>
+</div>
+
+<div class="aur-delete-demo" data-aur-delete-demo data-delete-preview="single">
+  <div class="aur-delete-demo__top">
+    <span class="aur-delete-demo__button-label">Delete Series Example</span>
+    <p>If you only need to delete one session, choose <strong>Just this event</strong>. If you want to delete that session and all future sessions in the same series, choose <strong>This event and following series</strong>.</p>
+  </div>
+
+  <div class="aur-delete-demo__choices" role="group" aria-label="Delete Series preview options">
+    <button type="button" class="aur-delete-demo__choice" data-delete-mode="single" aria-pressed="true">Just this event</button>
+    <button type="button" class="aur-delete-demo__choice" data-delete-mode="following" aria-pressed="false">This event and following series</button>
+  </div>
+
+  <div class="aur-delete-demo__calendar" aria-label="Weekly session preview">
+    <span class="aur-delete-demo__corner">Time</span>
+    <span class="aur-delete-demo__day">Mon</span>
+    <span class="aur-delete-demo__day">Tue</span>
+    <span class="aur-delete-demo__day aur-delete-demo__day--current">Wed</span>
+    <span class="aur-delete-demo__day">Thu</span>
+    <span class="aur-delete-demo__day">Fri</span>
+
+    <span class="aur-delete-demo__time">9:00-10:00</span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+
+    <span class="aur-delete-demo__time">10:00-11:00</span>
+    <span class="aur-delete-demo__cell"><span class="aur-delete-demo__session aur-delete-demo__session--past" aria-label="Monday session remains"></span></span>
+    <span class="aur-delete-demo__cell"><span class="aur-delete-demo__session aur-delete-demo__session--past" aria-label="Tuesday session remains"></span></span>
+    <span class="aur-delete-demo__cell aur-delete-demo__cell--current"><span class="aur-delete-demo__session aur-delete-demo__session--current" aria-label="Wednesday selected session"></span></span>
+    <span class="aur-delete-demo__cell"><span class="aur-delete-demo__session aur-delete-demo__session--future" aria-label="Thursday future session"></span></span>
+    <span class="aur-delete-demo__cell"><span class="aur-delete-demo__session aur-delete-demo__session--future" aria-label="Friday future session"></span></span>
+
+    <span class="aur-delete-demo__time">11:00-12:00</span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+
+    <span class="aur-delete-demo__time">12:00-1:00</span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+
+    <span class="aur-delete-demo__time">1:00-2:00</span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+    <span class="aur-delete-demo__cell"></span>
+  </div>
+
+  <p class="aur-delete-demo__caption" data-delete-caption>Preview: only the Wednesday event is removed. Monday and Tuesday stay, and the future sessions stay.</p>
+</div></div>
                     
                     
                       <div class="aur-step__media">
@@ -670,12 +823,6 @@
 </ul></div>
                     
                     
-                      <div class="aur-step__media">
-                        <video class="aur-step__media-img" loop muted playsinline preload="none" data-aur-lazy-video disablepictureinpicture controlslist="nopictureinpicture nodownload noremoteplayback">
-                              <source data-src="../assets/images/using-calendar-events/open-existing-calendar-event.webm" type="video/webm">
-                            </video>
-                      </div>
-                    
                   </div>
                 </div>
               </div>
@@ -684,7 +831,7 @@
         <div class="aur-video-panel__embed">
           <button class="aur-video-lite"
                   type="button"
-                  data-aur-video-src="https://www.youtube-nocookie.com/embed/DrtSBTkWnXg?rel=0"
+                  data-aur-video-src="https://www.youtube-nocookie.com/embed/FilILtVmi7Q?rel=0"
                   data-aur-video-title="Using Calendar Events video"
                   aria-label="Play video: Using Calendar Events video">
             <img class="aur-video-lite__poster"
@@ -707,20 +854,7 @@
           <span>Continue</span>
           <span aria-hidden="true">&rarr;</span>
         </a></nav></main>
-  </div><button type="button"
-          class="aur-anim-toggle"
-          data-aur-anim-toggle
-          aria-pressed="false"
-          aria-label="Pause animations">
-    <svg class="aur-anim-toggle__icon aur-anim-toggle__icon-pause" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
-      <rect x="6" y="5" width="4" height="14" rx="1"/>
-      <rect x="14" y="5" width="4" height="14" rx="1"/>
-    </svg>
-    <svg class="aur-anim-toggle__icon aur-anim-toggle__icon-play" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
-      <path d="M7 4.5v15a1 1 0 0 0 1.55.83l11-7.5a1 1 0 0 0 0-1.66l-11-7.5A1 1 0 0 0 7 4.5z"/>
-    </svg>
-    <span class="aur-anim-toggle__label">Pause animations</span>
-  </button><div class="aur-fab-wrap">
+  </div><div class="aur-fab-wrap">
     <div class="aur-fab-menu" id="aur-fab-menu" role="menu" aria-labelledby="aur-fab" aria-hidden="true">
       <button type="button" class="aur-fab-menu__item" data-aur-fab-action="prefs" role="menuitem">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -732,17 +866,6 @@
           <line x1="17" y1="16" x2="23" y2="16"/>
         </svg>
         <span>Appearance</span>
-      </button>
-      <button type="button" class="aur-fab-menu__item aur-fab-menu__item--anim" data-aur-fab-action="anim" role="menuitem" aria-pressed="false">
-        <svg class="aur-fab-menu__icon-pause" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
-          <rect x="6" y="5" width="4" height="14" rx="1"/>
-          <rect x="14" y="5" width="4" height="14" rx="1"/>
-        </svg>
-        <svg class="aur-fab-menu__icon-play" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
-          <path d="M7 4.5v15a1 1 0 0 0 1.55.83l11-7.5a1 1 0 0 0 0-1.66l-11-7.5A1 1 0 0 0 7 4.5z"/>
-        </svg>
-        <span class="aur-fab-menu__label-pause">Pause animations</span>
-        <span class="aur-fab-menu__label-play">Resume animations</span>
       </button>
       <button type="button" class="aur-fab-menu__item aur-fab-menu__item--dev" data-aur-fab-action="dev" role="menuitem">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1273,42 +1396,6 @@
                 <span class="aur-prefs-switch__track" aria-hidden="true"></span>
               </label>
             </div>
-            <div class="aur-prefs-field aur-prefs-field--colours">
-              <span class="aur-prefs-label">Colour mix</span>
-              <div class="aur-prefs-colour-row">
-                <div class="aur-prefs-picker" id="aur-pref-colour-1-picker">
-                  <button type="button" class="aur-picker__swatch" aria-expanded="false" aria-label="Backdrop colour 1"></button>
-                  <div class="aur-picker__pop" hidden>
-                    <div class="aur-picker__sv"><div class="aur-picker__sv-cursor"></div></div>
-                    <div class="aur-picker__row"><input type="range" class="aur-picker__hue" min="0" max="360" step="1" value="0" aria-label="Hue"></div>
-                    <div class="aur-picker__row"><input type="text" class="aur-picker__hex" maxlength="7" aria-label="Hex value" spellcheck="false"></div>
-                  </div>
-                </div>
-                <div class="aur-prefs-picker" id="aur-pref-colour-2-picker">
-                  <button type="button" class="aur-picker__swatch" aria-expanded="false" aria-label="Backdrop colour 2"></button>
-                  <div class="aur-picker__pop" hidden>
-                    <div class="aur-picker__sv"><div class="aur-picker__sv-cursor"></div></div>
-                    <div class="aur-picker__row"><input type="range" class="aur-picker__hue" min="0" max="360" step="1" value="0" aria-label="Hue"></div>
-                    <div class="aur-picker__row"><input type="text" class="aur-picker__hex" maxlength="7" aria-label="Hex value" spellcheck="false"></div>
-                  </div>
-                </div>
-                <div class="aur-prefs-picker" id="aur-pref-colour-3-picker">
-                  <button type="button" class="aur-picker__swatch" aria-expanded="false" aria-label="Backdrop colour 3"></button>
-                  <div class="aur-picker__pop" hidden>
-                    <div class="aur-picker__sv"><div class="aur-picker__sv-cursor"></div></div>
-                    <div class="aur-picker__row"><input type="range" class="aur-picker__hue" min="0" max="360" step="1" value="0" aria-label="Hue"></div>
-                    <div class="aur-picker__row"><input type="text" class="aur-picker__hex" maxlength="7" aria-label="Hex value" spellcheck="false"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="aur-prefs-field aur-prefs-field--fill aur-prefs-field--bg-intensity">
-              <label class="aur-prefs-label" for="aur-pref-bg-intensity">Intensity</label>
-              <div class="aur-prefs-range-row">
-                <input type="range" class="aur-prefs-range" id="aur-pref-bg-intensity" min="0" max="1" step="0.05" value="0.15">
-                <span class="aur-prefs-range-val" id="aur-pref-bg-intensity-val">15%</span>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -1334,7 +1421,7 @@
               </div>
             </div>
             <div class="aur-prefs-field aur-prefs-field--fill">
-              <label class="aur-prefs-label" for="aur-pref-tile-opacity">Glass effect</label>
+              <label class="aur-prefs-label" for="aur-pref-tile-opacity">Card opacity</label>
               <div class="aur-prefs-range-row">
                 <input type="range" class="aur-prefs-range" id="aur-pref-tile-opacity" min="0" max="1" step="0.05" value="1">
                 <span class="aur-prefs-range-val" id="aur-pref-tile-opacity-val">100%</span>
@@ -1375,6 +1462,6 @@
   </div>
 
 
-  <script src="../assets/javascripts/aurora.js?v=20260523-clean-pngs"></script><script src="../search/main.js?v=20260523-clean-pngs"></script>
+  <script src="../assets/javascripts/aurora.js?v=20260828-new-defaults"></script>
 </body>
 </html>

@@ -19,12 +19,14 @@
             copy:
               - label: "Community Site URL"        # visible label text
                 value: "https://mindjam.my.site.com/Portal"   # copied to clipboard
+                html: "<p>Optional rich HTML copied by browsers that support it.</p>"
 
       Falls back to `value` as the label if `label` is omitted. -#}
   {%- macro copy_button(item) -%}
   <button type="button"
           class="aur-copy"
           data-aur-copy="{{ item.value }}"
+          {%- if 'html' in item %} data-aur-copy-html="{{ item.html | e }}"{% endif %}
           aria-label="Copy {{ item.label or item.value }}">
     <span class="aur-copy__icon" aria-hidden="true">
       <svg class="aur-copy__icon-default" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
@@ -126,10 +128,10 @@
         </header>
         <ol class="aur-steps">
           {%- for step in page.meta.steps -%}
-            <li class="aur-step" id="step-{{ loop.index }}">
+            <li class="aur-step{% if step.variant == 'warning' %} aur-step--warning{% endif %}" id="step-{{ loop.index }}">
               {#- Plain integer (1, 2, …). Pill styling and accessible
                   label live in CSS. -#}
-              <span class="aur-step__marker" aria-hidden="true">{{ loop.index }}</span>
+              <span class="aur-step__marker" aria-hidden="true">{% if 'marker' in step %}{{ step.marker }}{% else %}{{ loop.index }}{% endif %}</span>
               <div class="aur-step__body">
                 <h3 class="aur-step__title">{{ step.title }}</h3>
                 <div class="aur-step__detail">
@@ -142,7 +144,7 @@
                         block. Use membership + bracket-indexing for safety,
                         same pattern as tip.copy below. -#}
                     {% if 'copy' in step %}
-                      <div class="aur-step__copies">
+                      <div class="aur-step__copies{% if step.copy_align == 'center' %} aur-step__copies--center{% endif %}">
                         {% for item in step['copy'] %}{{ copy_button(item) }}{% endfor %}
                       </div>
                     {% endif %}

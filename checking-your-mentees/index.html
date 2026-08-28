@@ -17,9 +17,59 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Mentee Check">
   <meta name="twitter:description" content="How to make sure all your assigned mentees have come across, and what to do if any of them are missing.">
-  <meta name="twitter:image" content="https://mindjamsam.github.io/MindJam-System-Guidance/assets/images/brand/video-poster.jpg">
+  <meta name="twitter:image" content="https://mindjamsam.github.io/MindJam-System-Guidance/assets/images/brand/video-poster.jpg"><style id="aur-fouc-guard">
+    html.aur-fouc-hide { visibility: hidden; }
+    /* While `aur-preload` is on <html>, ALL CSS transitions and
+       animations are suppressed — this prevents grid-template-rows,
+       chevron rotate, and other stateful transitions from animating
+       from their default to their initial state on first paint (which
+       reads as "sidebar sections flash open then close" on navigation).
+       Removed a couple of frames after `load` so real user interactions
+       animate normally. */
+    html.aur-preload *,
+    html.aur-preload *::before,
+    html.aur-preload *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  </style>
+  <script>
+    (function () {
+      var root = document.documentElement;
+      root.classList.add('aur-fouc-hide');
+      root.classList.add('aur-preload');
+      function reveal() { root.classList.remove('aur-fouc-hide'); }
+      function enableTransitions() { root.classList.remove('aur-preload'); }
+      function afterPaint() {
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            reveal();
+            /* Wait one more frame after reveal so the browser has
+               painted the final state before transitions turn on. */
+            requestAnimationFrame(enableTransitions);
+          });
+        });
+      }
+      /* Fire on DOMContentLoaded rather than `load` — CSS is applied
+         and the DOM is parsed by then, but images are still loading.
+         Waiting for `load` on a cold cache could take multiple seconds,
+         long enough for the safety-timeout escape hatch to trigger and
+         re-introduce the chevron-flash bug this guard was built to
+         prevent. */
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', afterPaint, { once: true });
+      } else {
+        afterPaint();
+      }
+      /* Safety net — reveal + enable transitions after 3s no matter
+         what. Long enough that a slow cold-cache DOMContentLoaded
+         beats it in practice; short enough that a genuinely broken
+         page still becomes visible. */
+      setTimeout(function () { reveal(); enableTransitions(); }, 3000);
+    })();
+  </script>
 
-  <link rel="stylesheet" href="../assets/stylesheets/aurora.css?v=20260523-clean-pngs"><script>
+  <link rel="stylesheet" href="../assets/stylesheets/aurora.css?v=20260828-new-defaults"><script>
     window.__AURORA_DEFAULTS__ = {
       fontStack:     null,
       fontSize:      1.05,
@@ -28,9 +78,9 @@
       colour1:       '#e6b71d',
       colour2:       '#c52f64',
       colour3:       '#9734e4',
-      bgOpacity:     0.15,
-      tileColour:    '#141020',
-      tileOpacity:   1,
+      bgOpacity:     0.25,
+      tileColour:    '#261b48',
+      tileOpacity:   0.75,
       tileBlur:      3,
       headingColour: '#e7c5f3',
       textColour:    '#dbc4e9',
@@ -490,7 +540,7 @@
                 <div class="aur-step__detail">
                   <div class="aur-step__detail-inner">
                     
-                      <div class="aur-step__prose aur-prose"><p>Before you start using Salesforce properly, it is worth taking a moment to check that all of your mentees are on your assigned mentee list. Because of the timing of the recent data transfer, a small number of mentees may not have come across yet, and you will not be able to set up sessions with anyone who is missing from the list.</p></div>
+                      <div class="aur-step__prose aur-prose"><p>Before you start using Salesforce properly, it is worth taking a moment to <strong>check that all of your mentees are on your assigned mentee list</strong>. Because of the timing of the <strong>recent data transfer</strong>, a small number of mentees may not have come across yet, and you <strong>will not be able to set up sessions</strong> with anyone who is missing from the list.</p></div>
                     
                     
                   </div>
@@ -521,14 +571,19 @@
                   <div class="aur-step__detail-inner">
                     
                       <div class="aur-step__prose aur-prose"><p>If someone is missing, all you need to do is send a quick email to the <strong>Assigning</strong> team and let them know. You can use the template below and pop the mentee's name in where it says.</p>
-<div style="background: var(--aur-bg-elev-1, rgba(255,255,255,0.03)); border: 1px solid var(--aur-border-strong, rgba(255,255,255,0.12)); border-radius: 12px; padding: 18px 20px; margin: 14px 0 4px; line-height: 1.65;">
-  <p style="margin: 0 0 10px;">Dear Assigning Team,</p>
-  <p style="margin: 0 0 10px;">I've just logged into the new system and noticed that <em>[please replace with the mentees name]</em> is not showing on my mentee list.</p>
-  <p style="margin: 0 0 10px;">Could you please arrange for their record to be transferred over so I can start setting up sessions with them?</p>
-  <p style="margin: 0;">Thanks!</p>
+<div class="aur-email-template" aria-label="Email template">
+  <div class="aur-email-template__bar">
+    <span class="aur-email-template__to">To: assigning@mindjam.org.uk</span>
+  </div>
+  <div class="aur-email-template__body">
+    <p>Dear Assigning Team,</p>
+    <p>I've just logged into the new system and noticed that <em>[please replace with the mentees name]</em> is not showing on my mentee list.</p>
+    <p>Could you please arrange for their record to be transferred over so I can start setting up sessions with them?</p>
+    <p>Thanks!</p>
+  </div>
 </div></div>
                     
-                      <div class="aur-step__copies">
+                      <div class="aur-step__copies aur-step__copies--center">
                         <button type="button"
           class="aur-copy"
           data-aur-copy="assigning@mindjam.org.uk"
@@ -555,6 +610,10 @@ I've just logged into the new system and noticed that [please replace with the m
 Could you please arrange for their record to be transferred over so I can start setting up sessions with them?
 
 Thanks!
+" data-aur-copy-html="&lt;p&gt;Dear Assigning Team,&lt;/p&gt;
+&lt;p&gt;I&#39;ve just logged into the new system and noticed that &lt;strong&gt;[please replace with the mentees name]&lt;/strong&gt; is not showing on my mentee list.&lt;/p&gt;
+&lt;p&gt;Could you please arrange for their record to be transferred over so I can start setting up sessions with them?&lt;/p&gt;
+&lt;p&gt;Thanks!&lt;/p&gt;
 "
           aria-label="Copy Copy template">
     <span class="aur-copy__icon" aria-hidden="true">
@@ -577,7 +636,7 @@ Thanks!
                   </div>
                 </div>
               </div>
-            </li><li class="aur-step" id="step-4"><span class="aur-step__marker" aria-hidden="true">4</span>
+            </li><li class="aur-step aur-step--warning" id="step-4"><span class="aur-step__marker" aria-hidden="true">!</span>
               <div class="aur-step__body">
                 <h3 class="aur-step__title">Important</h3>
                 <div class="aur-step__detail">
@@ -598,20 +657,7 @@ Thanks!
           <span>Continue</span>
           <span aria-hidden="true">&rarr;</span>
         </a></nav></main>
-  </div><button type="button"
-          class="aur-anim-toggle"
-          data-aur-anim-toggle
-          aria-pressed="false"
-          aria-label="Pause animations">
-    <svg class="aur-anim-toggle__icon aur-anim-toggle__icon-pause" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
-      <rect x="6" y="5" width="4" height="14" rx="1"/>
-      <rect x="14" y="5" width="4" height="14" rx="1"/>
-    </svg>
-    <svg class="aur-anim-toggle__icon aur-anim-toggle__icon-play" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
-      <path d="M7 4.5v15a1 1 0 0 0 1.55.83l11-7.5a1 1 0 0 0 0-1.66l-11-7.5A1 1 0 0 0 7 4.5z"/>
-    </svg>
-    <span class="aur-anim-toggle__label">Pause animations</span>
-  </button><div class="aur-fab-wrap">
+  </div><div class="aur-fab-wrap">
     <div class="aur-fab-menu" id="aur-fab-menu" role="menu" aria-labelledby="aur-fab" aria-hidden="true">
       <button type="button" class="aur-fab-menu__item" data-aur-fab-action="prefs" role="menuitem">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -623,17 +669,6 @@ Thanks!
           <line x1="17" y1="16" x2="23" y2="16"/>
         </svg>
         <span>Appearance</span>
-      </button>
-      <button type="button" class="aur-fab-menu__item aur-fab-menu__item--anim" data-aur-fab-action="anim" role="menuitem" aria-pressed="false">
-        <svg class="aur-fab-menu__icon-pause" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
-          <rect x="6" y="5" width="4" height="14" rx="1"/>
-          <rect x="14" y="5" width="4" height="14" rx="1"/>
-        </svg>
-        <svg class="aur-fab-menu__icon-play" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
-          <path d="M7 4.5v15a1 1 0 0 0 1.55.83l11-7.5a1 1 0 0 0 0-1.66l-11-7.5A1 1 0 0 0 7 4.5z"/>
-        </svg>
-        <span class="aur-fab-menu__label-pause">Pause animations</span>
-        <span class="aur-fab-menu__label-play">Resume animations</span>
       </button>
       <button type="button" class="aur-fab-menu__item aur-fab-menu__item--dev" data-aur-fab-action="dev" role="menuitem">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1164,42 +1199,6 @@ Thanks!
                 <span class="aur-prefs-switch__track" aria-hidden="true"></span>
               </label>
             </div>
-            <div class="aur-prefs-field aur-prefs-field--colours">
-              <span class="aur-prefs-label">Colour mix</span>
-              <div class="aur-prefs-colour-row">
-                <div class="aur-prefs-picker" id="aur-pref-colour-1-picker">
-                  <button type="button" class="aur-picker__swatch" aria-expanded="false" aria-label="Backdrop colour 1"></button>
-                  <div class="aur-picker__pop" hidden>
-                    <div class="aur-picker__sv"><div class="aur-picker__sv-cursor"></div></div>
-                    <div class="aur-picker__row"><input type="range" class="aur-picker__hue" min="0" max="360" step="1" value="0" aria-label="Hue"></div>
-                    <div class="aur-picker__row"><input type="text" class="aur-picker__hex" maxlength="7" aria-label="Hex value" spellcheck="false"></div>
-                  </div>
-                </div>
-                <div class="aur-prefs-picker" id="aur-pref-colour-2-picker">
-                  <button type="button" class="aur-picker__swatch" aria-expanded="false" aria-label="Backdrop colour 2"></button>
-                  <div class="aur-picker__pop" hidden>
-                    <div class="aur-picker__sv"><div class="aur-picker__sv-cursor"></div></div>
-                    <div class="aur-picker__row"><input type="range" class="aur-picker__hue" min="0" max="360" step="1" value="0" aria-label="Hue"></div>
-                    <div class="aur-picker__row"><input type="text" class="aur-picker__hex" maxlength="7" aria-label="Hex value" spellcheck="false"></div>
-                  </div>
-                </div>
-                <div class="aur-prefs-picker" id="aur-pref-colour-3-picker">
-                  <button type="button" class="aur-picker__swatch" aria-expanded="false" aria-label="Backdrop colour 3"></button>
-                  <div class="aur-picker__pop" hidden>
-                    <div class="aur-picker__sv"><div class="aur-picker__sv-cursor"></div></div>
-                    <div class="aur-picker__row"><input type="range" class="aur-picker__hue" min="0" max="360" step="1" value="0" aria-label="Hue"></div>
-                    <div class="aur-picker__row"><input type="text" class="aur-picker__hex" maxlength="7" aria-label="Hex value" spellcheck="false"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="aur-prefs-field aur-prefs-field--fill aur-prefs-field--bg-intensity">
-              <label class="aur-prefs-label" for="aur-pref-bg-intensity">Intensity</label>
-              <div class="aur-prefs-range-row">
-                <input type="range" class="aur-prefs-range" id="aur-pref-bg-intensity" min="0" max="1" step="0.05" value="0.15">
-                <span class="aur-prefs-range-val" id="aur-pref-bg-intensity-val">15%</span>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -1225,7 +1224,7 @@ Thanks!
               </div>
             </div>
             <div class="aur-prefs-field aur-prefs-field--fill">
-              <label class="aur-prefs-label" for="aur-pref-tile-opacity">Glass effect</label>
+              <label class="aur-prefs-label" for="aur-pref-tile-opacity">Card opacity</label>
               <div class="aur-prefs-range-row">
                 <input type="range" class="aur-prefs-range" id="aur-pref-tile-opacity" min="0" max="1" step="0.05" value="1">
                 <span class="aur-prefs-range-val" id="aur-pref-tile-opacity-val">100%</span>
@@ -1266,6 +1265,6 @@ Thanks!
   </div>
 
 
-  <script src="../assets/javascripts/aurora.js?v=20260523-clean-pngs"></script><script src="../search/main.js?v=20260523-clean-pngs"></script>
+  <script src="../assets/javascripts/aurora.js?v=20260828-new-defaults"></script>
 </body>
 </html>

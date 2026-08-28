@@ -110,6 +110,7 @@
 
     function shouldSpawn() {
       if (document.documentElement.classList.contains('aur-is-scrolling')) return false;
+      if (document.documentElement.getAttribute('data-aur-paused') === '1') return false;
       try {
         var rawPrefs = localStorage.getItem('auroraUserPrefs');
         if (rawPrefs) {
@@ -201,13 +202,17 @@
     fill.style.transition = 'none';
     fill.style.width = prev + '%';
 
-    var noChange = Math.abs(prev - pct) < 0.5;
+    // Only celebrate when moving forward. Going backwards (e.g. clicking
+    // Back to page 3 after reaching page 8) would otherwise animate the
+    // fill bar shrinking with the "advance" glow/bounce still firing,
+    // which reads as broken.
+    var isAdvance = pct > prev + 0.5;
 
     requestAnimationFrame(function () {
       fill.style.transition = 'width var(--aur-dur-large) var(--aur-ease-out-soft)';
       fill.style.width = pct + '%';
 
-      if (!noChange) {
+      if (isAdvance) {
         var ADVANCE_MS = 900;  // matches --aur-dur-large width transition
         el.classList.add('is-advancing');
         setTimeout(function () {
@@ -294,26 +299,23 @@
     window.__aurHydrateVideo = hydrate;
 
     if ('IntersectionObserver' in window) {
+      // On desktop the viewport doesn't scroll — .aur-main does. Default
+      // root:null would compare against the viewport, so videos far down
+      // long pages would never fire an intersection and stay as posters.
+      var lvIsMobile = window.matchMedia('(max-width: 800px)').matches;
+      var lvMain = document.querySelector('.aur-main');
+      var lvRoot = (!lvIsMobile && lvMain) ? lvMain : null;
       var observer = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
           if (!entry.isIntersecting) return;
           hydrate(entry.target);
           observer.unobserve(entry.target);
         });
-      }, { rootMargin: '700px 0px' });
+      }, { root: lvRoot, rootMargin: '700px 0px' });
       videos.forEach(function (video) { observer.observe(video); });
     } else {
       videos.forEach(hydrate);
     }
-  })();
-
-
-  (function initEntrance() {
-    var main = document.querySelector('.aur-main');
-    if (!main) return;
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () { main.classList.add('is-revealed'); });
-    });
   })();
 
 
@@ -371,6 +373,7 @@
 
       btn.addEventListener('click', function () {
         var value = btn.getAttribute('data-aur-copy') || '';
+        var html = btn.getAttribute('data-aur-copy-html') || '';
         var done = function () {
           btn.classList.remove('is-copied');
           // Force reflow so re-adding the class restarts the animations
@@ -382,20 +385,32 @@
             btn.classList.remove('is-copied');
           }, 1400);
         };
+        var copyPlain = function () {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(value).then(done, function () { /* swallow */ });
+          } else {
+            // Fallback for older browsers / non-secure contexts.
+            var ta = document.createElement('textarea');
+            ta.value = value;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); done(); } catch (e) {}
+            document.body.removeChild(ta);
+          }
+        };
 
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(value).then(done, function () { /* swallow */ });
+        if (html && navigator.clipboard && navigator.clipboard.write && window.ClipboardItem && window.Blob) {
+          navigator.clipboard.write([
+            new ClipboardItem({
+              'text/html': new Blob([html], { type: 'text/html' }),
+              'text/plain': new Blob([value], { type: 'text/plain' })
+            })
+          ]).then(done, copyPlain);
         } else {
-          // Fallback for older browsers / non-secure contexts.
-          var ta = document.createElement('textarea');
-          ta.value = value;
-          ta.setAttribute('readonly', '');
-          ta.style.position = 'fixed';
-          ta.style.opacity = '0';
-          document.body.appendChild(ta);
-          ta.select();
-          try { document.execCommand('copy'); done(); } catch (e) {}
-          document.body.removeChild(ta);
+          copyPlain();
         }
       });
     });
@@ -830,11 +845,10 @@
       var heading = section.querySelector('.aur-nav__heading');
       if (!heading) return;
 
-      // Apply any saved state (overrides template default).
-      if (Object.prototype.hasOwnProperty.call(saved, slug)) {
-        section.classList.toggle('is-open', !!saved[slug]);
-        heading.setAttribute('aria-expanded', saved[slug] ? 'true' : 'false');
-      }
+      // Default is minimised; per-section user preference overrides.
+      var open = Object.prototype.hasOwnProperty.call(saved, slug) ? !!saved[slug] : false;
+      section.classList.toggle('is-open', open);
+      heading.setAttribute('aria-expanded', open ? 'true' : 'false');
 
       heading.addEventListener('click', function () {
         var nowOpen = !section.classList.contains('is-open');
@@ -1181,10 +1195,34 @@
         pop.style.top  = (r.bottom + 6) + 'px';
         pop.style.left = Math.max(8, r.right - 230) + 'px';
       }
+      /* Keep the fixed-position popover attached to the swatch while
+         it's open. Both .aur-main (desktop scroll container) and window
+         (mobile) fire scroll events, plus resize for layout changes.
+         Attached only while open to avoid always-on listeners. */
+      var _scrollTargets = null;
+      function bindReposition() {
+        if (_scrollTargets) return;
+        _scrollTargets = [window];
+        var mainEl = document.querySelector('.aur-main');
+        if (mainEl) _scrollTargets.push(mainEl);
+        _scrollTargets.forEach(function (t) {
+          t.addEventListener('scroll', positionPop, { passive: true });
+        });
+        window.addEventListener('resize', positionPop);
+      }
+      function unbindReposition() {
+        if (!_scrollTargets) return;
+        _scrollTargets.forEach(function (t) {
+          t.removeEventListener('scroll', positionPop);
+        });
+        window.removeEventListener('resize', positionPop);
+        _scrollTargets = null;
+      }
       function closePop() {
         pop.hidden = true;
         root.classList.remove('is-open');
         swatch.setAttribute('aria-expanded', 'false');
+        unbindReposition();
       }
       function openPop() {
         allPrefsPickers.forEach(function (inst) { if (inst !== instance) inst.close(); });
@@ -1192,6 +1230,7 @@
         pop.hidden = false;
         root.classList.add('is-open');
         swatch.setAttribute('aria-expanded', 'true');
+        bindReposition();
       }
 
       swatch.addEventListener('click', function (e) {
@@ -1834,58 +1873,40 @@
   } // end dev-only block
 
 
-  /* ---------- Scroll-position restore on refresh (always runs) ----------
-     Browser's native scroll-restoration is unreliable when content
-     lazy-loads or layout shifts after first paint (animated entrance
-     stagger, lazy GIFs, etc.). We disable the browser's default and
-     handle it ourselves via sessionStorage, keyed per path. Re-applies
-     for several frames after load to catch height shifts. URL hash
-     deeplinks (#step-N) take precedence and skip the restore. */
+  /* Scroll position: always start every page at the top. We opt out of
+     the browser's automatic scroll-restoration (which can otherwise
+     put you back where you last were on the same URL) and clear any
+     saved positions from the previous per-path restore feature so a
+     returning visitor isn't dumped at the bottom of a page they
+     scrolled through earlier. */
 
-  (function initScrollRestore() {
+  (function resetScrollOnLoad() {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-    var KEY = 'auroraScroll:' + location.pathname;
-    // .aur-main is the actual scroll container (body is fixed-height
-    // overflow:hidden — see CSS). On mobile, body scrolls instead.
-    var mainEl = document.querySelector('.aur-main');
-    var isMobile = window.matchMedia('(max-width: 800px)').matches;
-    var scroller = (!isMobile && mainEl) ? mainEl : window;
 
-    function getY() {
-      return scroller === window ? window.scrollY : scroller.scrollTop;
-    }
-    function setY(y) {
-      if (scroller === window) window.scrollTo(0, y);
-      else scroller.scrollTop = y;
-    }
-
-    var pending = false;
-    function save() {
-      try { sessionStorage.setItem(KEY, String(getY())); } catch (e) {}
-    }
-    scroller.addEventListener('scroll', function () {
-      if (pending) return;
-      pending = true;
-      requestAnimationFrame(function () {
-        pending = false;
-        save();
-      });
-    }, { passive: true });
-    window.addEventListener('beforeunload', save);
-    window.addEventListener('pagehide', save);
-
-    if (!location.hash) {
-      var raw = null;
-      try { raw = sessionStorage.getItem(KEY); } catch (e) {}
-      var y = raw == null ? NaN : parseInt(raw, 10);
-      if (isFinite(y) && y > 0) {
-        setY(y);
-        requestAnimationFrame(function () {
-          setY(y);
-          requestAnimationFrame(function () { setY(y); });
-        });
+    /* One-time cleanup of the old sessionStorage keys (`auroraScroll:...`)
+       that were written by the removed initScrollRestore feature. */
+    try {
+      for (var i = sessionStorage.length - 1; i >= 0; i--) {
+        var k = sessionStorage.key(i);
+        if (k && k.indexOf('auroraScroll:') === 0) sessionStorage.removeItem(k);
       }
+    } catch (e) {}
+
+    if (location.hash) return; // let the browser jump to the anchor
+
+    function toTop() {
+      var mainEl = document.querySelector('.aur-main');
+      var isMobile = window.matchMedia('(max-width: 800px)').matches;
+      if (!isMobile && mainEl) mainEl.scrollTop = 0;
+      else window.scrollTo(0, 0);
     }
+    toTop();
+    /* Re-apply for a couple of frames to defeat late layout shifts
+       (lazy images, animated entrance staggers). */
+    requestAnimationFrame(function () {
+      toTop();
+      requestAnimationFrame(toTop);
+    });
   })();
 
 
@@ -1957,60 +1978,10 @@
   })();
 
 
-  /* ---------- Page-nav gradual reveal (always runs) ----------
-     The Back / Continue nav sits in-flow at the bottom of the page.
-     CSS starts it at opacity 0 + translateY(24px); this loop maps the
-     nav's distance from the viewport bottom to an opacity in [0..1],
-     so the buttons gradually fade and rise as the reader scrolls down.
-     The fade window starts ~600px below the viewport and completes
-     when the nav top is ~30% from the viewport top. rAF-throttled. */
-
-  (function initPageNavReveal() {
-    var nav = document.querySelector('.aur-page-nav');
-    if (!nav) return;
-
-    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) {
-      nav.style.opacity = '1';
-      nav.style.transform = 'none';
-      return;
-    }
-
-    var pending = false;
-
-    function update() {
-      pending = false;
-      var rect = nav.getBoundingClientRect();
-      var vh = window.innerHeight || document.documentElement.clientHeight;
-
-      // dist = how far the nav's top is below the viewport bottom.
-      // Positive â†’ nav still below the fold; negative â†’ nav above
-      // viewport bottom (i.e. partially or fully in view).
-      var dist = rect.top - vh;
-
-      // Reveal window: starts 600px below viewport, completes when
-      // the nav top has crossed 30% from the top of the viewport.
-      var startDist = 600;
-      var endDist   = -vh * 0.7;
-
-      var t = (startDist - dist) / (startDist - endDist);
-      if (t < 0) t = 0;
-      else if (t > 1) t = 1;
-
-      nav.style.opacity = String(t);
-      nav.style.transform = 'translateY(' + ((1 - t) * 24).toFixed(1) + 'px)';
-    }
-
-    function onScroll() {
-      if (pending) return;
-      pending = true;
-      requestAnimationFrame(update);
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    update();
-  })();
+  /* Page-nav visibility: the previous scroll-driven fade was fragile
+     (depended on the scroll container and viewport dimensions) and
+     often left the Back/Continue buttons faint. CSS now shows them
+     at full opacity in-flow; no JS needed. */
 
 
   /* ---------- Global GIF pause/resume (always runs) ----------
@@ -2448,4 +2419,191 @@
     });
   })();
 
+})();
+
+
+/* ---------- Assigned Mentees interactive example ----------
+   Used on Accessing Your Mentees. The markup contains both panels so
+   the guidance remains readable without JavaScript; this only swaps
+   the visible explanation when a table link is clicked. */
+(function () {
+  var roots = Array.prototype.slice.call(document.querySelectorAll('[data-aur-mentee-picker]'));
+  if (!roots.length) return;
+
+  roots.forEach(function (root) {
+    var buttons = Array.prototype.slice.call(root.querySelectorAll('[data-aur-mentee-record]'));
+    var panels = Array.prototype.slice.call(root.querySelectorAll('[data-aur-mentee-panel]'));
+    var title = root.querySelector('.aur-mentee-picker__selected-title');
+    var type = root.querySelector('.aur-mentee-picker__selected-type');
+    var labels = {
+      client: {
+        title: 'Client',
+        type: 'Universal account'
+      },
+      assigned: {
+        title: 'Assigned Mentee Name',
+        type: 'Your assigned mentee record'
+      }
+    };
+
+    function show(key) {
+      var selected = labels[key];
+      if (!selected) return;
+      buttons.forEach(function (button) {
+        button.setAttribute('aria-pressed', String(button.getAttribute('data-aur-mentee-record') === key));
+      });
+      panels.forEach(function (panel) {
+        panel.hidden = panel.getAttribute('data-aur-mentee-panel') !== key;
+      });
+      if (title) title.textContent = selected.title;
+      if (type) type.textContent = selected.type;
+    }
+
+    buttons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        show(button.getAttribute('data-aur-mentee-record'));
+      });
+    });
+  });
+})();
+
+
+/* ---------- Record difference guide ----------
+   Used on Understanding the Difference. Selects one focused answer for
+   the task the mentor is trying to complete. */
+(function () {
+  var roots = Array.prototype.slice.call(document.querySelectorAll('[data-aur-record-guide]'));
+  if (!roots.length) return;
+
+  var labels = {
+    client: {
+      context: 'Mentee Profile',
+      title: 'Client',
+      summary: 'Use this for shared, general information about the young person.',
+      note: 'Your own session notes and history are under Assigned Mentee Name.'
+    },
+    assigned: {
+      context: 'Mentee Profile',
+      title: 'Assigned Mentee Name',
+      summary: 'Use this for your mentor-specific record, session notes, and history.',
+      note: 'This is the one to use when you need notes linked to your work with the mentee.'
+    },
+    calendar: {
+      context: 'Calendar Event',
+      title: 'Date, time, and who with',
+      summary: 'Use this to check, move, or delete the session time.',
+      note: 'This helps you manage the calendar, but it does not record what happened.'
+    },
+    service: {
+      context: 'Service Appointment',
+      title: 'What happened in the session',
+      summary: 'Use this to confirm attendance, complete the wrap up, add notes, and update status.',
+      note: 'This is the record used for attendance tracking, invoicing, and payment.'
+    }
+  };
+
+  roots.forEach(function (root) {
+    var buttons = Array.prototype.slice.call(root.querySelectorAll('[data-record-choice]'));
+    var context = root.querySelector('[data-record-context]');
+    var title = root.querySelector('[data-record-title]');
+    var summary = root.querySelector('[data-record-summary]');
+    var note = root.querySelector('[data-record-note]');
+
+    function show(key) {
+      var selected = labels[key] || labels.client;
+      buttons.forEach(function (button) {
+        button.setAttribute('aria-pressed', String(button.getAttribute('data-record-choice') === key));
+      });
+      if (context) context.textContent = selected.context;
+      if (title) title.textContent = selected.title;
+      if (summary) summary.textContent = selected.summary;
+      if (note) note.textContent = selected.note;
+    }
+
+    buttons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        show(button.getAttribute('data-record-choice'));
+      });
+    });
+
+    show('client');
+  });
+})();
+
+
+/* ---------- Nav preview component (how-to-navigate page) ----------
+   Toggles which panel is visible based on which top-nav button is
+   clicked. No-op on every other page. */
+(function () {
+  var root = document.querySelector('.mj-navprev');
+  if (!root) return;
+
+  var buttons = Array.prototype.slice.call(root.querySelectorAll('.mj-navprev__nav-button'));
+  var panels  = Array.prototype.slice.call(root.querySelectorAll('.mj-navprev__panel'));
+
+  function showPanel(name) {
+    buttons.forEach(function (button) {
+      button.setAttribute('aria-expanded', String(button.dataset.mjTarget === name));
+    });
+    panels.forEach(function (panel) {
+      panel.classList.toggle('is-active', panel.dataset.mjPanel === name);
+    });
+  }
+
+  buttons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      showPanel(button.dataset.mjTarget);
+    });
+  });
+})();
+
+
+/* ---------- Delete Series visualizer ----------
+   Used on Using Calendar Events. Click or hover an option to preview
+   whether Salesforce removes one event or the selected event plus all
+   following future events. */
+(function () {
+  var roots = Array.prototype.slice.call(document.querySelectorAll('[data-aur-delete-demo]'));
+  if (!roots.length) return;
+
+  var captions = {
+    none: 'Preview: no delete choice is selected, so all sessions are still visible.',
+    single: 'Preview: only the Wednesday event is removed. Monday and Tuesday stay, and the future sessions stay.',
+    following: 'Preview: Wednesday and the following sessions are removed. Monday and Tuesday stay because they are historic events.'
+  };
+
+  roots.forEach(function (root) {
+    var buttons = Array.prototype.slice.call(root.querySelectorAll('[data-delete-mode]'));
+    var caption = root.querySelector('[data-delete-caption]');
+    var active = root.getAttribute('data-delete-preview') || 'single';
+
+    function show(mode, commit) {
+      if (!captions[mode]) return;
+      root.setAttribute('data-delete-preview', mode);
+      if (caption) caption.textContent = captions[mode];
+      if (commit) active = mode;
+      buttons.forEach(function (button) {
+        button.setAttribute('aria-pressed', String(button.getAttribute('data-delete-mode') === active));
+      });
+    }
+
+    buttons.forEach(function (button) {
+      var mode = button.getAttribute('data-delete-mode');
+      button.addEventListener('click', function (event) {
+        event.stopPropagation();
+        show(mode, true);
+      });
+      button.addEventListener('mouseenter', function () { show(mode, false); });
+      button.addEventListener('focus', function () { show(mode, false); });
+      button.addEventListener('mouseleave', function () { show(active, false); });
+      button.addEventListener('blur', function () { show(active, false); });
+    });
+
+    root.addEventListener('click', function (event) {
+      if (event.target.closest('[data-delete-mode]')) return;
+      show('none', true);
+    });
+
+    show(active, true);
+  });
 })();
