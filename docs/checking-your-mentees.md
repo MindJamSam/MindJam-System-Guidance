@@ -1,6 +1,6 @@
 ---
 title: Mentee Check
-section: what-to-do-first
+section: getting-started
 description: How to make sure all your assigned mentees have come across, and what to do if any of them are missing.
 steps:
   - title: Why This Step Matters
@@ -55,4 +55,6 @@ steps:
       If a mentee is not on your list yet, you **will not be able to set up sessions with them**. Their data may **still be on its way over to Salesforce**, or they might still be **linked to another mentor** while things are being tidied up. Without that link, the system has **no way of knowing a session with them took place**.
 
       The easiest thing to do is **wait until all of your mentees are showing** before you start using Salesforce for sessions. Once everyone is there, you are **good to go**.
+
+      In the meantime, you can still **set up your game preferences**, **update your availability**, and **navigate around the Community Site**. In fact, doing all of this is actively encouraged so you are fully set up when everyone appears on your list.
 ---

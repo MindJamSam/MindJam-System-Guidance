@@ -1,6 +1,6 @@
 ---
 title: Availability
-section: what-to-do-first
+section: getting-started
 description: How to set and update your availability and time slots so mentoring sessions can be booked with you.
 media:
   src: assets/images/availability/availabilityexample.webm

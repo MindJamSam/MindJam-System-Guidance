@@ -1,6 +1,6 @@
 ---
 title: Switching Systems Mid-Month
-section: getting-started
+section: swapping-systems
 description: A short guide for moving from Google Sheets to Salesforce mid-month without affecting invoicing or payment.
 steps:
   - title: "Step 1: Choose Your Move Date"

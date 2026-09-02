@@ -17,17 +17,20 @@ hooks:
 
 nav:
   - Home: index.md
+  - But, why?: but-why.md
   - Getting Started:
-      - But, why?: but-why.md
-      - Switching Systems: switching-systems-mid-month.md
+      - Before You Begin: new-page-getting-started.md
       - First Time Logging In: first-time-logging-in.md
-      - Site Navigation: how-to-navigate-the-community-site.md
-      - My Account: my-account.md
-  - What to Do First:
       - What to Do First: what-to-do-first.md
-      - Update Your Games, Equipment and Preferences: update-your-games-equipment-and-preferences.md
-      - Availability: availability.md
+      - Site Navigation: how-to-navigate-the-community-site.md
+      - Home Page Mockup: home-page-mockup.md
       - Mentee Check: checking-your-mentees.md
+      - Update Preferences: update-your-games-equipment-and-preferences.md
+      - Availability: availability.md
+  - Swapping Systems:
+      - Before You Switch: new-page-swapping-systems.md
+      - Switching Systems: switching-systems-mid-month.md
+      - My Account: my-account.md
   - Understanding the Difference:
       - Understanding the Difference: understanding-the-difference.md
       - Calendar Events: using-calendar-events.md

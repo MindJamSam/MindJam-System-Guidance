@@ -1,6 +1,6 @@
 ---
-title: Update Your Games, Equipment and Preferences
-section: what-to-do-first
+title: Update Preferences
+section: getting-started
 description: How to update your profile with the games, equipment, and preferences you use for mentoring.
 media:
   src: assets/images/update-games-equipment-preferences/open-update-preferences-form.webm
@@ -20,7 +20,7 @@ steps:
       - Click **My Account** again
       - In the top right, click **Update Games and Equipment** Flow
 
-      ![Update Games and Equipment flow prompt](assets/images/update-games-equipment-preferences/update-games-equipment-flow-prompt.png)
+      ![Update Games and Equipment flow prompt](../assets/images/update-games-equipment-preferences/update-games-equipment-flow-prompt.png)
 
       *Option 2:*
 

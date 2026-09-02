@@ -1,6 +1,6 @@
 ---
 title: My Account
-section: getting-started
+section: swapping-systems
 description: How to access your account page and update your details.
 steps:
   - title: How to Access My Account
