@@ -6806,6 +6806,76 @@ html[data-aur-dev="1"] .aur-fab-menu__item--dev { display: flex; }
   .mj-navprev__card { grid-template-columns: 1fr; }
 }
 
+/* ---------- Home page mockup embed ----------
+   Same width-escape trick as .mj-navprev so the iframe can breathe
+   past the 72ch reading measure. */
+.aur-lesson-body:has(> .mj-mockup-embed),
+.aur-lesson-body.aur-prose:has(> .mj-mockup-embed) {
+  width: 100%;
+  max-width: none;
+}
+
+.mj-mockup-embed {
+  position: relative;
+  width: 100%;
+  max-width: min(1500px, 100%);
+  margin: 24px auto 32px;
+  border: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: transparent;
+  box-shadow: none;
+}
+
+.mj-mockup-embed iframe {
+  width: 100%;
+  height: 1700px;
+  border: 0;
+  display: block;
+  background: #fff;
+}
+
+/* Reveal the shared .aur-media-expand button on hover of the embed,
+   and keep it visible while the mockup is in fullscreen. */
+.mj-mockup-embed:hover .aur-media-expand,
+.mj-mockup-embed.is-fullscreen .aur-media-expand {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Bump the expand button (and its icon) larger for the mockup embed,
+   without affecting the smaller variant used on media tiles. */
+.mj-mockup-embed .aur-media-expand {
+  width: 52px;
+  height: 52px;
+  top: 14px;
+  right: 14px;
+  border-radius: 14px;
+}
+.mj-mockup-embed .aur-media-expand__icon {
+  width: 26px;
+  height: 26px;
+}
+
+.mj-mockup-embed.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9600;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+  background: #000;
+}
+.mj-mockup-embed.is-fullscreen iframe {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+html:has(.mj-mockup-embed.is-fullscreen),
+body:has(.mj-mockup-embed.is-fullscreen) {
+  overflow: hidden;
+}
+
 /* ---------- Record difference guide (Understanding the Difference) ---------- */
 .aur-record-guide {
   display: grid;

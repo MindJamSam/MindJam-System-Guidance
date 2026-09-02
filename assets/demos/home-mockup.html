@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MindJam Mentor Home</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #fff;
+    color: #222;
+    font-size: 13px;
+  }
+
+  /* ===== Top nav ===== */
+  .topnav {
+    background: #000;
+    height: 60px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    padding: 0 24px;
+    gap: 24px;
+  }
+  .topnav-logo {
+    justify-self: start;
+    display: flex;
+    align-items: center;
+  }
+  .topnav-logo img {
+    height: 40px;
+    width: auto;
+    display: block;
+    object-fit: contain;
+    flex-shrink: 0;
+    mix-blend-mode: lighten;
+  }
+  .topnav-items {
+    justify-self: center;
+  }
+  .topnav-items {
+    display: flex;
+    gap: 32px;
+    color: #fff;
+    font-size: 13px;
+    white-space: nowrap;
+    align-items: stretch;
+  }
+  .topnav-items > a,
+  .topnav-items > .dropdown > a {
+    color: #fff;
+    text-decoration: none;
+    padding: 20px 2px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .topnav-items > a.active {
+    border-bottom: 2px solid #8b3fff;
+  }
+  .topnav-items .caret::after {
+    content: "▾";
+    font-size: 16px;
+    opacity: 1;
+    margin-left: 2px;
+  }
+
+  /* Dropdown */
+  .dropdown { position: relative; display: flex; align-items: stretch; }
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: -12px;
+    background: #0a0a0a;
+    min-width: 220px;
+    z-index: 100;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+    padding: 12px 0;
+  }
+  .dropdown.open .dropdown-menu { display: block; }
+  .dropdown-header {
+    color: #c9a7ff;
+    font-weight: 600;
+    padding: 6px 20px 12px;
+    font-size: 13px;
+  }
+  .dropdown-menu a {
+    display: block;
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+  .dropdown-menu a:hover { background: #1a1a1a; }
+  .topnav-right {
+    justify-self: end;
+    display: flex;
+    align-items: center;
+  }
+  .avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: linear-gradient(135deg,#d4a373,#a06a3f);
+    border: 2px solid #fff;
+  }
+
+  /* ===== Welcome banner (Backsplashj.png is 4906×828, aspect ~5.925:1) ===== */
+  .hero {
+    width: 100%;
+    aspect-ratio: 4906 / 828;
+    max-height: 340px;
+    min-height: 200px;
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("Backsplashj.png") no-repeat center / 100% 100%;
+    opacity: 0.6;
+    z-index: 0;
+  }
+  .hero-content {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 55%; right: 0;
+    z-index: 2;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 20px;
+  }
+  .hero-content h1 {
+    font-size: 34px;
+    font-weight: 600;
+    color: #222;
+  }
+  .hero-content p {
+    font-size: 18px;
+    color: #333;
+    margin-top: 8px;
+  }
+  .hero-buttons {
+    margin-top: 18px;
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+  }
+  .btn-pill {
+    padding: 10px 22px;
+    border-radius: 999px;
+    border: none;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    color: #222;
+  }
+  .btn-purple { background: #8b3fff; color: #fff; }
+  .btn-yellow { background: #ffd93d; }
+
+  /* ===== Main content wrapper ===== */
+  .main {
+    max-width: 1120px;
+    margin: 30px auto;
+    padding: 0 20px;
+  }
+
+  /* ===== Wrap up table ===== */
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  table.wrap {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.wrap th,
+  table.wrap td {
+    text-align: left;
+    padding: 12px 10px;
+    border-bottom: 1px solid #e5e5e5;
+  }
+  table.wrap th {
+    font-weight: 600;
+    color: #444;
+    background: #fafafa;
+    border-top: 1px solid #e5e5e5;
+  }
+  table.wrap a {
+    color: #a83fff;
+    text-decoration: none;
+  }
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .status-chip::before {
+    content: "";
+    width: 10px; height: 10px;
+    background: #c9a7ff;
+    display: inline-block;
+    border-radius: 2px;
+  }
+  .view-all {
+    display: inline-block;
+    margin-top: 10px;
+    color: #a83fff;
+    text-decoration: none;
+    font-size: 13px;
+  }
+
+  /* ===== Calendar ===== */
+  .cal-wrap {
+    margin-top: 24px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    display: grid;
+    grid-template-columns: 1fr 260px;
+  }
+  .cal-main { border-right: 1px solid #e0e0e0; }
+  .cal-wrap.no-side { grid-template-columns: 1fr; }
+  .cal-wrap.no-side .side { display: none; }
+  .cal-wrap.no-side .cal-main { border-right: none; }
+  .cal-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid #e0e0e0;
+    gap: 10px;
+  }
+  .cal-icon {
+    width: 32px; height: 32px; border-radius: 4px;
+    background: #a83fff;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 16px;
+  }
+  .cal-title small { color: #666; font-size: 11px; display: block; }
+  .cal-title b { font-size: 15px; font-weight: 600; }
+  .cal-tools {
+    margin-left: auto;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .cal-tools button {
+    width: 28px; height: 28px;
+    background: #fff;
+    border: 1px solid #d5d5d5;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #555;
+  }
+  .cal-tools .today {
+    width: auto; padding: 0 14px;
+    color: #aaa;
+  }
+  .cal-tools .new {
+    background: #8b3fff; color: #fff; border: none;
+    padding: 0 14px; height: 28px; width: auto;
+    border-radius: 3px; font-weight: 600;
+  }
+  @keyframes cal-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  #refreshCal .ricon {
+    display: inline-block;
+    transform-origin: 50% 55%;
+  }
+  #refreshCal.spinning .ricon {
+    animation: cal-spin 0.6s linear;
+  }
+  .cal-main.refreshing .week-body {
+    opacity: 0.35;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+  }
+
+  /* Week grid */
+  .week {
+    display: grid;
+    grid-template-columns: 60px repeat(7, 1fr);
+    font-size: 11px;
+  }
+  .week .col-head {
+    padding: 8px 6px;
+    text-align: center;
+    border-bottom: 1px solid #e5e5e5;
+    border-right: 1px solid #e5e5e5;
+    color: #666;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .week .col-head.active { color: #2b7cff; }
+  .week .tz-head { border-right: 1px solid #e5e5e5; border-bottom: 1px solid #e5e5e5; }
+
+  .week-body {
+    display: grid;
+    grid-template-columns: 60px repeat(7, 1fr);
+    height: 420px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+  }
+  .hours {
+    display: grid;
+    grid-template-rows: repeat(24, 56px);
+    border-right: 1px solid #e5e5e5;
+  }
+  .hours span {
+    text-align: right;
+    padding: 2px 6px;
+    color: #888;
+    font-size: 11px;
+    transform: translateY(-6px);
+  }
+  .day-col {
+    border-right: 1px solid #e5e5e5;
+    display: grid;
+    grid-template-rows: repeat(24, 56px);
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0 55px,
+      #f0f0f0 55px 56px
+    );
+  }
+  .event {
+    grid-row: 18;  /* 17:00 slot (1-indexed row 18 = hour 17) */
+    margin: 0 3px;
+    background: #3f8fbf;
+    color: #fff;
+    font-size: 10px;
+    padding: 4px 6px;
+    border-radius: 2px;
+    line-height: 1.2;
+    box-shadow: inset 0 0 0 1px #2f7ba6;
+    overflow: hidden;
+  }
+  .event b { font-weight: 700; display: block; }
+
+  /* Mini side calendar */
+  .side {
+    padding: 12px 14px;
+  }
+  .mini-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+  .mini-nav .month,
+  .mini-nav .year {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-weight: 600;
+    color: #444;
+  }
+  .mini-nav .arr { color: #888; cursor: pointer; padding: 0 4px; }
+  .mini {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    font-size: 11px;
+  }
+  .mini th {
+    color: #888;
+    font-weight: 500;
+    padding: 4px 0;
+  }
+  .mini td {
+    padding: 5px 0;
+    color: #333;
+    cursor: pointer;
+  }
+  .mini td.dim { color: #bbb; }
+  .mini td.sel {
+    background: #ffd93d;
+    border-radius: 50%;
+  }
+  .mycals {
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 14px;
+  }
+  .mycals h4 { font-size: 13px; margin-bottom: 10px; }
+  .mycals .row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    padding: 4px 0;
+  }
+  .mycals .sw {
+    width: 14px; height: 14px; border-radius: 2px;
+    background: #2b7cff;
+  }
+  .mycals .caret {
+    margin-left: auto;
+    border: 1px solid #d5d5d5;
+    padding: 2px 6px;
+    font-size: 10px;
+    border-radius: 2px;
+    color: #666;
+  }
+
+  /* ===== New Event modal ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 1000;
+    padding: 40px 20px;
+    overflow-y: auto;
+  }
+  .modal-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
+  .modal {
+    background: #fff;
+    width: min(900px, 100%);
+    border-radius: 6px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 80px);
+    margin: auto;
+  }
+  .modal-head {
+    padding: 18px 30px;
+    border-bottom: 1px solid #e5e5e5;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .modal-required {
+    position: absolute;
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+  }
+  .modal-required .star { color: #c00; }
+  .modal-body {
+    padding: 20px 30px 8px;
+    overflow-y: auto;
+    flex: 1;
+    font-size: 13px;
+    color: #222;
+  }
+  .modal-body h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 14px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #8b3fff;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    font-style: italic;
+    font-family: Georgia, "Times New Roman", serif;
+    cursor: help;
+    line-height: 1;
+    box-shadow: 0 0 0 2px rgba(139,63,255,0.2);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .info-icon:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 3px rgba(139,63,255,0.3);
+  }
+  /* Shared floating tooltip element (attached to <body>) */
+  #tooltip {
+    position: fixed;
+    display: none;
+    background: #222;
+    color: #fff;
+    padding: 11px 13px;
+    border-radius: 5px;
+    font-size: 13.5px;
+    font-style: normal;
+    font-weight: 400;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    max-width: 300px;
+    z-index: 9999;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    pointer-events: none;
+  }
+  #tooltip b { font-weight: 600; }
+  #tooltip::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+  }
+  #tooltip.above::after {
+    top: 100%;
+    border-top-color: #222;
+  }
+  #tooltip.below::after {
+    bottom: 100%;
+    border-bottom-color: #222;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 40px;
+  }
+  .form-grid > .full { grid-column: 1 / -1; }
+  .field { display: flex; flex-direction: column; margin-bottom: 14px; }
+  .field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+  }
+  .field label .req { color: #c00; margin-right: 3px; }
+  .field .hint { font-size: 11px; color: #555; margin: -2px 0 4px; }
+  .field input,
+  .field select,
+  .field textarea {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    background: #fff;
+    color: #222;
+  }
+  .field input.focused {
+    outline: none;
+    border: 2px solid #1a75d1;
+    padding: 5px 9px;
+  }
+  .field textarea { min-height: 80px; resize: vertical; }
+  .field.with-icon { position: relative; }
+  .field.with-icon input { padding-right: 30px; }
+  .field.with-icon .ficon {
+    position: absolute;
+    right: 8px; bottom: 8px;
+    color: #888;
+    pointer-events: none;
+    font-size: 12px;
+  }
+
+  /* Mentee autocomplete list */
+  .mentee-dd {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 0 3px 3px;
+    z-index: 60;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .field.open .mentee-dd { display: block; }
+  .mentee-opt {
+    padding: 9px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #222;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .mentee-opt:hover { background: #f4f6f9; }
+  .mentee-opt .avatar-sm {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #7a5aa8;
+    color: #fff;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .sub-head {
+    font-weight: 600;
+    font-size: 13px;
+    color: #222;
+    margin: 4px 0 8px;
+  }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px 6px 6px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 13px;
+    background: #fff;
+  }
+  .tag .avatar-sm {
+    width: 20px; height: 20px;
+    border-radius: 3px;
+    background: #5a6b8a;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 12px;
+  }
+  .tag .x { margin-left: auto; color: #888; cursor: pointer; padding: 0 4px; }
+  .modal-foot {
+    border-top: 1px solid #e5e5e5;
+    padding: 14px 30px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .mbtn {
+    border-radius: 3px;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #8b3fff;
+    background: #fff;
+    color: #8b3fff;
+  }
+  .mbtn.primary { background: #8b3fff; color: #fff; }
+
+  /* Standalone info popup — clean Salesforce-Lightning-style card, always centred */
+  .info-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 900;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+  .info-overlay.open {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+  }
+  .info-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 0;
+    max-width: 440px;
+    width: 100%;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+    transform: scale(0.96) translateY(6px);
+    opacity: 0;
+    transition: transform 0.22s ease, opacity 0.18s ease;
+  }
+  .info-overlay.open .info-card {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  .info-card-head {
+    padding: 18px 26px 14px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .info-icon-large {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #f3ebff;
+    color: #8b3fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  .info-card-head h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #222;
+    letter-spacing: 0.1px;
+  }
+  .info-card-body {
+    padding: 18px 26px 6px;
+  }
+  .info-card-body p {
+    font-size: 14px;
+    line-height: 1.55;
+    color: #333;
+    margin: 0;
+  }
+  .info-card-body p b {
+    font-weight: 600;
+    color: #6a20d1;
+  }
+  .info-card-foot {
+    display: flex;
+    justify-content: flex-end;
+    padding: 14px 26px 18px;
+  }
+
+  /* Demo popup layered over the event modal */
+  .modal { position: relative; }
+  .demo-popup {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 10;
+    border-radius: 6px;
+    padding: 20px;
+  }
+  .demo-popup.open { display: flex; align-items: center; justify-content: center; }
+  .demo-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 26px 30px;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.18);
+    max-width: 380px;
+    text-align: center;
+  }
+  .demo-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #222;
+  }
+  .demo-card p {
+    font-size: 13px;
+    color: #444;
+    line-height: 1.5;
+    margin: 0 0 18px;
+  }
+
+  /* ===== Bottom cards ===== */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-top: 28px;
+    margin-bottom: 40px;
+  }
+  .card {
+    aspect-ratio: 16/10;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 12px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 20px;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    transition: box-shadow 0.25s ease;
+  }
+  .card { background-size: cover; background-position: center; }
+
+  /* Subtle bottom-fade gradient so any overlaid text stays legible */
+  .card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 55%,
+      rgba(0,0,0,0.35) 100%
+    );
+    pointer-events: none;
+  }
+
+  .card:hover,
+  .card:focus-visible {
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08);
+  }
+  .card:focus-visible {
+    outline: 3px solid #8b3fff;
+    outline-offset: 3px;
+  }
+
+  /* Respect reduced-motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .card { transition: none; }
+  }
+
+  .card.safeguard { background-image: url("Safeguarding.png"); }
+  .card.update    { background-image: url("Update%20Preferences.png"); }
+  .card.discord   { background-image: url("Discord.png"); }
+  .card.guide     { background-image: url("System%20Guide.png"); }
+
+</style>
+</head>
+<body>
+
+<!-- Top navigation -->
+<div class="topnav">
+  <div class="topnav-logo">
+    <!-- Drop small nav logo here, e.g. MindJam-Nav.png -->
+    <img src="Logo.png" alt="MindJam" onerror="this.style.display='none'">
+  </div>
+  <nav class="topnav-items">
+    <a href="#" class="active">Home</a>
+    <div class="dropdown">
+      <a href="#" class="caret">Appointment Management</a>
+      <div class="dropdown-menu">
+        <a href="#" data-info-title="My Mentees" data-info-icon="👥" data-info-body="A list of your mentees.">My Mentees</a>
+        <a href="#" data-info-title="My Sessions" data-info-icon="📋" data-info-body="A list of your scheduled sessions. You can change the list view to show things like today's sessions or this week's sessions.">My Sessions</a>
+        <a href="#" data-info-title="Manage Time Slots" data-info-icon="🕐" data-info-body="This is where you add your availability. For example, if you are free from 9:00 to 10:00 on a Monday, you can add that time slot here.">Manage Time Slots</a>
+        <a href="#" data-info-title="Absences" data-info-icon="🏖️" data-info-body="This section is optional. You can use it to record time away, such as holidays. It does not email parents or carers.">Absences</a>
+      </div>
+    </div>
+    <div class="dropdown">
+      <a href="#" class="caret">Support</a>
+      <div class="dropdown-menu">
+        <a href="#" data-info-title="Support Tickets" data-info-icon="🎫" data-info-body="Use this section when you need to raise something with the team.">Support Tickets</a>
+        <a href="#" data-info-title="Knowledge Base" data-info-icon="📚" data-info-body="Contains helpful articles and guidance. You can browse what is available from here.">Knowledge Base</a>
+      </div>
+    </div>
+    <div class="dropdown">
+      <a href="#" class="caret">My Account</a>
+      <div class="dropdown-menu">
+        <a href="#" data-info-title="My Account" data-info-icon="👤" data-info-body="This section is where you can update your account information, such as your mobile number or personal email address.">My Account</a>
+        <a href="#" data-info-title="My Invoices" data-info-icon="💰" data-info-body="This shows the invoices you create that are sent to the finance team. It is mainly there for record-keeping.">My Invoices</a>
+      </div>
+    </div>
+    <div class="dropdown">
+      <a href="#" class="caret">Analytics</a>
+      <div class="dropdown-menu">
+        <a href="#" data-info-title="Dashboard" data-info-icon="📊" data-info-body="Shows useful information such as how much you have made in a month and how many sessions you have. This area can be customised, so if there is information you would find useful, you can suggest it to senior leadership.">Dashboard</a>
+      </div>
+    </div>
+  </nav>
+  <div class="topnav-right">
+    <div class="avatar"></div>
+  </div>
+</div>
+
+<!-- Hero banner (Backsplashj.png is the background — it already contains the big MindJam wordmark) -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>Welcome to the MindJam Mentor Home!</h1>
+    <p>Have a great day!</p>
+    <div class="hero-buttons">
+      <button class="btn-pill btn-purple" id="teamMeetingLog">Team Meeting Log</button>
+      <button class="btn-pill btn-yellow" id="availableMentees">Available Mentees</button>
+    </div>
+  </div>
+</section>
+
+<!-- Main content -->
+<main class="main">
+
+  <div class="section-title">REQUIRING WRAP UP (TODAY)</div>
+  <table class="wrap">
+    <thead>
+      <tr>
+        <th>Appointment Number</th>
+        <th>Mentee Name</th>
+        <th>Status ✏️</th>
+        <th>Scheduled Start</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="#">SA-27482</a></td>
+        <td>Bob Smith</td>
+        <td><span class="status-chip">Scheduled</span></td>
+        <td>01/09/2026, 17:00</td>
+      </tr>
+      <tr>
+        <td><a href="#">SA-27545</a></td>
+        <td>Bob Smith</td>
+        <td><span class="status-chip">Scheduled</span></td>
+        <td>01/09/2026, 11:30</td>
+      </tr>
+    </tbody>
+  </table>
+  <a href="#" class="view-all">View All</a>
+
+  <!-- Calendar -->
+  <div class="cal-wrap">
+    <div class="cal-main">
+      <div class="cal-header">
+        <div class="cal-icon">📅</div>
+        <div class="cal-title">
+          <small>Calendar</small>
+          <b id="calRange">31 August 2026–6 September 2026</b>
+        </div>
+        <div class="cal-tools">
+          <button>‹</button>
+          <button>›</button>
+          <button class="today">Today</button>
+          <button id="refreshCal"><span class="ricon">⟳</span></button>
+          <button>▦ ▾</button>
+          <button class="new" id="openNewEvent">New Event</button>
+          <button id="toggleSide" title="Toggle side panel">≡</button>
+        </div>
+      </div>
+
+      <div class="week" id="weekHead">
+        <div class="tz-head" style="padding:8px 6px;color:#666;font-weight:600;text-align:center;">GMT +1</div>
+        <div class="col-head">MON</div>
+        <div class="col-head">TUE</div>
+        <div class="col-head">WED</div>
+        <div class="col-head">THU</div>
+        <div class="col-head">FRI</div>
+        <div class="col-head">SAT</div>
+        <div class="col-head">SUN</div>
+      </div>
+
+      <div class="week-body" id="weekBody">
+        <div class="hours">
+          <span>0</span><span>1</span><span>2</span><span>3</span>
+          <span>4</span><span>5</span><span>6</span><span>7</span>
+          <span>8</span><span>9</span><span>10</span><span>11</span>
+          <span>12</span><span>13</span><span>14</span><span>15</span>
+          <span>16</span><span>17</span><span>18</span><span>19</span>
+          <span>20</span><span>21</span><span>22</span><span>23</span>
+        </div>
+        <!-- 7 day columns, each with a single event at 17:00 -->
+        <div class="day-col">
+          <div class="event">
+            <b>Bob Smith - SCHEDULED</b>
+            Bob Smith<br>17–18
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="event">
+            <b>Bob Smith - SCHEDULED</b>
+            Bob Smith<br>17–18
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="event">
+            <b>Bob Smith - SCHEDULED</b>
+            Bob Smith<br>17–18
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="event">
+            <b>Bob Smith - SCHEDULED</b>
+            Bob Smith<br>17–18
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="event">
+            <b>Bob Smith - SCHEDULED</b>
+            Bob Smith<br>17–18
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="event">
+            <b>Bob Smith - SCHEDULED</b>
+            Bob Smith<br>17–18
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="event">
+            <b>Bob Smith - SCHEDULED</b>
+            Bob Smith<br>17–18
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side mini calendar -->
+    <aside class="side">
+      <div class="mini-nav">
+        <span class="arr">‹</span>
+        <span class="month" id="miniMonth">SEPTEMBER ▾</span>
+        <span class="arr">›</span>
+        <span class="year" id="miniYear">2026 ▾</span>
+      </div>
+      <table class="mini">
+        <thead>
+          <tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr>
+        </thead>
+        <tbody id="miniDays"></tbody>
+      </table>
+
+      <div class="mycals">
+        <h4>My Calendars</h4>
+        <div class="row">
+          <span class="sw"></span>
+          <span>My Events</span>
+          <span class="caret">▾</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Bottom quick-links cards (text is baked into the images) -->
+  <div class="cards">
+    <a href="#" class="card safeguard" aria-label="Safeguarding"></a>
+    <a href="#" class="card update"    aria-label="Update Preferences"></a>
+    <a href="#" class="card discord"   aria-label="Discord"></a>
+    <a href="#" class="card guide"     aria-label="System Guide"></a>
+  </div>
+
+</main>
+
+<!-- ===== Standalone info popup ===== -->
+<div class="info-overlay" id="infoOverlay">
+  <div class="info-card">
+    <div class="info-card-head">
+      <span class="info-icon-large" id="infoIcon">💡</span>
+      <h3 id="infoTitle"></h3>
+    </div>
+    <div class="info-card-body">
+      <p id="infoBody"></p>
+    </div>
+    <div class="info-card-foot">
+      <button class="mbtn primary" id="infoClose">Got it</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== New Event Modal ===== -->
+<div class="modal-overlay" id="newEventModal">
+  <div class="modal">
+    <div class="modal-head">
+      New Event
+      <div class="modal-required"><span class="star">*</span> = Required Information</div>
+    </div>
+    <div class="modal-body">
+      <h3>Calendar Details</h3>
+      <div class="form-grid">
+        <div>
+          <div class="field">
+            <label>Event Name <span class="info-icon" data-tooltip="Here you can write the name. We recommend using the <b>mentee's name</b> followed by their <b>funding status</b> as a handy reminder. Add <b>(F)</b> for Funded, or leave it off for Self-Funded.">i</span></label>
+            <input type="text" class="focused">
+          </div>
+
+          <div class="sub-head">Subject <span class="info-icon" data-tooltip="This is the list of all <b>services offered by MindJam</b>. Please choose which <b>type of session</b> this will be.">i</span></div>
+          <div class="field">
+            <label><span class="req">*</span>Type</label>
+            <select>
+              <option>--None--</option>
+              <option>MindJam Mentoring</option>
+              <option>Adventure Guild</option>
+              <option>BlockJam Counselling</option>
+              <option>Counselling</option>
+              <option>Group Session</option>
+              <option>Report</option>
+              <option>Meeting (Charged)</option>
+              <option>Personal Time</option>
+              <option>Report (charged)</option>
+              <option>Parent/Carer Meeting</option>
+              <option>Official Meeting</option>
+              <option>Other Paid Work</option>
+            </select>
+          </div>
+
+          <div class="sub-head">Start</div>
+          <div class="two-col">
+            <div class="field with-icon">
+              <label><span class="req">*</span>Date</label>
+              <input type="text" value="1 Sept 2026">
+              <span class="ficon">📅</span>
+            </div>
+            <div class="field">
+              <label><span class="req">*</span>Time</label>
+              <select class="time-select" data-default="16:00"></select>
+            </div>
+          </div>
+
+          <div class="sub-head">End</div>
+          <div class="two-col">
+            <div class="field with-icon">
+              <label><span class="req">*</span>Date</label>
+              <input type="text" value="1 Sept 2026">
+              <span class="ficon">📅</span>
+            </div>
+            <div class="field">
+              <label><span class="req">*</span>Time</label>
+              <select class="time-select" data-default="17:00"></select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Repeat <span class="info-icon" data-tooltip="Here you can set events to <b>repeat</b>, similar to <b>Google Calendar</b>.">i</span></label>
+            <input type="checkbox" style="width:16px;height:16px;">
+          </div>
+        </div>
+
+        <div>
+          <div class="field">
+            <label>Description <span class="info-icon" data-tooltip="Here you can write the <b>calendar event description</b>, or paste in the <b>Google Meet URL</b>.">i</span></label>
+            <div class="hint">Tip: Type Control + period to insert quick text.</div>
+            <textarea></textarea>
+          </div>
+
+          <div class="sub-head">Related To <span class="info-icon" data-tooltip="Here you can search for <b>mentees on your caseload</b>. If they don't appear, feel free to type it in. Just a friendly reminder, this is a <b>demo</b>, so no mentees will actually appear here.">i</span></div>
+          <div class="field with-icon" id="menteeField">
+            <label>Mentee</label>
+            <input type="text" id="menteeInput" placeholder="Search Assigned Mentees..." autocomplete="off">
+            <span class="ficon">🔍</span>
+            <div class="mentee-dd" id="menteeDD">
+              <div class="mentee-opt" data-name="Michael Scott"><span class="avatar-sm">MS</span>Michael Scott</div>
+              <div class="mentee-opt" data-name="Jim Halpert"><span class="avatar-sm">JH</span>Jim Halpert</div>
+              <div class="mentee-opt" data-name="Dwight Schrute"><span class="avatar-sm">DS</span>Dwight Schrute</div>
+              <div class="mentee-opt" data-name="Pam Beesly"><span class="avatar-sm">PB</span>Pam Beesly</div>
+              <div class="mentee-opt" data-name="Andy Bernard"><span class="avatar-sm">AB</span>Andy Bernard</div>
+            </div>
+          </div>
+
+          <div class="field with-icon">
+            <label>Session Group <span class="info-icon" data-tooltip="You can safely <b>ignore this for now</b>. Group sessions will be added a little later.">i</span></label>
+            <input type="text" placeholder="Search Session Groups...">
+            <span class="ficon">🔍</span>
+          </div>
+        </div>
+      </div>
+
+      <h3>Related To <span class="info-icon" data-tooltip="You can safely <b>ignore everything from here onwards</b>. These are <b>system fields</b> that MindJam handles behind the scenes, so you don't need to fill them in.">i</span></h3>
+      <div class="form-grid">
+        <div class="field">
+          <label><span class="req">*</span>Assigned To</label>
+          <div class="tag">
+            <span class="avatar-sm">👤</span>
+            <span>Mentor Name</span>
+            <span class="x">✕</span>
+          </div>
+        </div>
+        <div class="field with-icon">
+          <label>Session Record</label>
+          <input type="text" placeholder="Search Sessions...">
+          <span class="ficon">🔍</span>
+        </div>
+      </div>
+
+      <h3>System Information</h3>
+      <div class="form-grid">
+        <div class="field with-icon">
+          <label>Name</label>
+          <input type="text" placeholder="Search Contacts...">
+          <span class="ficon">🔍</span>
+        </div>
+        <div class="field with-icon">
+          <label>Work Type</label>
+          <input type="text" placeholder="Search Work Types...">
+          <span class="ficon">🔍</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="mbtn" id="cancelEvent">Cancel</button>
+      <button class="mbtn" data-save>Save &amp; New</button>
+      <button class="mbtn primary" data-save>Save</button>
+    </div>
+
+    <div class="demo-popup" id="demoPopup">
+      <div class="demo-card">
+        <h3>Just a heads-up</h3>
+        <p>This is a demo mockup, so nothing will actually be saved. Thanks for taking a look!</p>
+        <button class="mbtn primary" id="closeDemoPopup">Got it</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('toggleSide').addEventListener('click', function () {
+    document.querySelector('.cal-wrap').classList.toggle('no-side');
+  });
+
+  // Reusable info popup with icon + gradient header
+  (function infoPopups() {
+    var overlay = document.getElementById('infoOverlay');
+    var titleEl = document.getElementById('infoTitle');
+    var bodyEl = document.getElementById('infoBody');
+    var iconEl = document.getElementById('infoIcon');
+    var closeBtn = document.getElementById('infoClose');
+
+    function open(title, htmlBody, icon) {
+      titleEl.textContent = title;
+      bodyEl.innerHTML = htmlBody;
+      iconEl.textContent = icon || '💡';
+      overlay.classList.add('open');
+    }
+    function close() { overlay.classList.remove('open'); }
+    closeBtn.addEventListener('click', close);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) close();
+    });
+
+    // Hero pill buttons
+    document.getElementById('teamMeetingLog').addEventListener('click', function () {
+      open('Team Meeting Log',
+        "Here you'll be able to find the <b>historic meeting notes</b> from previous meetings. This will take you to a <b>Google Doc</b>.",
+        '📝');
+    });
+    document.getElementById('availableMentees').addEventListener('click', function () {
+      open('Available Mentees',
+        "This will take you to another <b>Google Doc</b> that lists mentees who may be a little more difficult to assign due to <b>niche game preferences</b>.",
+        '👥');
+    });
+
+    // Bottom tile cards
+    var tiles = [
+      ['.card.safeguard', 'Safeguarding Form',
+        "This will take you to our <b>safeguarding form</b>.", '🛡️'],
+      ['.card.update', 'Update Preferences',
+        "This is where you can update your <b>games and equipment</b>. Feel free to do this at any time.", '⚙️'],
+      ['.card.discord', 'MindJam Discord',
+        "This will take you to the <b>MindJam Discord</b>.", '💬'],
+      ['.card.guide', 'System Guide',
+        "This will take you to the <b>system guidance</b>.", '📖']
+    ];
+    tiles.forEach(function (t) {
+      var el = document.querySelector(t[0]);
+      if (el) el.addEventListener('click', function () { open(t[1], t[2], t[3]); });
+    });
+
+    // Calendar event blocks
+    document.querySelectorAll('.day-col .event').forEach(function (ev) {
+      ev.addEventListener('click', function () {
+        open('Event',
+          "This is where you can see <b>which events you have</b>, when they're happening, and who they're with. You can also access the session's <b>Service Appointment</b> from here.",
+          '📅');
+      });
+    });
+
+    // Wrap-up table Service Appointment links
+    document.querySelectorAll('table.wrap a').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        open('Service Appointment',
+          "This is where you can access a session's <b>Service Appointment</b>. Here is where you confirm the session took place by <b>wrapping it up</b>.",
+          '✅');
+      });
+    });
+
+    // Top-nav dropdown sub-items → info popup
+    document.querySelectorAll('.dropdown-menu a[data-info-title]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelectorAll('.dropdown.open').forEach(function (o) { o.classList.remove('open'); });
+        open(
+          a.getAttribute('data-info-title'),
+          a.getAttribute('data-info-body'),
+          a.getAttribute('data-info-icon') || '💡'
+        );
+      });
+    });
+  })();
+
+  // Fake calendar refresh: spin the icon, briefly fade the week view
+  document.getElementById('refreshCal').addEventListener('click', function () {
+    var btn = this;
+    var main = document.querySelector('.cal-main');
+    if (btn.classList.contains('spinning')) return;
+    btn.classList.add('spinning');
+    main.classList.add('refreshing');
+    setTimeout(function () { main.classList.remove('refreshing'); }, 500);
+    setTimeout(function () { btn.classList.remove('spinning'); }, 620);
+  });
+
+  // New Event modal open/close + demo save popup
+  (function () {
+    var modal = document.getElementById('newEventModal');
+    var openBtn = document.getElementById('openNewEvent');
+    var cancelBtn = document.getElementById('cancelEvent');
+    var demoPopup = document.getElementById('demoPopup');
+    var closeDemoBtn = document.getElementById('closeDemoPopup');
+
+    function closeAll() {
+      demoPopup.classList.remove('open');
+      modal.classList.remove('open');
+    }
+    function openModal() { modal.classList.add('open'); }
+
+    openBtn.addEventListener('click', openModal);
+    cancelBtn.addEventListener('click', closeAll);
+
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) closeAll();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeAll();
+    });
+
+    // Save / Save & New → demo popup
+    modal.querySelectorAll('[data-save]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        demoPopup.classList.add('open');
+      });
+    });
+    closeDemoBtn.addEventListener('click', closeAll);
+  })();
+
+  // Click to toggle Appointment Management dropdown; click outside to close
+  document.querySelectorAll('.dropdown > a').forEach(function (trigger) {
+    trigger.addEventListener('click', function (e) {
+      e.preventDefault();
+      var dd = trigger.parentElement;
+      var wasOpen = dd.classList.contains('open');
+      document.querySelectorAll('.dropdown.open').forEach(function (o) { o.classList.remove('open'); });
+      if (!wasOpen) dd.classList.add('open');
+    });
+  });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.dropdown')) {
+      document.querySelectorAll('.dropdown.open').forEach(function (o) { o.classList.remove('open'); });
+    }
+  });
+
+  // Scroll the week view to ~15:00 on load so the events (17-18) sit near the top of the visible area
+  (function () {
+    var wb = document.getElementById('weekBody');
+    if (wb) wb.scrollTop = 15 * 56;
+  })();
+
+  // Floating tooltip that lives on <body>, so it escapes the modal's overflow clip
+  (function setupTooltips() {
+    var tt = document.createElement('div');
+    tt.id = 'tooltip';
+    document.body.appendChild(tt);
+
+    function position(icon) {
+      var text = icon.getAttribute('data-tooltip');
+      tt.innerHTML = text;
+      tt.style.display = 'block';
+      tt.classList.remove('above', 'below');
+      var rect = icon.getBoundingClientRect();
+      var ttH = tt.offsetHeight;
+      var ttW = tt.offsetWidth;
+      var top = rect.top - ttH - 10;
+      var below = false;
+      if (top < 10) { top = rect.bottom + 10; below = true; }
+      var left = rect.left + rect.width / 2 - ttW / 2;
+      if (left < 8) left = 8;
+      if (left + ttW > window.innerWidth - 8) left = window.innerWidth - ttW - 8;
+      tt.style.top = top + 'px';
+      tt.style.left = left + 'px';
+      tt.classList.add(below ? 'below' : 'above');
+    }
+    function hide() { tt.style.display = 'none'; }
+
+    document.querySelectorAll('.info-icon[data-tooltip]').forEach(function (icon) {
+      icon.addEventListener('mouseenter', function () { position(icon); });
+      icon.addEventListener('mouseleave', hide);
+      icon.addEventListener('focus', function () { position(icon); });
+      icon.addEventListener('blur', hide);
+    });
+  })();
+
+  // Mentee autocomplete — open on focus, filter as you type, click to fill
+  (function menteeAutocomplete() {
+    var field = document.getElementById('menteeField');
+    var input = document.getElementById('menteeInput');
+    var dd = document.getElementById('menteeDD');
+    if (!field || !input || !dd) return;
+
+    input.addEventListener('focus', function () { field.classList.add('open'); });
+    input.addEventListener('blur', function () {
+      setTimeout(function () { field.classList.remove('open'); }, 150);
+    });
+    input.addEventListener('input', function () {
+      var q = input.value.toLowerCase().trim();
+      var anyVisible = false;
+      dd.querySelectorAll('.mentee-opt').forEach(function (opt) {
+        var name = opt.getAttribute('data-name').toLowerCase();
+        var match = !q || name.indexOf(q) !== -1;
+        opt.style.display = match ? 'flex' : 'none';
+        if (match) anyVisible = true;
+      });
+      field.classList.toggle('open', anyVisible);
+    });
+    dd.querySelectorAll('.mentee-opt').forEach(function (opt) {
+      opt.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+        input.value = opt.getAttribute('data-name');
+        field.classList.remove('open');
+      });
+    });
+  })();
+
+  // Populate every .time-select with 15-minute increments (00:00 → 23:45)
+  (function populateTimeSelects() {
+    document.querySelectorAll('.time-select').forEach(function (sel) {
+      var def = sel.getAttribute('data-default');
+      for (var h = 0; h < 24; h++) {
+        for (var m = 0; m < 60; m += 15) {
+          var v = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+          var opt = document.createElement('option');
+          opt.value = v;
+          opt.textContent = v;
+          if (v === def) opt.selected = true;
+          sel.appendChild(opt);
+        }
+      }
+    });
+  })();
+
+  // Render the current week + current month
+  (function renderCurrentWeek() {
+    var now = new Date();
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    // Monday of this week (Mon=0 ... Sun=6)
+    var dow = (today.getDay() + 6) % 7;
+    var monday = new Date(today);
+    monday.setDate(today.getDate() - dow);
+    var sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    var months = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+    var dayLbl = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+    function fmt(d) { return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear(); }
+
+    // Header range
+    document.getElementById('calRange').textContent = fmt(monday) + '–' + fmt(sunday);
+
+    // Week column headers
+    var heads = document.querySelectorAll('#weekHead .col-head');
+    heads.forEach(function (el, i) {
+      var d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      el.textContent = dayLbl[i] + ' ' + d.getDate();
+      if (d.getTime() === today.getTime()) el.classList.add('active');
+      else el.classList.remove('active');
+    });
+
+    // Mini calendar month/year label
+    document.getElementById('miniMonth').textContent = months[today.getMonth()].toUpperCase() + ' ▾';
+    document.getElementById('miniYear').textContent = today.getFullYear() + ' ▾';
+
+    // Mini calendar grid — 6 rows × 7 cols starting from Monday of the week containing the 1st
+    var firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    var firstDow = (firstOfMonth.getDay() + 6) % 7;
+    var gridStart = new Date(firstOfMonth);
+    gridStart.setDate(1 - firstDow);
+
+    var body = document.getElementById('miniDays');
+    body.innerHTML = '';
+    for (var r = 0; r < 6; r++) {
+      var tr = document.createElement('tr');
+      for (var c = 0; c < 7; c++) {
+        var d = new Date(gridStart);
+        d.setDate(gridStart.getDate() + r * 7 + c);
+        var td = document.createElement('td');
+        td.textContent = d.getDate();
+        if (d.getMonth() !== today.getMonth()) td.classList.add('dim');
+        if (d.getTime() === today.getTime()) td.classList.add('sel');
+        tr.appendChild(td);
+      }
+      body.appendChild(tr);
+    }
+  })();
+</script>
+</body>
+</html>
