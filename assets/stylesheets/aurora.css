@@ -6806,6 +6806,37 @@ html[data-aur-dev="1"] .aur-fab-menu__item--dev { display: flex; }
   .mj-navprev__card { grid-template-columns: 1fr; }
 }
 
+/* ---------- Training-video index table (Useful Links page) ---------- */
+.aur-video-index {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 4px 0 2px;
+  font-size: 0.94rem;
+}
+.aur-video-index thead th {
+  text-align: left;
+  padding: 8px 12px;
+  font-weight: 600;
+  color: var(--aur-text-soft);
+  border-bottom: 1px solid var(--aur-border);
+  letter-spacing: 0.02em;
+}
+.aur-video-index tbody td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: top;
+}
+.aur-video-index tbody tr:last-child td {
+  border-bottom: none;
+}
+.aur-video-index tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+.aur-video-index td:last-child {
+  color: var(--aur-text-soft);
+  white-space: nowrap;
+}
+
 /* ---------- Home page mockup embed ----------
    Same width-escape trick as .mj-navprev so the iframe can breathe
    past the 72ch reading measure. */
