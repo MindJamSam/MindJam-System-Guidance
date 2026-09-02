@@ -688,8 +688,13 @@
     var steps   = card.querySelectorAll('.aur-step');
 
     var STORAGE_KEY = 'auroraStepsCompact';
-    var compact = false;
-    try { compact = localStorage.getItem(STORAGE_KEY) === '1'; } catch (e) {}
+    // Default to compact on first visit so pages open with all steps
+    // collapsed; a stored user preference still wins.
+    var compact = true;
+    try {
+      var stored = localStorage.getItem(STORAGE_KEY);
+      if (stored !== null) compact = stored === '1';
+    } catch (e) {}
 
     function apply() {
       card.classList.toggle('is-compact', compact);
