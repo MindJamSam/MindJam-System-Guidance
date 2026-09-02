@@ -8,7 +8,7 @@ section: standalone
 </header>
 
 <article class="aur-tile aur-info-card aur-welcome-card is-tiltable">
-  <div class="aur-info-card__prose aur-prose" style="text-align: center;">
+  <div class="aur-info-card__prose aur-prose" style="text-align: center; margin-left: auto; margin-right: auto;">
     <p>Welcome to the <strong>MindJam Salesforce Training Guide</strong>.</p>
     <p>This guide introduces the key information you need to use the <strong>Salesforce Community</strong> site to manage and run your mentoring sessions.</p>
     <p>The guide is organised into clear sections. We recommend following them in chronological order, as each section builds on the previous one and will help you set up your account step by step.</p>
