@@ -161,4 +161,34 @@ accordion_toolbar: true
   </div>
 </details>
 
+<details class="aur-term-section aur-tile">
+  <summary class="aur-term-section__summary">
+    <span>
+      <span class="aur-term-section__title">Training Videos</span>
+      <span class="aur-term-section__hint">Jump to any walkthrough video from across the guide.</span>
+    </span>
+    <span class="aur-term-section__chevron" aria-hidden="true"></span>
+  </summary>
+  <div class="aur-term-section__body">
+  <table class="aur-video-index">
+    <thead>
+      <tr><th scope="col">Video</th><th scope="col">From this section</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><a href="https://youtu.be/0knMU3Ypz3o" target="_blank" rel="noopener">But Why?</a></td><td>Introduction</td></tr>
+      <tr><td><a href="https://youtu.be/fMMA673ZBf4" target="_blank" rel="noopener">Update Preferences</a></td><td>Getting Started</td></tr>
+      <tr><td><a href="https://youtu.be/6yZe3z4dh2Y" target="_blank" rel="noopener">Availability</a></td><td>Getting Started</td></tr>
+      <tr><td><a href="https://youtu.be/HhPB2pGHbOc" target="_blank" rel="noopener">Switching Systems Mid-Month</a></td><td>Swapping Systems</td></tr>
+      <tr><td><a href="https://youtu.be/9T48j76vQ5Q" target="_blank" rel="noopener">My Account</a></td><td>Swapping Systems</td></tr>
+      <tr><td><a href="https://youtu.be/UAxlOz68_mg" target="_blank" rel="noopener">Understanding the Difference</a></td><td>Understanding the Difference</td></tr>
+      <tr><td><a href="https://youtu.be/FilILtVmi7Q" target="_blank" rel="noopener">Calendar Events</a></td><td>Understanding the Difference</td></tr>
+      <tr><td><a href="https://youtu.be/aXAd8FRa784" target="_blank" rel="noopener">Wrap Up a Session</a></td><td>Understanding the Difference</td></tr>
+      <tr><td><a href="https://youtu.be/94bytN9gC1Y" target="_blank" rel="noopener">Dashboard</a></td><td>Mentees and Sessions</td></tr>
+      <tr><td><a href="https://youtu.be/RYoIyoUZSSo" target="_blank" rel="noopener">Knowledge Base</a></td><td>Resources</td></tr>
+      <tr><td><a href="https://youtu.be/0AiFsROS2BY" target="_blank" rel="noopener">Support Tickets</a></td><td>Resources</td></tr>
+    </tbody>
+  </table>
+  </div>
+</details>
+
 </div>
