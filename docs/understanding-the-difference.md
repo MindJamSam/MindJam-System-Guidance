@@ -6,7 +6,7 @@ steps:
   - title: Overview
     body: |
       Three things to understand: a Mentee's Profile, Calendar Events, and Service Appointments.
-  - title: 1. A Mentee's Profile
+  - title: A Mentee's Profile
     body: |
       The Mentee Profile is the young person's main record. You can open this by clicking on the young person's name. This is where you can find:
 
@@ -18,7 +18,7 @@ steps:
       You may see two different mentee record links in the **My Mentees** list: **Client** and **Assigned Mentee Name**. These are explained in more detail in the [Accessing Your Mentees](../accessing-your-mentees/) section.
 
       This is for information only. It does not schedule sessions, confirm attendance, or record what happened in a session.
-  - title: 2. Calendar Events
+  - title: Calendar Events
     body: |
       A Calendar Event is the session in your calendar. This shows:
 
@@ -30,7 +30,7 @@ steps:
     media:
       - src: assets/images/understanding-the-difference/open-calendar-event-view.webm
         alt: Opening a calendar event
-  - title: 3. Service Appointments
+  - title: Service Appointments
     body: |
       A Service Appointment is created automatically when a Calendar Event is made. You can open it by clicking a link that starts with **SA**. This is where you:
 
