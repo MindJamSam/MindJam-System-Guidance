@@ -18,6 +18,19 @@ steps:
       - 2:00 to 5:00
 
       This ensures 1:00 to 2:00 does not appear as available.
+  - title: Delete the Placeholder Hours First
+    body: |
+      When you first open **Manage Time Slots**, you will see Monday 9:00 to 5:00 already there. **Do not panic. This is a placeholder.**
+
+      To create your account, our Salesforce partner (Katy at Ignyto) had to enter some hours. She used Monday 9:00 to 5:00.
+
+      Before adding your own availability:
+
+      - Find the Monday 9:00 to 5:00 slot
+      - Click the small **(▼)** arrow next to it
+      - Choose **Delete**
+
+      Then add your own availability using the steps below.
   - title: How to Add Availability
     body: |
       - Log in to the Community Site
