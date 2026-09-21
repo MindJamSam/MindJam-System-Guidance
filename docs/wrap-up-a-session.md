@@ -29,9 +29,16 @@ steps:
         alt: Logging the session details and choosing the funding type
   - title: Why This Matters
     body: |
-      Wrapping up a session is important because it helps the system confirm what happened, send automatic attendance emails, and support invoicing and payment processing.
+      Wrapping up a session is important because it helps the system confirm what happened, and supports invoicing and payment processing.
 
       If a mentor does not wrap up a session, they will **not be paid** for that session. Invoices are automatically generated at the end of each month, so please make sure sessions are wrapped up before the final day of each month. If you are unable to wrap up any sessions for any reason, let a member of Senior Leadership know the status of each session (Attended, Cancelled, and so on) and they will wrap your sessions up for you.
+  - title: Attendance Emails at Launch
+    body: |
+      Automatic attendance emails will **not** be switched on at launch.
+
+      We are still working out what each LA needs from us. Some LAs may want attendance details shared through a portal, and others may be happy with a straightforward automatic email. Until that is agreed, we do not want the system sending emails that later have to be undone or replaced.
+
+      **In the meantime, please continue sending your attendance emails the way you do now.** We are in the process of getting this sorted and will let you know as soon as it is ready to switch on.
   - title: After You Submit
     body: |
       Once everything has been completed, the Service Appointment will update and the session record will be complete. This is what the system uses for attendance, invoicing, and payment.
