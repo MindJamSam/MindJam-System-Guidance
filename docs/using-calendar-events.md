@@ -187,6 +187,11 @@ steps:
 
         <p class="aur-delete-demo__caption" data-delete-caption>Preview: only the Wednesday event is removed. Monday and Tuesday stay, and the future sessions stay.</p>
       </div>
+
+      <div class="aur-delete-demo__note" role="note">
+        <p><strong>Good to know:</strong> when you delete an event, it can still appear in the <strong>Requiring Wrap Up Today</strong> list for a little while. That is because a helpful automation sweeps through twice a day, at midday and midnight, and clears the deleted events out for you.</p>
+        <p>So if you see one lingering after you have hit delete, it is nothing you have done wrong. It is simply waiting for the next tidy-up. We know it can feel a bit odd, and we are looking at a smoother fix for the near future.</p>
+      </div>
     media:
       - src: assets/images/using-calendar-events/create-calendar-event.webm
         alt: Using the Delete Series option to remove an event

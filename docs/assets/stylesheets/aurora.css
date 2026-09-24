@@ -3607,6 +3607,25 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
   padding-left: 22px;
 }
 
+.aur-delete-demo__note {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  margin-top: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--aur-border);
+  border-left: 3px solid var(--aur-accent);
+  border-radius: var(--aur-tile-radius-sm);
+  background: color-mix(in srgb, var(--aur-accent) 8%, transparent);
+}
+
+.aur-delete-demo__note p {
+  margin: 0 0 8px;
+}
+
+.aur-delete-demo__note p:last-child {
+  margin-bottom: 0;
+}
+
 .aur-step:has(.aur-delete-demo) .aur-step__media {
   grid-column: 2;
   grid-row: 2;
@@ -3820,6 +3839,7 @@ a.aur-contact-value:hover { color: var(--aur-accent-soft); text-decoration: unde
 
   .aur-delete-demo__intro,
   .aur-delete-demo,
+  .aur-delete-demo__note,
   .aur-step:has(.aur-delete-demo) .aur-step__media {
     grid-column: 1;
     grid-row: auto;
