@@ -66,6 +66,13 @@ steps:
           </div>
         </div>
       </div>
+  - title: What (AM) Means Next to a Name
+    body: |
+      Sometimes you will see **(AM)** next to a mentee's name in your list.
+
+      **(AM)** stands for **Additional Mentor**. It means this mentee already has a main mentor, and an additional mentor has been assigned to work with them as well.
+
+      If you see **(AM)** next to one of your mentees, it tells you that you are their **additional mentor**.
   - title: Opening a Mentee Profile
     body: |
       To open a mentee's profile, click on their name. Inside the profile, you can view useful information about the young person, including background details that may help you prepare for sessions.
@@ -89,12 +96,18 @@ steps:
       When a new mentee is assigned to you, the first step is to read their **form submission** carefully and attend the **initial parent/carer meeting**. You should only decide whether to accept or reject the mentee after both of these steps have taken place. The form submission on its own is **not enough** to decide whether the match is suitable.
 
       *Making Your Decision:* If the mentee feels like a **good fit**, you should **Accept** them. Once accepted, they will be added to your **caseload**. If the mentee does not feel like a good fit, you should **Reject** them. Once rejected, they will be returned to the assigning team so another match can be considered.
-  - title: How New Mentees Are Added to Your Caseload — When a Mentee Leaves
+  - title: When a Mentee Leaves
     body: |
-      There are two ways new mentees can be added to your caseload. If you have already set up your [operating hours](../availability/), and one of your mentees leaves, their time slot will become available again. For example, if you had a mentee every Monday from 9:00 to 10:00 and they leave, that slot will become free. If you do not add a blocker to that slot, it will remain available in your [operating hours](../availability/). This means the Assigning Team can use it to place a new mentee with you. You do not need to do anything else. If you have any questions, you can log a ticket with the Assigning Team using the [ticket system](../how-to-log-a-support-ticket/).
+      If one of your mentees leaves, their time slot in your [operating hours](../availability/) will become free again.
+
+      For example, if you had a mentee every Monday from 9:00 to 10:00 and they leave, that slot will open back up. If you do not add a blocker to that slot, it will stay available in your [operating hours](../availability/), and the Assigning Team can use it to place a new mentee with you.
+
+      You do not need to do anything else. If you have any questions, you can log a ticket with the Assigning Team using the [ticket system](../how-to-log-a-support-ticket/).
   - title: When You Add More Availability
     body: |
-      The second way is when your availability changes and you are able to take on more sessions. If this happens, you should add the new time slots to your [operating hours](../availability/). This tells the system that you now have more unfilled availability. Once those extra slots have been added, they will appear in the assigning system and the Assigning Team will be able to place new mentees into them.
+      If your availability changes and you are able to take on more sessions, add the new time slots to your [operating hours](../availability/). This tells the system that you now have more unfilled availability.
+
+      Once those extra slots have been added, they will appear in the assigning system and the Assigning Team will be able to place new mentees into them.
   - title: Off-Boarding a Mentee
     body: |
       If a mentee is leaving the service, you can off-board them from their profile. When you off-board a mentee, you will need to:

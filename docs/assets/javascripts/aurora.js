@@ -2451,7 +2451,7 @@
       }
     };
 
-    function show(key) {
+    function show(key, updateUrl) {
       var selected = labels[key];
       if (!selected) return;
       buttons.forEach(function (button) {
@@ -2462,13 +2462,21 @@
       });
       if (title) title.textContent = selected.title;
       if (type) type.textContent = selected.type;
+      if (updateUrl && window.history && window.history.replaceState) {
+        var url = new URL(window.location.href);
+        url.searchParams.set('mentee', key);
+        window.history.replaceState(null, '', url.toString());
+      }
     }
 
     buttons.forEach(function (button) {
       button.addEventListener('click', function () {
-        show(button.getAttribute('data-aur-mentee-record'));
+        show(button.getAttribute('data-aur-mentee-record'), true);
       });
     });
+
+    var initial = new URL(window.location.href).searchParams.get('mentee');
+    if (initial && labels[initial]) show(initial, false);
   });
 })();
 
