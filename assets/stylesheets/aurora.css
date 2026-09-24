@@ -3917,6 +3917,10 @@ video.aur-step__media-img {
   backdrop-filter: blur(var(--aur-tile-blur)) saturate(120%);
 }
 
+.aur-step:has(img[src*="earnings-forecast.png"]) .aur-step__media {
+  max-width: 100%;
+}
+
 /* Step prose and media stack vertically inside the card. The
    per-step 2-column layout was tried (commit history) but Salesforce
    admin screenshots need full card width to remain legible. The
