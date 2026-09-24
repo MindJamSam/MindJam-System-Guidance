@@ -49,6 +49,17 @@ steps:
       - src: assets/images/dashboard/yearly-totals.png
         alt: Yearly Totals dashboard showing monthly billing totals and record count
 
+  - title: Earnings Forecast
+    body: |
+      **Earnings Forecast** shows an estimate of how much you are expected to make each month.
+
+      It adds together all your scheduled sessions and completed sessions, then groups the total by month so you can see roughly what to expect over the coming months.
+
+      *Please note: this is only an estimate and may not be a true reflection of your actual monthly or yearly earnings. Sessions can be cancelled, rescheduled, or added after the forecast is calculated.*
+    media:
+      - src: assets/images/dashboard/earnings-forecast.png
+        alt: Earnings Forecast dashboard showing a Mentor Monthly Earnings Summary table with expected earnings totalled by month
+
   - title: Tax Year Totals
     body: |
       **Yearly Totals (April - April)** shows the same kind of information from a tax-year perspective.
